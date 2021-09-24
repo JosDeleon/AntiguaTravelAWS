@@ -14,7 +14,7 @@ export default ({ app, store, $axios }, inject) => {
   const api = {
     timeout: 5000,
     outboxing: false,
-    get (service, params = {}){
+    get (service, params = {}, data = null){
       store.commit('setLoading',true)
       return new Promise((resolve, reject) => {
         let config = {
@@ -22,6 +22,8 @@ export default ({ app, store, $axios }, inject) => {
           //withCredentials: true,
           timeout: this.timeout
         }
+        console.log(data)
+        config.data = data ?? null
         processRequest($axios.get(process.env.API + service, config),resolve,reject)
       })
     },
@@ -32,9 +34,14 @@ export default ({ app, store, $axios }, inject) => {
           //withCredentials: true,
           timeout: this.timeout,
         }
+
         if (files){
           config.headers = { 'content-type': 'multipart/form-data' }
         }
+        /*const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        if(usuario.accessToken){
+          config.headers['x-access-token'] = usuario.accessToken ?? ''
+        }*/
         processRequest($axios.post(process.env.API + service,params, config),resolve,reject)
       })
     },
