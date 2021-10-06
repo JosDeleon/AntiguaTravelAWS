@@ -413,6 +413,13 @@
       </v-card>
     </v-dialog>
 
+    <v-overlay :value="$store.state.loading">
+      <v-progress-circular
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
+
   </v-container>
 
 </template>
@@ -484,14 +491,12 @@ export default {
     },
 
     async EnviarMensaje(restaurante){
-      const usersRef = this.$fire.database.ref('Users')
+      const usersRef = this.$fire.database.ref('Users').child("id"+restaurante.usuarioId)
       await this.$api.post("/usuario/info", { id: restaurante.usuarioId })
         .then(async data => {
           let encargado = data
           try {
-            let userNegocio = {}
-            userNegocio[encargado.username] = {
-              id: restaurante.usuarioId,
+            let userNegocio = {
               negocioId: restaurante.id,
               nombreNegocio: restaurante.nombre,
               username: encargado.username,
@@ -501,14 +506,19 @@ export default {
             }
 
             const chatsRef = this.$fire.database.ref('Chats')
-            let chat = {}
-            chat["chat"+this.auth.id+"-"+encargado.id] = {
-              miembros: [this.auth.username, encargado.username],
+              .child("chat"+this.auth.id+"-"+encargado.id)
+            let chat = {
+              usuario: "id"+this.auth.id,
+              negocio: "id"+encargado.id,
               ultimoMensaje: ''
             }
 
+            const userChatsRef = this.$fire.database.ref('userChats')
+              .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
             await usersRef.set(userNegocio)
             await chatsRef.set(chat)
+            await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
 
             this.$router.push({path: '/usuario/mensajes'})
 

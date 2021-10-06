@@ -720,6 +720,7 @@ export default {
         }
 
       }
+
     },
 
     MostrarDialogoOpcionesNegocio(tipo) {
@@ -736,6 +737,12 @@ export default {
       if(tipo === 'C'){
 
         this.$router.push({ path: '/usuario/cuenta' })
+
+      }
+
+      else if(tipo === 'M'){
+
+        this.$router.push({ path: '/usuario/mensajes' })
 
       }
 
@@ -811,8 +818,6 @@ export default {
       }
       this.helpers.loading = true
 
-      const usersRef = this.$fire.database.ref('Users')
-
       this.$api.post('/signin', params).then( async data => {
         if (data.accessToken) {
           sessionStorage.setItem('usuario', JSON.stringify(data));
@@ -822,9 +827,9 @@ export default {
             .then(async data => {
               try{
 
-                let user = {}
-                user[data.username] = {
-                  id: data.id,
+                const usersRef = this.$fire.database.ref('Users').child("id"+data.id)
+
+                let user =  {
                   negocioId: -1,
                   nombreNegocio: '',
                   username: data.username,
