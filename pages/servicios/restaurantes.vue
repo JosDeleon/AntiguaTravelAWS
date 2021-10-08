@@ -524,7 +524,7 @@ export default {
                 .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
 
               const encargadoChatsRef = this.$fire.database.ref('userChats')
-                .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+                .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
 
               const negociosRef = this.$fire.database.ref('Negocios').child("id"+encargado.id)
 

@@ -46,7 +46,7 @@
           <div v-for="(us_chat, i) in usuario_chats" :key="i">
 
             <v-list-item
-              v-for="(llave, j) in Object.keys(chats.listado[us_chat])"
+              v-for="(llave, j) in chats.listado[us_chat] ? Object.keys(chats.listado[us_chat]) : []"
               :key="j"
               :value="llave"
               exact
@@ -95,8 +95,6 @@
       <v-toolbar-title v-text="" />
     </v-app-bar>
 
-    {{usuario_chats}}
-    {{chats.seleccionado}}
     {{$store.state.usuarioChatActual}}
 
     <v-list-item-group>
@@ -172,8 +170,10 @@ export default {
     CurrentChatListener(){
       if(this.msjRef){
         this.msjRef.on('value', (snapshot) => {
-          this.mensajes.ids = Object.keys(snapshot.val())
-          this.mensajes.listado = snapshot.val()
+          if(snapshot.val()){
+            this.mensajes.ids = Object.keys(snapshot.val())
+            this.mensajes.listado = snapshot.val()
+          }
         }, (errorObject) => {
           console.log('The read failed: ' + errorObject.name);
         });
@@ -210,15 +210,19 @@ export default {
       })
 
      Axios.get(userChatsRef.toString() + '.json').then(response => {
+       if(response.data){
+         this.usuario_chats = Object.keys(response.data)
+         let chat_0 = this.usuario_chats[0]
+         let chatKeys = Object.keys(this.chats.listado)
+         this.chats.seleccionado = chatKeys[0]
 
-       this.usuario_chats = Object.keys(response.data)
-       this.chats.seleccionado = this.usuario_chats[0]
+         let chat = Object.assign({}, this.chats.listado[chat_0][this.chats.seleccionado])
+         chat.id = this.chats.seleccionado
+         this.$store.commit("setUsuarioChatActual", this.chats.listado[chat_0][chatKeys[0]])
 
-       let chat = Object.assign({}, this.chats.listado[this.chats.seleccionado])
-       chat.id = this.chats.seleccionado
-       this.$store.commit("setUsuarioChatActual", chat)
+         this.msjRef = this.$fire.database.ref("chatMessages/"+this.chats.seleccionado)
+       }
 
-       this.msjRef = this.$fire.database.ref("chatMessages/"+this.chats.seleccionado)
        this.CurrentChatListener
 
      })
