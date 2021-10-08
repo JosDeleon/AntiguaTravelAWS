@@ -426,11 +426,14 @@
 
 <script>
 
+import * as Axios from "axios";
+
 export default {
 
   mounted() {
     this.ObtenerRestaurantes()
     this.ObtenerAuth()
+    console.log(JSON.parse(sessionStorage.getItem('usuario')))
   },
 
   data(){
@@ -491,41 +494,88 @@ export default {
     },
 
     async EnviarMensaje(restaurante){
-      const usersRef = this.$fire.database.ref('Users').child("id"+restaurante.usuarioId)
-      await this.$api.post("/usuario/info", { id: restaurante.usuarioId })
-        .then(async data => {
-          let encargado = data
-          try {
-            let userNegocio = {
-              negocioId: restaurante.id,
-              nombreNegocio: restaurante.nombre,
-              username: encargado.username,
-              image: '',
-              correo: encargado.correo,
-              nombre: encargado.nombre
+
+      let negocioFound = {id: 0}
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === restaurante.id );
+      }
+
+      if(negocioFound.id > 0){
+        this.$alert.warning("No puedes enviar mensajes a tu negocio",
+          "Contacto Fallido")
+      }
+      else{
+        await this.$api.post("/usuario/info", { id: restaurante.usuarioId })
+          .then(async data => {
+            let encargado = data
+            try {
+
+              const chatsRef = this.$fire.database.ref('Chats')
+                .child("chat"+this.auth.id+"-"+encargado.id)
+              let chat = {
+                usuario: "id"+this.auth.id,
+                negocio: "id"+encargado.id,
+                key_negocio: '',
+                ultimoMensaje: ''
+              }
+
+              const userChatsRef = this.$fire.database.ref('userChats')
+                .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+              const encargadoChatsRef = this.$fire.database.ref('userChats')
+                .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+              const negociosRef = this.$fire.database.ref('Negocios').child("id"+encargado.id)
+
+              Axios.get(negociosRef.toString() + '.json').then(async response => {
+
+                let keys = Object.keys(response.data)
+                keys.forEach( key => {
+
+                  if(restaurante.id === response.data[key].negocioId){
+                    chat.key_negocio = key
+                  }
+
+                } )
+
+                Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                  let keys = []
+                  if(response.data && response.data.length > 0)
+                    keys = Object.keys(response.data)
+                  let found = false
+                  let llave = ''
+
+                  keys.forEach( key => {
+
+                    if(chat.key_negocio === response.data[key].key_negocio){
+                      found = true
+                      llave = key
+                    }
+
+                  } )
+
+                  if(!found)
+                    await chatsRef.push(chat)
+                  else
+                    await chatsRef.child(llave).set(chat)
+
+                })
+
+                await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+              })
+
+              this.$router.push({path: '/usuario/mensajes'})
+
+            } catch (e) {
+              console.error(e)
             }
+          })
+      }
 
-            const chatsRef = this.$fire.database.ref('Chats')
-              .child("chat"+this.auth.id+"-"+encargado.id)
-            let chat = {
-              usuario: "id"+this.auth.id,
-              negocio: "id"+encargado.id,
-              ultimoMensaje: ''
-            }
-
-            const userChatsRef = this.$fire.database.ref('userChats')
-              .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
-
-            await usersRef.set(userNegocio)
-            await chatsRef.set(chat)
-            await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
-
-            this.$router.push({path: '/usuario/mensajes'})
-
-          } catch (e) {
-            console.error(e)
-          }
-        })
     },
 
     VerificarHora(abre, cierra){

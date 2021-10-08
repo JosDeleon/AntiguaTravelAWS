@@ -42,33 +42,42 @@
         <v-divider />
 
         <v-list-item-group v-model="chats.seleccionado" mandatory>
-          <v-list-item
-            v-for="(chat, i) in usuario_chats"
-            :key="i"
-            :value="chat"
-            exact
-            class="ma-2"
-            link
-          >
-            <v-list-item-avatar>
-              <v-img :src="ObtenerImagen(chat)"
-              />
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>
-                <h4>{{ObtenerNombreNegocio(chat)}}</h4>
-                <v-spacer />
-                <span>
+
+          <div v-for="(us_chat, i) in usuario_chats" :key="i">
+
+            <v-list-item
+              v-for="(llave, j) in Object.keys(chats.listado[us_chat])"
+              :key="j"
+              :value="llave"
+              exact
+              class="ma-2"
+              link
+            >
+              <v-list-item-avatar>
+                <v-img :src="ObtenerImagen(chats.listado[us_chat][llave])"
+                />
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>
+                  <h4>{{ chats.listado[us_chat][llave] ?
+                    negocios.listado[chats.listado[us_chat][llave].negocio][chats.listado[us_chat][llave].key_negocio].nombreNegocio : '' }}
+                  </h4>
+                  <v-spacer />
+                  <span>
                   {{
-                    chats.listado[chat] ?
-                      $moment(chats.listado[chat].fechaHora, "L h:mm:ss a").fromNow() : null
-                  }}
+                      chats.listado[us_chat][llave].fechaHora ?
+                        $moment(chats.listado[us_chat][llave].fechaHora, "L h:mm:ss a").fromNow() : null
+                    }}
                 </span>
-              </v-list-item-title>
-              <v-list-item-subtitle v-text="chats.listado[chat] && chats.listado[chat].ultimoMensaje !== '' ?
-              chats.listado[chat].ultimoMensaje : 'Aún no hay mensajes en esta conversación'" />
-            </v-list-item-content>
-          </v-list-item>
+                </v-list-item-title>
+                <v-list-item-subtitle v-text="chats.listado[us_chat][llave] &&
+                chats.listado[us_chat][llave].ultimoMensaje !== '' ?
+                chats.listado[us_chat][llave].ultimoMensaje : 'Aún no hay mensajes en esta conversación'" />
+              </v-list-item-content>
+            </v-list-item>
+
+          </div>
+
         </v-list-item-group>
 
       </v-list>
@@ -83,8 +92,12 @@
       outlined
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="ObtenerNombreNegocio(chats.seleccionado)" />
+      <v-toolbar-title v-text="" />
     </v-app-bar>
+
+    {{usuario_chats}}
+    {{chats.seleccionado}}
+    {{$store.state.usuarioChatActual}}
 
     <v-list-item-group>
       <v-list-item
@@ -135,6 +148,9 @@ export default {
       usuarios: {
         listado: {},
         seleccionado: {}
+      },
+      negocios: {
+        listado: {}
       },
       chats: {
         listado: {},
@@ -187,6 +203,12 @@ export default {
 
      this.ChatsListener
 
+      let negociosRef = this.$fire.database.ref("Negocios")
+
+      Axios.get(negociosRef.toString() + '.json').then(response => {
+        this.negocios.listado = response.data
+      })
+
      Axios.get(userChatsRef.toString() + '.json').then(response => {
 
        this.usuario_chats = Object.keys(response.data)
@@ -211,8 +233,8 @@ export default {
 
     ObtenerImagen(chat){
 
-     if(this.chats.listado[chat] && this.usuarios.listado[this.chats.listado[chat].negocio] &&
-        this.usuarios.listado[this.chats.listado[chat].negocio].image){
+     if(this.negocios.listado[chat.negocio][chat.key_negocio] &&
+       this.negocios.listado[chat.negocio][chat.key_negocio].image){
        return this.usuarios.listado[this.chats.listado[chat].negocio].image
      }
      else{
@@ -220,15 +242,6 @@ export default {
      }
 
    },
-
-    ObtenerNombreNegocio(chat){
-
-      if(this.chats.listado[chat] && this.usuarios.listado[this.chats.listado[chat].negocio] &&
-        this.usuarios.listado[this.chats.listado[chat].negocio].nombreNegocio){
-        return this.usuarios.listado[this.chats.listado[chat].negocio].nombreNegocio
-      }
-
-    }
 
 
   }

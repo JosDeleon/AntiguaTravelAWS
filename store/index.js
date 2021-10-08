@@ -1,6 +1,7 @@
 export const state = () => ({
   loading: false,
-  usuarioChatActual: {}
+  usuarioChatActual: {},
+  negocios: []
 })
 
 export const mutations = {
@@ -9,5 +10,8 @@ export const mutations = {
   },
   setUsuarioChatActual(state, value){
     state.usuarioChatActual = value
-  }
+  },
+  setNegocios(state, value){
+    state.negocios = value
+  },
 }
