@@ -152,6 +152,7 @@ export default {
   },
 
   computed: {
+
     CurrentChatListener(){
       if(this.msjRef){
         this.msjRef.on('value', (snapshot) => {
@@ -162,6 +163,7 @@ export default {
         });
       }
     },
+
     ChatsListener(){
       if(this.chatsRef){
         this.chatsRef.on('value', (snapshot) => {
@@ -171,6 +173,7 @@ export default {
         });
       }
     }
+
   },
 
 
