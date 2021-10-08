@@ -118,12 +118,18 @@ export default {
         },
         {
           no: 2,
+          icon: 'fa fa-inbox',
+          title: 'Mensajes',
+          to: '/negocios/mensajes'
+        },
+        {
+          no: 3,
           icon: 'fa fa-briefcase',
           title: 'Listado de Negocios',
           to: '/negocios/listado_negocios'
         },
         {
-          no: 3,
+          no: 4,
           icon: 'fa fa-cubes',
           title: 'Productos y Servicios',
           to: '/negocios/productos_servicios'
