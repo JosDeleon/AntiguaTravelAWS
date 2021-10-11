@@ -1,7 +1,8 @@
 export const state = () => ({
   loading: false,
   usuarioChatActual: {},
-  negocios: []
+  negocios: [],
+  hideMessageField: false
 })
 
 export const mutations = {
@@ -13,5 +14,8 @@ export const mutations = {
   },
   setNegocios(state, value){
     state.negocios = value
+  },
+  setHideMessageField(state, value){
+    state.hideMessageField = value
   },
 }

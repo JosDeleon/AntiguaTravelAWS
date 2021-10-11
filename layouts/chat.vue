@@ -4,13 +4,12 @@
       <nuxt />
     </v-main>
     <template>
-      <v-footer inset app>
+      <v-footer inset app v-if="!$store.state.hideMessageField">
         <v-row>
           <v-col cols="12">
 
             <v-text-field
               v-model="mensaje"
-              append-outer-icon="mdi-send"
               filled
               placeholder="Mensaje"
               type="text"
@@ -18,8 +17,17 @@
               @keyup.enter.native="EnviarMensaje"
               clearable
               clear-icon="fa fa-times-circle"
+            >
 
-            />
+              <template v-slot:append-outer>
+                <v-btn icon @click="EnviarMensaje">
+                  <v-icon color="secondary">
+                    mdi-send
+                  </v-icon>
+                </v-btn>
+              </template>
+
+            </v-text-field>
 
           </v-col>
         </v-row>
@@ -41,30 +49,44 @@ export default {
 
     async EnviarMensaje(){
 
-      const mensajeRef = this.$fire.database.ref('chatMessages')
-        .child(this.$store.state.usuarioChatActual.id)
+      if(this.mensaje === null)
+        this.mensaje = ''
 
-      const chatRef = this.$fire.database.ref('Chats')
-        .child(this.$store.state.usuarioChatActual.id)
+      if(this.mensaje.trim() !== ''){
 
-      let mensaje = {
-        mensaje: this.mensaje,
-        fecha: this.$moment().format('L').toString(),
-        hora: this.$moment().format('h:mm:ss a').toString(),
-        enviadoPor: JSON.parse(sessionStorage.getItem('usuario')).id
+        const mensajeRef = this.$fire.database.ref('chatMessages')
+          .child(this.$store.state.usuarioChatActual.idChat)
+
+        const chatRef = this.$fire.database.ref('Chats')
+          .child(this.$store.state.usuarioChatActual.chat)
+          .child(this.$store.state.usuarioChatActual.idChat)
+
+        let mensaje = {
+          mensaje: this.mensaje,
+          fecha: this.$moment().format('L').toString(),
+          hora: this.$moment().format('h:mm:ss a').toString(),
+          enviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id
+        }
+
+        let chat = {
+          key_negocio: this.$store.state.usuarioChatActual.key_negocio,
+          negocio: this.$store.state.usuarioChatActual.negocio,
+          ultimoMensaje: this.mensaje,
+          usuario: this.$store.state.usuarioChatActual.usuario,
+          fechaHora: this.$moment().format('L h:mm:ss a').toString()
+        }
+
+        await chatRef.set(chat)
+        await mensajeRef.push(mensaje)
+
+        let changeStore = Object.assign({}, this.$store.state.usuarioChatActual)
+        changeStore.ultimoMensaje = this.mensaje
+        changeStore.ultimoMensaje = this.$moment().format('L h:mm:ss a').toString()
+        this.$store.commit("setUsuarioChatActual", changeStore)
+
+        this.mensaje = ''
+
       }
-
-      let chat = Object.assign({}, this.$store.state.usuarioChatActual)
-      chat.ultimoMensaje = this.mensaje
-      chat.fechaHora = this.$moment().format('L').toString()+" "+this.$moment().format('h:mm:ss a').toString()
-      delete chat['id']
-
-      await chatRef.set(chat)
-      await mensajeRef.push(mensaje)
-
-      chat.id = this.$store.state.usuarioChatActual.id
-      this.$store.commit("setUsuarioChatActual", chat)
-      this.mensaje = ''
 
     }
 

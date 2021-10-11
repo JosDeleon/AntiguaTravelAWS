@@ -1,6 +1,6 @@
 <template>
 
-  <v-container fluid>
+  <v-container fluid :fill-height="chat_pool.length === 0">
 
     <v-navigation-drawer
       v-model="drawer"
@@ -9,7 +9,7 @@
       app
       :width="($vuetify.breakpoint.name === 'sm' ||
       $vuetify.breakpoint.name === 'xs') ? 350 : 500"
-
+      v-if="chat_pool && chat_pool.length > 0"
     >
       <v-list>
 
@@ -41,42 +41,40 @@
 
         <v-divider />
 
-        <v-list-item-group v-model="chats.seleccionado" mandatory>
+        <v-list-item-group v-model="seleccionado" mandatory
+                           @change="CambiarChat"
+        >
 
-          <div v-for="(us_chat, i) in usuario_chats" :key="i">
-
-            <v-list-item
-              v-for="(llave, j) in chats.listado[us_chat] ? Object.keys(chats.listado[us_chat]) : []"
-              :key="j"
-              :value="llave"
-              exact
-              class="ma-2"
-              link
-            >
-              <v-list-item-avatar>
-                <v-img :src="ObtenerImagen(chats.listado[us_chat][llave])"
-                />
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>
-                  <h4>{{ chats.listado[us_chat][llave] ?
-                    negocios.listado[chats.listado[us_chat][llave].negocio][chats.listado[us_chat][llave].key_negocio].nombreNegocio : '' }}
-                  </h4>
-                  <v-spacer />
-                  <span>
+          <v-list-item
+            v-for="(chat, j) in chat_pool"
+            :key="j"
+            exact
+            class="ma-2"
+            link
+          >
+            <v-list-item-avatar>
+              <v-img :src="negocios && negocios[chat.negocio][chat.key_negocio].image !== '' ?
+              negocios[chat.negocio][chat.key_negocio].image :
+              'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'"
+              />
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title>
+                <h4>
+                  {{ negocios ? negocios[chat.negocio][chat.key_negocio].nombreNegocio : '' }}
+                </h4>
+                <v-spacer />
+                <span>
                   {{
-                      chats.listado[us_chat][llave].fechaHora ?
-                        $moment(chats.listado[us_chat][llave].fechaHora, "L h:mm:ss a").fromNow() : null
-                    }}
+                    chat.fechaHora ? $moment(chat.fechaHora, "L h:mm:ss a").fromNow() : null
+                  }}
                 </span>
-                </v-list-item-title>
-                <v-list-item-subtitle v-text="chats.listado[us_chat][llave] &&
-                chats.listado[us_chat][llave].ultimoMensaje !== '' ?
-                chats.listado[us_chat][llave].ultimoMensaje : 'Aún no hay mensajes en esta conversación'" />
-              </v-list-item-content>
-            </v-list-item>
-
-          </div>
+              </v-list-item-title>
+              <v-list-item-subtitle v-text="chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
+                                            'Aún no hay mensajes en esta conversación'"
+              />
+            </v-list-item-content>
+          </v-list-item>
 
         </v-list-item-group>
 
@@ -91,35 +89,118 @@
       color="white"
       outlined
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="" />
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0" />
+      <v-avatar size="50" v-if="chat_pool && chat_pool.length > 0">
+        <v-img :src="negocios && chat_pool[seleccionado] &&
+              negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
+              negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image :
+               'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'"
+               width="100"
+               height="100"
+               contain
+               class="mr-2"
+        />
+      </v-avatar>
+      <v-avatar size="60" v-else>
+        <v-img src="/logo-no-texto.png"
+               width="100"
+               height="100"
+               contain
+               class="mr-2"
+        />
+      </v-avatar>
+      <v-toolbar-title v-if="chat_pool && chat_pool.length > 0">
+        {{
+          negocios && chat_pool[seleccionado] ?
+            negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].nombreNegocio :
+            ''
+        }}
+      </v-toolbar-title>
+      <v-toolbar-title v-else v-text="'No hay mensajes para mostrar'" />
     </v-app-bar>
 
-    {{$store.state.usuarioChatActual}}
-
     <v-list-item-group>
-      <v-list-item
-        v-for="(idMensaje, i) in mensajes.ids"
-        :key="i"
-        exact
-        class="ma-2"
-        link
+
+      <v-row v-for="(mensaje, i) in mensajes" :key="i"
+             :justify="mensaje.enviadoPor !== idAuth ? 'end' : 'start'"
       >
-        <v-list-item-avatar v-if="mensajes.listado[idMensaje].enviadoPor === idAuth">
-          <v-img :src="'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'" />
-        </v-list-item-avatar>
-        <v-list-item-content :class="mensajes.listado[idMensaje].enviadoPor !== idAuth ?
+
+        <v-col cols="12">
+
+          <v-layout justify-center>
+            <div class="text-secondary">
+              {{ $moment.utc(mensaje.fecha, 'DD/MM/YYYY').format('D [ de ] MMMM YYYY') }} a las {{mensaje.hora}}
+            </div>
+          </v-layout>
+
+        </v-col>
+
+        <v-col cols="10" xl="4" lg="4" md="6" sm="8" xs="8">
+
+          <v-card
+            elevation="0"
+            outlined
+            style="border-radius:50px;"
+            class="mb-2"
+          >
+
+            <v-list-item
+              exact
+              class="ma-2"
+              link
+            >
+              <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor === idAuth">
+                <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
+              </v-list-item-avatar>
+              <v-list-item-content :class="mensaje.enviadoPor !== idAuth ?
                                      'text-right align-self-start' : null"
-                             color="white"
-        >
-          <v-list-item-title v-text="'Fernando Sagastume'" />
-          <v-list-item-subtitle v-text="mensajes.listado[idMensaje].mensaje" />
-        </v-list-item-content>
-        <v-list-item-avatar v-if="mensajes.listado[idMensaje].enviadoPor !== idAuth">
-          <v-img :src="'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'" />
-        </v-list-item-avatar>
-      </v-list-item>
+                                   color="white"
+              >
+                <v-list-item-title v-text="ObtenerNombreChat(mensaje.enviadoPor)" />
+                <v-list-item-subtitle class="text-wrap" v-text="mensaje.mensaje" />
+              </v-list-item-content>
+              <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor !== idAuth">
+                <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
+              </v-list-item-avatar>
+            </v-list-item>
+
+          </v-card>
+
+        </v-col>
+
+      </v-row>
+
     </v-list-item-group>
+
+    <v-layout justify-center align-center row wrap v-if="chat_pool.length === 0">
+
+      <v-row align="center" justify="center">
+
+        <v-col cols="12">
+
+          <v-layout justify-center>
+
+            <v-icon size="150" color="secondary">
+
+              fa fa-exclamation-triangle
+
+            </v-icon>
+
+          </v-layout>
+
+        </v-col>
+
+        <v-col cols="12">
+
+          <v-layout justify-center>
+            <div class="subtitle justify-text" style="font-size: 18px;">
+              Aún no has iniciado ninguna conversación
+            </div>
+          </v-layout>
+
+        </v-col>
+      </v-row>
+    </v-layout>
 
   </v-container>
 
@@ -127,126 +208,210 @@
 
 <script>
 
-import * as Axios from "axios";
-import firebase from 'firebase'
-
 export default {
 
   mounted() {
+
+    this.idAuth = JSON.parse(sessionStorage.getItem('usuario')) ?
+      "id" + JSON.parse(sessionStorage.getItem('usuario')).id : ''
     this.ObtenerChats()
+    this.ObtenerNegocios()
+    this.ObtenerUsuarios()
+    this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
+  },
+
+  middleware: 'VerificarUsuarioAuth',
+
+  data(){
+
+    return{
+      clipped: false,
+      drawer: false,
+      fixed: false,
+      chat_pool: [],
+      chats: {},
+      seleccionado: 0,
+      userChats: [],
+      negocios: {},
+      usuarios: {},
+      idAuth: -1,
+      mensajesRef: null,
+      mensajes: []
+
+    }
+
   },
 
   layout: 'chat',
 
-  data () {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      usuarios: {
-        listado: {},
-        seleccionado: {}
-      },
-      negocios: {
-        listado: {}
-      },
-      chats: {
-        listado: {},
-        seleccionado: ''
-      },
-      usuario_chats: [],
-      mensajes: {
-        ids: [],
-        listado: {}
-      },
-      msjRef: null,
-      chatsRef: null,
-      idAuth: JSON.parse(sessionStorage.getItem('usuario')).id
-    }
-  },
+  methods: {
 
-  computed: {
+    CambiarChat(){
 
-    CurrentChatListener(){
-      if(this.msjRef){
-        this.msjRef.on('value', (snapshot) => {
-          if(snapshot.val()){
-            this.mensajes.ids = Object.keys(snapshot.val())
-            this.mensajes.listado = snapshot.val()
-          }
-        }, (errorObject) => {
-          console.log('The read failed: ' + errorObject.name);
-        });
-      }
+      this.$store.commit('setUsuarioChatActual', this.chat_pool[this.seleccionado])
+      this.mensajesRef = this.$fire.database.ref("chatMessages")
+        .child(this.$store.state.usuarioChatActual.idChat)
+      this.ObtenerMensajes()
+
     },
 
-    ChatsListener(){
-      if(this.chatsRef){
-        this.chatsRef.on('value', (snapshot) => {
-          this.chats.listado = snapshot.val()
-        }, (errorObject) => {
-          console.log('The read failed: ' + errorObject.name);
-        });
+    ObtenerNombreChat(idEnviado){
+
+      console.log(this.usuarios)
+
+      if(this.chat_pool[this.seleccionado].negocio === idEnviado){
+
+        return this.negocios[idEnviado][this.chat_pool[this.seleccionado].key_negocio].nombreNegocio
+
       }
-    }
 
-  },
+      else{
 
+        return this.usuarios[idEnviado].nombre
 
-  methods: {
+      }
+
+    },
+
+    ObtenerImagenChat(idEnviado){
+
+      if(this.chat_pool[this.seleccionado].negocio === idEnviado){
+
+        let imagen = this.negocios[idEnviado][this.chat_pool[this.seleccionado].key_negocio].image
+
+        return imagen !== '' ? imagen :
+          'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'
+
+      }
+
+      else{
+
+        let imagen = this.usuarios[idEnviado].image
+
+        return imagen !== '' ? imagen :
+          'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'
+
+      }
+
+    },
 
     async ObtenerChats(){
 
-     this.chatsRef = this.$fire.database.ref("Chats")
-     let id = JSON.parse(sessionStorage.getItem('usuario')).id
-     const userChatsRef = this.$fire.database.ref("userChats/id"+id)
+      let chatsRef = this.$fire.database.ref("Chats")
 
-     this.ChatsListener
+      await chatsRef.on('value', (snapshot) => {
+        this.chats = snapshot.val()
+        this.ObtenerChatsUsuario()
+      }, (errorObject) => {
+        console.log('La lectura en la DB fallo: ' + errorObject.name);
+      });
+
+    },
+
+    async ObtenerMensajes(){
+
+      await this.mensajesRef.on('value', (snapshot) => {
+
+        this.mensajes = []
+
+        if(snapshot.exists()){
+
+          Object.keys(snapshot.val()).forEach( mensajeKey => {
+
+            this.mensajes.push(snapshot.val()[mensajeKey])
+
+          } )
+
+          this.$vuetify.goTo(document.body.scrollHeight)
+
+        }
+
+      }, (errorObject) => {
+        console.log('La lectura en la DB fallo: ' + errorObject.name);
+      });
+
+    },
+
+    async ObtenerNegocios(){
 
       let negociosRef = this.$fire.database.ref("Negocios")
 
-      Axios.get(negociosRef.toString() + '.json').then(response => {
-        this.negocios.listado = response.data
-      })
+      await negociosRef.on('value', (snapshot) => {
+        this.negocios = snapshot.val()
+      }, (errorObject) => {
+        console.log('La lectura en la DB fallo: ' + errorObject.name);
+      });
 
-     Axios.get(userChatsRef.toString() + '.json').then(response => {
-       if(response.data){
-         this.usuario_chats = Object.keys(response.data)
-         let chat_0 = this.usuario_chats[0]
-         let chatKeys = Object.keys(this.chats.listado)
-         this.chats.seleccionado = chatKeys[0]
+    },
 
-         let chat = Object.assign({}, this.chats.listado[chat_0][this.chats.seleccionado])
-         chat.id = this.chats.seleccionado
-         this.$store.commit("setUsuarioChatActual", this.chats.listado[chat_0][chatKeys[0]])
+    async ObtenerUsuarios(){
 
-         this.msjRef = this.$fire.database.ref("chatMessages/"+this.chats.seleccionado)
-       }
+      let usuariosRef = this.$fire.database.ref("Users")
 
-       this.CurrentChatListener
+      await usuariosRef.on('value', (snapshot) => {
+        this.usuarios = snapshot.val()
+      }, (errorObject) => {
+        console.log('La lectura en la DB fallo: ' + errorObject.name);
+      });
 
-     })
+    },
 
-     const usersRef = this.$fire.database.ref("Users")
+    async ObtenerChatsUsuario(){
 
-     Axios.get(usersRef.toString() + '.json').then(response => {
-       this.usuarios.listado = response.data
-     })
 
-   },
+      let userChatsRef = this.$fire.database.ref("userChats/"+this.idAuth)
 
-    ObtenerImagen(chat){
+      await userChatsRef.on('value', (snapshot) => {
 
-     if(this.negocios.listado[chat.negocio][chat.key_negocio] &&
-       this.negocios.listado[chat.negocio][chat.key_negocio].image){
-       return this.usuarios.listado[this.chats.listado[chat].negocio].image
-     }
-     else{
-       return 'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'
-     }
+        this.userChats = []
+        this.chat_pool = []
+        this.userChats = snapshot.val() ? Object.keys(snapshot.val()) : []
+        let chatKeys = this.chats ? Object.keys(this.chats) : []
 
-   },
+        this.userChats.forEach(uc => {
 
+          let temporal = {}
+
+          chatKeys.forEach(chatKey => {
+
+            if(chatKey === uc){
+
+              temporal = Object.assign({}, this.chats[chatKey])
+
+              Object.keys(temporal).forEach( chatItemKey => {
+
+                if(temporal[chatItemKey].usuario === this.idAuth){
+
+                  temporal[chatItemKey].idChat = chatItemKey
+                  temporal[chatItemKey].chat = uc
+
+                  this.chat_pool.push(temporal[chatItemKey])
+
+                }
+
+              })
+
+            }
+
+          })
+
+        })
+
+        if(this.chat_pool.length > 0){
+          this.mensajesRef = this.$fire.database.ref("chatMessages")
+            .child(this.chat_pool[0].idChat)
+          this.$store.commit('setHideMessageField', false)
+          this.ObtenerMensajes()
+        }
+        else{
+          this.$store.commit('setHideMessageField', true)
+        }
+
+      }, (errorObject) => {
+        console.log('La lectura en la DB fallo: ' + errorObject.name);
+      });
+
+    }
 
   }
 
