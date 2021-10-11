@@ -429,6 +429,7 @@
 export default {
 
   mounted() {
+    this.$store.commit('setRutaActual', 'Listado de Negocios')
     this.ObtenerNegocios()
   },
 

@@ -10,7 +10,13 @@
       :width="($vuetify.breakpoint.name === 'sm' ||
       $vuetify.breakpoint.name === 'xs') ? 350 : 500"
       v-if="chat_pool && chat_pool.length > 0"
+      color="primary"
     >
+
+      <v-layout justify-center>
+        <v-img src="/logo-no-texto.png" contain width="250" height="250"/>
+      </v-layout>
+
       <v-list>
 
         <v-list-item>
@@ -42,7 +48,7 @@
         <v-divider />
 
         <v-list-item-group v-model="seleccionado" mandatory
-                           @change="CambiarChat"
+                           @change="CambiarChat" color="secondary"
         >
 
           <v-list-item
@@ -51,6 +57,7 @@
             exact
             class="ma-2"
             link
+            outlined
           >
             <v-list-item-avatar>
               <v-img :src="negocios && negocios[chat.negocio][chat.key_negocio].image !== '' ?
@@ -70,9 +77,17 @@
                   }}
                 </span>
               </v-list-item-title>
-              <v-list-item-subtitle v-text="chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
-                                            'Aún no hay mensajes en esta conversación'"
-              />
+              <v-list-item-subtitle>
+                <div v-if="chat.ultimoEnviadoPor === idAuth">
+                  <v-icon small>fa fa-check</v-icon>
+                  {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
+                  'Aún no hay mensajes en esta conversación' }}
+                </div>
+                <div v-else>
+                  {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
+                  'Aún no hay mensajes en esta conversación' }}
+                </div>
+              </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
 
@@ -86,10 +101,12 @@
       fixed
       app
       flat
-      color="white"
+      color="primary"
       outlined
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0" />
+      <v-app-bar-nav-icon color="secondary"
+                          @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0"
+      />
       <v-avatar size="50" v-if="chat_pool && chat_pool.length > 0">
         <v-img :src="negocios && chat_pool[seleccionado] &&
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
@@ -221,6 +238,12 @@ export default {
   },
 
   middleware: 'VerificarUsuarioAuth',
+
+  head(){
+    return{
+      titleTemplate: "Antigua Travel | Bandeja de Entrada"
+    };
+  },
 
   data(){
 

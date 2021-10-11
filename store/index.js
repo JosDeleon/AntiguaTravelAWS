@@ -2,7 +2,8 @@ export const state = () => ({
   loading: false,
   usuarioChatActual: {},
   negocios: [],
-  hideMessageField: false
+  hideMessageField: false,
+  rutaActual: ''
 })
 
 export const mutations = {
@@ -17,5 +18,8 @@ export const mutations = {
   },
   setHideMessageField(state, value){
     state.hideMessageField = value
+  },
+  setRutaActual(state, value){
+    state.rutaActual = value
   },
 }

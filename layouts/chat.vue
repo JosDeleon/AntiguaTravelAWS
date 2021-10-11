@@ -72,6 +72,7 @@ export default {
           key_negocio: this.$store.state.usuarioChatActual.key_negocio,
           negocio: this.$store.state.usuarioChatActual.negocio,
           ultimoMensaje: this.mensaje,
+          ultimoEnviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id,
           usuario: this.$store.state.usuarioChatActual.usuario,
           fechaHora: this.$moment().format('L h:mm:ss a').toString()
         }
