@@ -233,7 +233,7 @@
                 v-bind="attrs"
                 v-on="on"
                 icon
-                @click="MostrarDialogoEditar(item)"
+                @click="MostrarDialogoEditarCaracteristicas(item)"
               >
                 <v-icon
                   color="grey"
@@ -345,6 +345,7 @@
               dense
               v-model="productos.seleccionado.valor"
               type="number"
+              prefix="Q. "
               :rules="[ v => v && v.length > 0 || 'El precio es obligatorio' ]"
               label="Precio del Producto"
               color="black"
@@ -426,7 +427,7 @@
             </div>
 
             <div
-              v-for="(caracteristica, i) in productos.seleccionado.carac && productos.seleccionado.carac.length
+              v-for="(caracteristica, i) in productos.seleccionado.carac && productos.seleccionado.carac.length > 0
                       ? productos.seleccionado.carac : []"
               :key="i"
               v-if="!productos.seleccionado.id > 0"
@@ -542,6 +543,182 @@
 
     </v-dialog>
 
+    <v-dialog v-model="dialogos.caracteristicas"
+              transition="dialog-bottom-transition"
+              scrollable
+              persistent
+              max-width="1100"
+    >
+
+      <v-card>
+
+        <v-toolbar elevation="0" dense color="transparent">
+          <h3> Listado de Características </h3>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="CerrarDialogoCaracteristicas">
+            <v-icon>fa fa-times</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+
+          <div class="mb-4">
+
+            <v-btn outlined
+                   class="hidden-sm-and-down"
+                   @click="AddCaracteristica"
+            >
+              <v-icon color="secondary" left>
+                fa fa-plus
+              </v-icon>
+              Agregar Característica
+            </v-btn>
+
+            <v-btn
+              small
+              outlined
+              class="hidden-md-and-up"
+              @click="AddCaracteristica"
+            >
+              <v-icon color="secondary" left>
+                fa fa-plus
+              </v-icon>
+              Agregar Característica
+            </v-btn>
+
+          </div>
+
+          <v-divider class="mb-4" />
+
+          <div v-if="productos.seleccionado.carac && productos.seleccionado.carac.length === 0">
+            <v-alert
+              type="info"
+              prominent
+              color="complementario"
+            >
+                Aún no se han agregado características a este producto o servicio
+            </v-alert>
+          </div>
+
+          <v-form ref="frmCaracteristica">
+
+            <div
+              v-for="(caracteristica, i) in productos.seleccionado.carac && productos.seleccionado.carac.length > 0
+                      ? productos.seleccionado.carac : []"
+              :key="i"
+            >
+              <IconPicker v-model="caracteristica.dialogo" :icono.sync="caracteristica.icono" />
+
+              <v-row>
+                <v-col cols="12">
+                  <v-btn color="error"
+                         outlined
+                         @click="RemoverCaracteristica(caracteristica, i)"
+                  >
+                    <v-icon color="error" left>
+                      fa fa-trash
+                    </v-icon>
+                    Eliminar Característica
+                  </v-btn>
+                </v-col>
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" lg="4" md="4" sm="4">
+                  <v-text-field
+                    outlined
+                    dense
+                    v-model="caracteristica.nombre"
+                    :rules="[ v => v && v.length > 0 || 'El nombre es obligatorio' ]"
+                    label="Nombre"
+                    color="black"
+                    prepend-icon="fa fa-heading"
+                    :disabled="caracteristica.id > 0"
+                  />
+                </v-col>
+                <v-col cols="12" lg="4" md="4" sm="4">
+                  <v-text-field
+                    outlined
+                    dense
+                    v-model="caracteristica.valor"
+                    :rules="[ v => v && v.length > 0 || 'El valor es obligatorio']"
+                    label="Valor"
+                    color="black"
+                    prepend-icon="fa fa-code-branch"
+                    :disabled="caracteristica.id > 0"
+                  />
+                </v-col>
+                <v-col cols="12" lg="3" md="3" sm="3">
+                  <v-btn color="black" outlined class="mt-1"
+                         @click="AbrirIconPicker(caracteristica)"
+                         :disabled="caracteristica.id > 0"
+                  >
+                    {{ caracteristica.icono == "" ? 'Seleccionar' : ''}} Icono {{caracteristica.dialogo}}
+                    <v-icon color="black" right>
+                      {{ caracteristica.icono }}
+                    </v-icon>
+                  </v-btn>
+                </v-col>
+                <v-col cols="12" lg="1" md="1" sm="1">
+
+                  <v-tooltip bottom v-if="caracteristica.id > 0">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn color="black"
+                             icon
+                             v-bind="attrs"
+                             v-on="on"
+                             @click="caracteristica.editar = !caracteristica.editar"
+                      >
+                        <v-icon color="black">
+                          fa fa-pencil
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Editar</span>
+                  </v-tooltip>
+
+                  <v-tooltip bottom v-else>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn color="green"
+                             icon
+                             v-bind="attrs"
+                             v-on="on"
+                             @click="GuardarCaracteristica(caracteristica)"
+                      >
+                        <v-icon color="green">
+                          fa fa-check
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Guardar</span>
+                  </v-tooltip>
+
+                </v-col>
+              </v-row>
+              <v-divider class="mb-5" />
+            </div>
+
+          </v-form>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="warning"
+            text
+            @click="ActualizarProducto"
+            v-if="productos.seleccionado.productoID > 0"
+          >
+            <v-icon left>fa fa-check</v-icon>
+            Actualizar
+          </v-btn>
+        </v-card-actions>
+
+      </v-card>
+
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -571,7 +748,8 @@ export default {
       v:null,
       dialogos: {
         producto: false,
-        detalles: false
+        detalles: false,
+        caracteristicas: false
       },
       busqueda: {
         realizada: false,
@@ -602,19 +780,6 @@ export default {
         listado: [],
         seleccionado: { carac: [] }
       },
-      proveedores: [],
-      llanta: {
-        caracteristicas: [
-          { caracteristicasID: -1, nombre: 'Medida', valor: '' },
-          { caracteristicasID: -1, nombre: 'Marca', valor: '' },
-          { caracteristicasID: -1, nombre: 'Tipo', valor: '' },
-          { caracteristicasID: -1, nombre: 'Estado', valor: '' },
-          { caracteristicasID: -1, nombre: 'Diseño', valor: '' },
-          { caracteristicasID: -1, nombre: 'Pliegos', valor: '' },
-          { caracteristicasID: -1, nombre: 'Serie', valor: '' },
-          { caracteristicasID: -1, nombre: 'Documento de Compra', valor: '' }
-        ]
-      }
     }
   },
 
@@ -659,6 +824,30 @@ export default {
 
     async ObtenerCaracteristicas(){
 
+      let params = {
+        productoId: this.productos.seleccionado.id
+      }
+
+      await this.$api.post("/carte/producto", params).then(data => {
+
+        this.productos.seleccionado.carac = data
+
+        this.productos.seleccionado.carac.forEach(caracteristica => {
+          caracteristica.dialogo = false
+          caracteristica.editar = false
+        })
+
+        this.$forceUpdate()
+
+      })
+
+    },
+
+    AbrirIconPicker(caracteristica){
+
+      caracteristica.dialogo = true
+      this.$forceUpdate()
+
     },
 
     async Busqueda(){
@@ -676,6 +865,18 @@ export default {
       this.$refs.frmProducto?.resetValidation()
     },
 
+    MostrarDialogoEditarCaracteristicas(producto){
+      this.productos.seleccionado = Object.assign({}, producto)
+      this.ObtenerCaracteristicas()
+      this.dialogos.caracteristicas = true
+      this.$refs.frmCaracteristica?.resetValidation()
+    },
+
+    CerrarDialogoCaracteristicas(){
+      this.productos.seleccionado = { carac: [] }
+      this.dialogos.caracteristicas = false
+    },
+
     CerrarDialogoProducto(){
       this.productos.seleccionado = { carac: [] }
       this.dialogos.producto = false
@@ -691,14 +892,15 @@ export default {
           descripcion: this.productos.seleccionado.descripcion,
           valor: this.productos.seleccionado.valor,
           img: null,
-          negocioId: this.negocios.seleccionado.id
-
+          negocioId: this.negocios.seleccionado.id,
+          carac: this.productos.seleccionado.carac
         }
 
         await this.$api.post("/producto", params).then(data => {
 
           this.ObtenerProductos()
           this.CerrarDialogoProducto()
+          this.$alert.exito('El producto fue ingresado exitosamente', 'Producto Ingresado')
 
         }).catch(data => {
           console.error(data)
@@ -717,23 +919,65 @@ export default {
 
     },
 
+    async GuardarCaracteristica(caracteristica){
+
+      if(this.$refs.frmCaracteristica.validate()){
+
+        let params = {
+          nombre : caracteristica.nombre,
+          valor : caracteristica.valor,
+          icono : caracteristica.icono,
+          productoId : this.productos.seleccionado.id
+        }
+
+        await this.$api.post("/carte", params).then(data => {
+
+          this.ObtenerCaracteristicas()
+          this.$alert.exito('La característica fue creada exitosamente', 'Característica Creada')
+
+        }).catch(data => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+        })
+
+      }
+
+    },
+
     AddCaracteristica(){
       this.productos.seleccionado.carac.push(
         {
-          idCaracteristica: -1,
+          id: -1,
           nombre: '',
           valor: '',
           icono: '',
-          dialogo: false
+          dialogo: false,
+          editar: false
         }
       )
       this.$forceUpdate()
     },
 
-    async RemoverCaracteristica(caracteristica, index){
-      if(caracteristica.caracteristicasID > 0){
-        //codigo
-        console.log()
+    RemoverCaracteristica(caracteristica, index){
+      if(caracteristica.id > 0){
+        this.$alert.confirm('¿Estás seguro que deseas eliminar esta característica?',
+          'Eliminar Característica').then(async () => {
+
+            let params = {
+              id: caracteristica.id
+            }
+
+            await this.$api.delete("/carte", params).then(data => {
+
+              this.ObtenerCaracteristicas()
+              this.$alert.exito('La característica fue eliminada exitosamente', 'Característica Eliminada')
+
+            }).catch(data => {
+              console.error(data)
+              this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+            })
+
+        });
       }
       else{
         this.productos.seleccionado.carac.splice(index, 1)

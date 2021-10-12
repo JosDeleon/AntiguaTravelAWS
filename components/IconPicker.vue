@@ -11,7 +11,7 @@
       <v-toolbar elevation="0" dense color="secondary" dark class="text-secondary">
         <h3>Selecciona un icono</h3>
         <v-spacer></v-spacer>
-        <v-btn icon @click="iconDialog=false">
+        <v-btn icon @click="CerrarDialogo">
           <v-icon>fa fa-times</v-icon>
         </v-btn>
       </v-toolbar>
@@ -71,6 +71,7 @@ export default {
     icono: String
   },
   computed: {
+
     iconDialog: {
       get () {
         return this.value
@@ -79,14 +80,7 @@ export default {
         this.$emit('input', value)
       }
     },
-    /*icono: {
-      get () {
-        return this.icon
-      },
-      set (icon) {
-        this.$emit('input', icon)
-      }
-    },*/
+
     FiltrarIconos() {
       function compare(a, b) {
         if (a.name < b.name) return -1;
@@ -188,7 +182,14 @@ export default {
     SeleccionarIcono(icon){
       this.childIcon = icon
       this.$emit('update:icono', this.childIcon)
-      this.iconDialog = false
+      this.CerrarDialogo()
+    },
+
+    CerrarDialogo(){
+
+      this.iconDialog = !this.iconDialog
+      this.$forceUpdate()
+
     },
 
     LimpiarTextoIcono(icono){

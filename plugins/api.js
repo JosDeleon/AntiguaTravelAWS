@@ -71,7 +71,7 @@ export default ({ app, store, $axios }, inject) => {
         let config = {
           //withCredentials: true,
           timeout: this.timeout,
-          params: params,
+          data: params,
         }
         processRequest($axios.delete(process.env.API + service,config),resolve,reject)
       })
