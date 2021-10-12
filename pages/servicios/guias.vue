@@ -193,7 +193,7 @@
               outlined
             >
               <v-img
-                height="200"
+                max-height="300"
                 :src="destino.src"
               ></v-img>
 
@@ -205,7 +205,7 @@
                 <h6>
                   <span :class="VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(destino.abre, destino.cierra) }}
+                    {{ VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -260,6 +260,17 @@
                     fa fa-compass
                   </v-icon>
                   Explorar
+                </v-btn>
+
+                <v-btn
+                  color="black"
+                  outlined
+                  @click="EnviarMensaje(destino)"
+                >
+                  <v-icon left color="primary darken-2">
+                    fa fa-paper-plane
+                  </v-icon>
+                  Contactar
                 </v-btn>
 
               </v-card-actions>
@@ -415,10 +426,13 @@
 
 <script>
 
+import * as Axios from "axios";
+
 export default {
 
   mounted() {
     this.ObtenerDestinos()
+    this.ObtenerAuth()
   },
 
   data(){
@@ -447,11 +461,74 @@ export default {
       center: { lat: 14.55706946331603, lng: -90.73366553217345 },
       mapOptions: {
         disableDefaultUI: true,
-      }
+      },
+      auth: {}
     }
   },
 
   methods: {
+
+    async EnviarMensaje(guia){
+
+      let negocioFound = {id: 0}
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === guia.id );
+      }
+
+      if(negocioFound.id > 0){
+        this.$alert.warning("No puedes enviar mensajes a tu negocio",
+          "Contacto Fallido")
+      }
+      else{
+        await this.$api.post("/usuario/info", { id: guia.usuarioId })
+          .then(async data => {
+            let encargado = data
+            try {
+
+              const chatsRef = this.$fire.database.ref(
+                'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+guia.id
+              )
+
+              Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                if(!response.data){
+                  let chat = {
+                    usuario: "id"+this.auth.id,
+                    negocio: "id"+encargado.id,
+                    key_negocio: 'idNegocio'+guia.id,
+                    ultimoMensaje: ''
+                  }
+
+                  const userChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                  const encargadoChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                  await chatsRef.set(chat)
+
+                  await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                  await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+                }
+
+                this.$router.push({path: '/usuario/mensajes'})
+
+              })
+
+            } catch (e) {
+              console.error(e)
+            }
+          })
+      }
+
+    },
+
+    async ObtenerAuth(){
+      this.auth = await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    },
 
     async ObtenerDestinos(){
 
@@ -462,7 +539,7 @@ export default {
         this.destinos.listado.forEach( destino => {
 
           destino.showCardTags = false
-          destino.src = "https://picsum.photos/500/300?image="+(cont+35)
+          destino.src = "https://cdn.vuetifyjs.com/images/lists/"+(cont+1)+".jpg"
           destino.tags = ["Al aire libre"]
           cont++
 
@@ -480,9 +557,6 @@ export default {
         afterTime = this.$moment(cierra, format);
 
       if (time.isBetween(beforeTime, afterTime)) {
-        console.log(time)
-        console.log(beforeTime)
-        console.log(afterTime)
         return "Abierto"
 
       } else {

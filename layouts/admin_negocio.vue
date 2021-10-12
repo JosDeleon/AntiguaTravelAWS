@@ -84,6 +84,21 @@
                            class="mx-2" color="white" />
       <v-spacer />
 
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            dark
+            v-bind="attrs"
+            v-on="on"
+            icon
+            @click="$router.push({path: '/'})"
+          >
+            <v-icon>fa fa-home</v-icon>
+          </v-btn>
+        </template>
+        <span>Regresar al sitio</span>
+      </v-tooltip>
+
       <v-tooltip left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn

@@ -388,7 +388,6 @@ export default {
     };
   },
 
-
   layout: 'empty',
 
   data(){
@@ -457,8 +456,6 @@ export default {
           imagen: 'https://media-cdn.tripadvisor.com/media/photo-s/19/49/3d/2a/restaurante-el-arco.jpg' },
         { titulo: 'Renta de Carros', valor: 'RC',
           imagen: 'https://www.motoryracing.com/images/noticias/24000/24823/3.jpg' },
-        { titulo: 'Destino Turístico', valor: 'D',
-          imagen: 'https://laantigua.files.wordpress.com/2019/03/foto-40sfdogstar-cerro-de-la-cruz.jpg' },
       ],
       negocio: { },
       tags: [],

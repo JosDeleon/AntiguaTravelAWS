@@ -679,9 +679,9 @@ export default {
         },
         {
           no: 5,
-          icon: 'fa fa-map-marked-alt',
-          title: 'Destinos Turísticos',
-          to: '/servicios/destinos_turisticos'
+          icon: 'fa fa-hiking',
+          title: 'Guías Turísticos',
+          to: '/servicios/guias'
         },
       ],
       title: 'Antigua Travel'
@@ -706,69 +706,21 @@ export default {
 
             this.$store.commit('setNegocios', data)
 
-            const negociosRef = this.$fire.database.ref('Negocios').child("id" +
-              JSON.parse(sessionStorage.getItem('usuario')).id)
+            for (const negocio of data) {
 
-            Axios.get(negociosRef.toString() + '.json').then(async response => {
+              const negocioRef = this.$fire.database.ref('Negocios').child("id" +
+                JSON.parse(sessionStorage.getItem('usuario')).id+"/idNegocio"+negocio.id)
 
-              let llaves = []
-              if(response.data && response.data.length > 0)
-                llaves = Object.keys(response.data)
-
-              for (const negocio of data) {
-
-                if (llaves && llaves.length > 0) {
-
-                  let found = false
-
-                  let llaveFound = ''
-
-                  for (const llave of llaves) {
-
-                    if (negocio.id === response.data[llave].negocioId) {
-                      found = true
-                      llaveFound = llave
-                    }
-
-                  }
-
-                  if (found) {
-                    let neg = {
-                      negocioId: negocio.id,
-                      adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
-                      image: '',
-                      nombreNegocio: negocio.nombre
-                    }
-
-                    await negociosRef.child(llaveFound).set(neg)
-
-                  }
-                  else {
-                    let neg = {
-                      negocioId: negocio.id,
-                      adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
-                      image: '',
-                      nombreNegocio: negocio.nombre
-                    }
-
-                    await negociosRef.push(neg)
-                  }
-
-                } else {
-                  let neg = {
-                    negocioId: negocio.id,
-                    adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
-                    image: '',
-                    nombreNegocio: negocio.nombre
-                  }
-
-                  negociosRef.push(neg)
-                }
-
+              let neg = {
+                negocioId: negocio.id,
+                adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                image: '',
+                nombreNegocio: negocio.nombre
               }
 
-            })
+              await negocioRef.set(neg)
 
+            }
 
           })
 
@@ -799,6 +751,30 @@ export default {
         }
         else{
           this.$router.push({ path: '/negocios/registro' })
+        }
+
+      }
+
+      else if (tipo === 'G') {
+
+        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+          this.must_login = true
+          this.MostrarDialogoSignInSignUp('L')
+        }
+        else{
+          this.$router.push({ path: '/negocios/registro_guia' })
+        }
+
+      }
+
+      else {
+
+        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+          this.must_login = true
+          this.MostrarDialogoSignInSignUp('L')
+        }
+        else{
+          this.$router.push({ path: '/negocios/registro_cambista' })
         }
 
       }

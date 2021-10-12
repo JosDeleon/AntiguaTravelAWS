@@ -85,7 +85,7 @@
         <v-col cols="12" sm="10" md="8">
 
           <h2 class="mb-5 black--text">
-            Descubre los mejores destinos turísticos
+            Descubre los mejores guías de turismo para obtener experiencias inolvidables
           </h2>
 
         </v-col>
@@ -111,8 +111,8 @@
             outlined
           >
             <v-img
-              height="200"
-              :src="`https://picsum.photos/500/300?image=${i + 10}`"
+              max-height="300"
+              :src="`https://cdn.vuetifyjs.com/images/lists/${i+1}.jpg`"
             />
 
             <v-card-title>
@@ -123,7 +123,7 @@
               <h6>
               <span :class="VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(sitio.abre, sitio.cierra) }}
+                {{ VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
               </span> -
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
@@ -1151,7 +1151,6 @@
 
 <script>
 
-
 export default {
 
   mounted(){
@@ -1164,7 +1163,6 @@ export default {
     return {
       model: null,
       tabs: null,
-      text: "Hola",
       loading:{
         restaurantes: false,
         hoteles: false

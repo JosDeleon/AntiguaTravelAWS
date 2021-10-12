@@ -63,7 +63,7 @@ export default {
           apiKey: "AIzaSyB1VHsTl-vmV3BP0gUGpVkI8pdK7JlTBmo",
           authDomain: "antiguatravel-e7bee.firebaseapp.com",
           projectId: "antiguatravel-e7bee",
-          storageBucket: "antiguatravel-e7bee.appspot.com",
+          storageBucket: 'gs://antiguatravel-e7bee.appspot.com',
           messagingSenderId: "1048267483085",
           appId: "1:1048267483085:web:22cb3475a82dd67d050684",
           measurementId: "G-X2QTT1Z4EP"

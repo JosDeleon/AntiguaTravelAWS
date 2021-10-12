@@ -261,6 +261,17 @@
                   Explorar
                 </v-btn>
 
+                <v-btn
+                  color="black"
+                  outlined
+                  @click="EnviarMensaje(renta)"
+                >
+                  <v-icon left color="primary darken-2">
+                    fa fa-paper-plane
+                  </v-icon>
+                  Contactar
+                </v-btn>
+
               </v-card-actions>
 
             </v-card>
@@ -414,10 +425,13 @@
 
 <script>
 
+import * as Axios from "axios";
+
 export default {
 
   mounted() {
     this.ObtenerRentaAutos()
+    this.ObtenerAuth()
   },
 
   data(){
@@ -446,11 +460,74 @@ export default {
       center: { lat: 14.55706946331603, lng: -90.73366553217345 },
       mapOptions: {
         disableDefaultUI: true,
-      }
+      },
+      auth: {}
     }
   },
 
   methods: {
+
+    async EnviarMensaje(renta){
+
+      let negocioFound = {id: 0}
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === renta.id );
+      }
+
+      if(negocioFound.id > 0){
+        this.$alert.warning("No puedes enviar mensajes a tu negocio",
+          "Contacto Fallido")
+      }
+      else{
+        await this.$api.post("/usuario/info", { id: renta.usuarioId })
+          .then(async data => {
+            let encargado = data
+            try {
+
+              const chatsRef = this.$fire.database.ref(
+                'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+renta.id
+              )
+
+              Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                if(!response.data){
+                  let chat = {
+                    usuario: "id"+this.auth.id,
+                    negocio: "id"+encargado.id,
+                    key_negocio: 'idNegocio'+renta.id,
+                    ultimoMensaje: ''
+                  }
+
+                  const userChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                  const encargadoChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                  await chatsRef.set(chat)
+
+                  await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                  await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+                }
+
+                this.$router.push({path: '/usuario/mensajes'})
+
+              })
+
+            } catch (e) {
+              console.error(e)
+            }
+          })
+      }
+
+    },
+
+    async ObtenerAuth(){
+      this.auth = await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    },
 
     async ObtenerRentaAutos(){
 

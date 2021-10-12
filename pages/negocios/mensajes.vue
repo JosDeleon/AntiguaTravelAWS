@@ -245,7 +245,6 @@ export default {
     this.ObtenerChats()
     this.ObtenerNegocios()
     this.ObtenerUsuarios()
-    this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
   },
 
   middleware: 'VerificarTieneNegocio',
@@ -434,6 +433,7 @@ export default {
         if(this.chat_pool.length > 0){
           this.mensajesRef = this.$fire.database.ref("chatMessages")
             .child(this.chat_pool[0].idChat)
+          this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
           this.$store.commit('setHideMessageField', false)
           this.ObtenerMensajes()
         }

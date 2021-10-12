@@ -192,6 +192,27 @@
 
         </template>
 
+        <template v-slot:[`item.imagen`]="{ item }">
+          <v-avatar
+            class="ma-3 hidden-sm-and-down"
+            size="80"
+            tile
+          >
+            <v-img v-if="item.img" :src="item.img" style="border-radius:10px;" />
+            <v-img v-else :src="'/imagen-no-disponible.png'"></v-img>
+          </v-avatar>
+
+          <v-avatar
+            class="ma-3 hidden-md-and-up"
+            size="100"
+            tile
+          >
+            <v-img v-if="item.img" :src="item.img" style="border-radius:10px;" />
+            <v-img v-else :src="'/imagen-no-disponible.png'"></v-img>
+          </v-avatar>
+
+        </template>
+
         <template v-slot:[`item.nombre`]="{ item }">
           <v-chip
             class="ma-2"
@@ -247,6 +268,27 @@
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="tertiary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="MostrarDialogoCambiarImagen(item)"
+              >
+                <v-icon
+                  color="tertiary"
+                >
+                  fas fa-image
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Cambiar Imagen</span>
+          </v-tooltip>
+
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -266,6 +308,7 @@
             </template>
             <span>Editar</span>
           </v-tooltip>
+
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="error"
@@ -281,6 +324,7 @@
             </template>
             <span>Eliminar</span>
           </v-tooltip>
+
         </template>
 
       </v-data-table>
@@ -358,12 +402,12 @@
               label="Imagen del Producto"
               placeholder="Selecciona la imagen de tu producto"
               prepend-icon="fa fa-file-image"
-              persistent-hint
-              hint="Opcional"
+              :rules="[ v => !!v || 'La imagen del producto es obligatoria' ]"
               outlined
               dense
               accept="image/*"
               truncate-length="50"
+              v-if="!productos.seleccionado.id > 0"
             >
               <template v-slot:selection="{ index, text }">
                 <v-chip
@@ -543,6 +587,85 @@
 
     </v-dialog>
 
+    <v-dialog v-model="dialogos.imagen"
+              transition="dialog-bottom-transition"
+              scrollable
+              persistent
+              max-width="700"
+    >
+
+      <v-card>
+
+        <v-toolbar elevation="0" dense color="transparent">
+          <h3> Imagen del Producto {{ this.productos.seleccionado.nombre }} </h3>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="CerrarDialogoImagenProducto">
+            <v-icon>fa fa-times</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+
+          <v-img
+            :src="productos.seleccionado.nuevaImagen ? productos.seleccionado.nuevaImagen : null"
+            style="border-radius:10px;"
+          >
+
+            <v-container fill-height>
+              <v-layout justify-center align-center>
+
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="SeleccionarImagen"
+                    >
+                      <v-icon
+                        color="primary"
+                        size="100"
+                      >
+                        fa fa-pencil
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Editar Imagen</span>
+                </v-tooltip>
+
+                <input
+                  ref="uploader"
+                  class="d-none"
+                  type="file"
+                  accept="image/*"
+                  @change="onFileChanged"
+                />
+
+              </v-layout>
+            </v-container>
+
+          </v-img>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="tertiary"
+            text
+            @click="CambiarImagen"
+          >
+            <v-icon left>fa fa-image</v-icon>
+            Cambiar Imagen
+          </v-btn>
+        </v-card-actions>
+
+      </v-card>
+
+    </v-dialog>
+
     <v-dialog v-model="dialogos.caracteristicas"
               transition="dialog-bottom-transition"
               scrollable
@@ -596,7 +719,7 @@
               prominent
               color="complementario"
             >
-                Aún no se han agregado características a este producto o servicio
+              Aún no se han agregado características a este producto o servicio
             </v-alert>
           </div>
 
@@ -653,7 +776,7 @@
                          @click="AbrirIconPicker(caracteristica)"
                          :disabled="caracteristica.id > 0"
                   >
-                    {{ caracteristica.icono == "" ? 'Seleccionar' : ''}} Icono {{caracteristica.dialogo}}
+                    {{ caracteristica.icono == "" ? 'Seleccionar' : ''}} Icono
                     <v-icon color="black" right>
                       {{ caracteristica.icono }}
                     </v-icon>
@@ -705,13 +828,13 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="warning"
+            color="black"
             text
             @click="ActualizarProducto"
             v-if="productos.seleccionado.productoID > 0"
           >
             <v-icon left>fa fa-check</v-icon>
-            Actualizar
+            Guardar
           </v-btn>
         </v-card-actions>
 
@@ -749,7 +872,8 @@ export default {
       dialogos: {
         producto: false,
         detalles: false,
-        caracteristicas: false
+        caracteristicas: false,
+        imagen: false
       },
       busqueda: {
         realizada: false,
@@ -762,6 +886,7 @@ export default {
       productos: {
         tabla: {
           headers: [
+            { text: 'Imagen', value: 'imagen', align: 'center' },
             { text: 'Nombre', value: 'nombre', align: 'center' },
             { text: 'Precio', value: 'precio', align: 'center' },
             { text: 'Descripción', value: 'data-table-expand', sortable: false, align: 'center' },
@@ -850,6 +975,66 @@ export default {
 
     },
 
+    SeleccionarImagen() {
+      window.addEventListener('focus', () => {
+      }, { once: true })
+
+      this.$refs.uploader.click()
+    },
+
+    onFileChanged(e) {
+      this.productos.seleccionado.nuevaImagen = URL.createObjectURL(e.target.files[0])
+      this.productos.seleccionado.archivo = e.target.files[0]
+      this.$forceUpdate()
+    },
+
+    CambiarImagen(){
+
+      if(this.productos.seleccionado.archivo){
+
+        if(this.productos.seleccionado.img){
+
+          let primeraParte = this.productos.seleccionado.img.split("productos")[1].split("%2F")[1]
+
+          let ref = primeraParte.split("?")[0]
+
+          const imagenRef = this.$fire.storage.ref('productos/'+ref)
+
+          imagenRef.put(this.productos.seleccionado.archivo).then( response => {
+
+            response.ref.getDownloadURL().then((downloadURL) => {
+
+              this.ObtenerProductos()
+              this.$alert.exito('La imagen fue actualizada exitosamente', 'Imagen Actualizada')
+              this.CerrarDialogoImagenProducto()
+
+            })
+
+          })
+
+        }
+        else {
+
+          let idGenerado = (Math.random() + 1).toString(36).substring(2);
+
+          const imagenRef = this.$fire.storage.ref('productos/'+idGenerado)
+
+          imagenRef.put(this.productos.seleccionado.archivo).then( response => {
+
+            response.ref.getDownloadURL().then((downloadURL) => {
+
+              this.window.location.reload()
+
+            })
+
+          })
+
+        }
+
+      }
+
+    },
+
     async Busqueda(){
 
     },
@@ -863,6 +1048,14 @@ export default {
       this.productos.seleccionado = Object.assign({}, producto)
       this.dialogos.producto = true
       this.$refs.frmProducto?.resetValidation()
+    },
+
+    MostrarDialogoCambiarImagen(producto){
+
+      this.productos.seleccionado = Object.assign({}, producto)
+      this.productos.seleccionado.nuevaImagen = producto.img ?? null
+      this.dialogos.imagen = true
+
     },
 
     MostrarDialogoEditarCaracteristicas(producto){
@@ -882,30 +1075,51 @@ export default {
       this.dialogos.producto = false
     },
 
+    CerrarDialogoImagenProducto(){
+
+      this.productos.seleccionado = { carac: [] }
+      this.dialogos.imagen = false
+
+    },
+
     async GuardarProducto(){
 
       if(this.$refs.frmProducto.validate()){
 
-        let params = {
+        let idGenerado = (Math.random() + 1).toString(36).substring(2);
 
-          nombre: this.productos.seleccionado.nombre,
-          descripcion: this.productos.seleccionado.descripcion,
-          valor: this.productos.seleccionado.valor,
-          img: null,
-          negocioId: this.negocios.seleccionado.id,
-          carac: this.productos.seleccionado.carac
-        }
+        const imagenRef = this.$fire.storage.ref('productos/'+idGenerado)
 
-        await this.$api.post("/producto", params).then(data => {
+        imagenRef.put(this.productos.seleccionado.imagen).then( response => {
 
-          this.ObtenerProductos()
-          this.CerrarDialogoProducto()
-          this.$alert.exito('El producto fue ingresado exitosamente', 'Producto Ingresado')
+          response.ref.getDownloadURL().then(async (downloadURL) => {
 
-        }).catch(data => {
-          console.error(data)
-          this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
-        })
+            let params = {
+
+              nombre: this.productos.seleccionado.nombre,
+              descripcion: this.productos.seleccionado.descripcion,
+              valor: this.productos.seleccionado.valor,
+              img: downloadURL,
+              negocioId: this.negocios.seleccionado.id,
+              carac: this.productos.seleccionado.carac
+            }
+
+            await this.$api.post("/producto", params).then(data => {
+
+              this.ObtenerProductos()
+              this.CerrarDialogoProducto()
+              this.$alert.exito('El producto fue ingresado exitosamente', 'Producto Ingresado')
+
+            }).catch(data => {
+              console.error(data)
+              this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+            })
+
+          })
+
+        } )
+
+
 
       }
 
@@ -916,6 +1130,25 @@ export default {
     },
 
     async EliminarProducto(producto){
+
+      this.$alert.confirm('¿Estás seguro que deseas eliminar este producto o servicio?',
+        'Eliminar Producto o Servicio').then(async () => {
+
+        let params = {
+          id: producto.id
+        }
+
+        await this.$api.delete("/producto", params).then(data => {
+
+          this.ObtenerProductos()
+          this.$alert.exito('El producto o servicio fue eliminado exitosamente', 'Producto o Servicio Eliminado')
+
+        }).catch(data => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+        })
+
+      });
 
     },
 

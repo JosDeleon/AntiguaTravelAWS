@@ -287,7 +287,7 @@
               <v-dialog
                 ref="dialogoHoraAbre"
                 v-model="dialogos.pickerHoraAbre"
-                :return-value.sync="date"
+                :return-value.sync="negocios.seleccionado.abre"
                 persistent
                 width="300px"
               >
@@ -330,7 +330,7 @@
               <v-dialog
                 ref="dialogoHoraCierra"
                 v-model="dialogos.pickerHoraCierra"
-                :return-value.sync="date"
+                :return-value.sync="negocios.seleccionado.cierra"
                 persistent
                 width="300px"
               >

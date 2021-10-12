@@ -433,7 +433,6 @@ export default {
   mounted() {
     this.ObtenerRestaurantes()
     this.ObtenerAuth()
-    console.log(JSON.parse(sessionStorage.getItem('usuario')))
   },
 
   data(){
@@ -511,64 +510,36 @@ export default {
             let encargado = data
             try {
 
-              const chatsRef = this.$fire.database.ref('Chats')
-                .child("chat"+this.auth.id+"-"+encargado.id)
-              let chat = {
-                usuario: "id"+this.auth.id,
-                negocio: "id"+encargado.id,
-                key_negocio: '',
-                ultimoMensaje: ''
-              }
+              const chatsRef = this.$fire.database.ref(
+                'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+restaurante.id
+              )
 
-              const userChatsRef = this.$fire.database.ref('userChats')
-                .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+              Axios.get(chatsRef.toString() + '.json').then(async response => {
 
-              const encargadoChatsRef = this.$fire.database.ref('userChats')
-                .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
-
-              const negociosRef = this.$fire.database.ref('Negocios').child("id"+encargado.id)
-
-              Axios.get(negociosRef.toString() + '.json').then(async response => {
-
-                let keys = Object.keys(response.data)
-                keys.forEach( key => {
-
-                  if(restaurante.id === response.data[key].negocioId){
-                    chat.key_negocio = key
+                if(!response.data){
+                  let chat = {
+                    usuario: "id"+this.auth.id,
+                    negocio: "id"+encargado.id,
+                    key_negocio: 'idNegocio'+restaurante.id,
+                    ultimoMensaje: ''
                   }
 
-                } )
+                  const userChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
 
-                Axios.get(chatsRef.toString() + '.json').then(async response => {
+                  const encargadoChatsRef = this.$fire.database.ref('userChats')
+                    .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
 
-                  let keys = []
-                  if(response.data && response.data.length > 0)
-                    keys = Object.keys(response.data)
-                  let found = false
-                  let llave = ''
+                  await chatsRef.set(chat)
 
-                  keys.forEach( key => {
+                  await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                  await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
 
-                    if(chat.key_negocio === response.data[key].key_negocio){
-                      found = true
-                      llave = key
-                    }
+                }
 
-                  } )
-
-                  if(!found)
-                    await chatsRef.push(chat)
-                  else
-                    await chatsRef.child(llave).set(chat)
-
-                })
-
-                await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
-                await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                this.$router.push({path: '/usuario/mensajes'})
 
               })
-
-              this.$router.push({path: '/usuario/mensajes'})
 
             } catch (e) {
               console.error(e)
