@@ -1,73 +1,62 @@
 <template>
-    <v-app light>
-        <v-main>
-            <section>
-                <v-parallax :src="imageLink.sub_main" height="800" class="welcomeImage">
-                    <v-layout column align-center justify-center class="white--text">
-                        <h1 class="white--text mb-2 display-1 text-xs-center" style="font-weight: 900; text-shadow: 3px 2px #000000">Bienvenido a la comunidad de 
-                            Antigua Travel, Comencemos...</h1>
-                        <v-btn class="blue lighten-2 mt-5" dark large href="/">
-                        Inicio
-                        </v-btn>
-                    </v-layout>
-                </v-parallax>            
-            </section>
-        </v-main>
-    </v-app>
+    <div>
+        <v-row no-gutters justify="center" align="center">
+            <v-col cols="8">
+                <v-file-input
+                    show-size
+                    label="Select Image"
+                    accept="image/*"
+                    @change="selectImage"
+                ></v-file-input>
+            </v-col>
+            <v-col cols="4" class="pl-2">
+                <v-btn color="success" dark small @click="upload">
+                    Upload
+                    <v-icon right dark>mdi-cloud-upload</v-icon>
+                </v-btn>
+            </v-col>
+        </v-row>
+        <div v-if="previewImage">
+            <div>
+                <img class="preview my-3" :src="previewImage" alt="" />
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
-import { createApp } from 'vue';
-import App from '../index.vue';
-import { 
-    applyPolyfills,
-    defineCustomElements
-} from '@aws-amplify/ui-components/loader';
-import Amplify from 'aws-amplify';
-import awsconfig from '../../src/aws-exports';
+import { Storage } from 'aws-amplify';
 
-Amplify.configure(awsconfig);
-
-export default {
-  name: "App",
-  data: function() {
-    return {
-      imageLink: {
-        sub_main:
-          "https://agn.gt/wp-content/uploads/2020/11/antigua-guatemala-inguat-e1605737679486.jpg"
-      },
-      subscribed: false
-    };
+export default{
+    name : "TestForImage",
+    data(){
+        return {
+            currentImage : undefined,
+            previewImage : undefined
+        };
     },
-    layout : 'empty',
-    methods: {
-        /*subscribe: function() {
-            this.subscribed = !this.subscribed;
-        }*/
+    methods : {
+        selectImage(image){
+            this.currentImage = image;
+            this.previewImage = URL.createObjectURL(this.currentImage);
+        },
+        async upload(){
+            console.log(this.currentImage.name);
+            if(!this.currentImage){
+                this.message = "Please select an Image!";
+                return;
+            }
+            const url = Storage.put(this.currentImage.name, this.currentImage, {
+                progressCallback(progress) {
+                    console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+                },
+            });
+            
+            console.log('=======================================');
+            console.log(url);
+            console.log('=======================================');
+        }
     },
-    components : {
-        VImageInput,
-    },
-
-    computed: {
-        /*imgHeight: function() {
-            var offset = 320;
-            console.log("new image height is " + (this.pageHeight - offset));
-            return this.pageHeight - offset;
-        }*/
-    },
-
-    mounted: function() {
-        /*this.$api.post('/verificacion', { tag : this.$route.query.tag }).then( response => {
-            console.log(response);
-        }).catch(err => console.log(err));*/
-    }
-};
-</script>
-
-<style scoped>
-
-.welcomeImage{
-    margin-top: 4%;
+    layout : 'empty'
 }
-</style>
+</script>

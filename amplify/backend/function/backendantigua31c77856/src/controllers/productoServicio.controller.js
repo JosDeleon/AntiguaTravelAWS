@@ -1,18 +1,39 @@
 const db = require('../models');
 const Producto = db.producto;
+const Caracteristca = db.caracteristicas;
 
-exports.insert = (req, res) => {
+exports.insert = async (req, res) => {
+    const carac = req.body.carac;
+    
     Producto.create({
         nombre : req.body.nombre,
         descripcion : req.body.descripcion,
         valor : req.body.valor,
         img : req.body.img,
         negocioId : req.body.negocioId
-    }).then(() => {
+    }).then( (producto) => {
+        let insertCarac = []
+
+        carac.forEach( carArray => {
+            insertCarac.push({
+                nombre : carArray.nombre,
+                valor : carArray.valor,
+                icono : carArray.icono,
+                productoServicioId : producto.id
+            })
+        })
+
+        Caracteristca.bulkCreate(insertCarac)
+        .then( () => {
+            res.status(200).send({ message : 'Producto Creado'})
+        })
+        .catch( err => {
+            res.status(500).send({ message : err.message})
+        })
         res.send({ message : 'Producto Registrado Correctamente!!!'});
     }).catch(err => {
         res.status(500).send({ message : err.message })
-    });
+    }); 
 }
 
 
@@ -33,7 +54,7 @@ exports.getProducto = (req, res) => {
 
 exports.getProductos = (req, res) => {
     Producto.findAll({
-        where : { negocioId : req.body.id }
+        where : { negocioId : req.body.negocioId }
     })
     .then(async (productos) => {
         if(!productos){
@@ -45,8 +66,6 @@ exports.getProductos = (req, res) => {
         res.status(500).send({ message : err.message});
     });
 }
-
-
 
 exports.delete = (req, res) => {
     Galeria.destroy({

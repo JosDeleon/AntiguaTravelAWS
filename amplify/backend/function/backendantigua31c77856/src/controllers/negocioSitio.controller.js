@@ -33,6 +33,9 @@ exports.get = (req, res) => {
     let extras = []
 
     Negocio.findAll({
+        where : {
+            aut : 'v'
+        },
         order : [['categoria', 'ASC']]
     })
     .then(async (negocios) => {

@@ -15,12 +15,15 @@
       "function": {
         "backendantigua31c77856": {
           "deploymentBucketName": "amplify-backendantigua-dev-84449-deployment",
-          "s3Key": "amplify-builds/backendantigua31c77856-564e4d48645a4f324169-build.zip"
+          "s3Key": "amplify-builds/backendantigua31c77856-38482b41413356775343-build.zip"
         },
         "emailAntigua": {
           "deploymentBucketName": "amplify-backendantigua-dev-84449-deployment",
           "s3Key": "amplify-builds/emailAntigua-58795346727036324e7a-build.zip"
         }
+      },
+      "auth": {
+        "backendantigua90122466": {}
       }
     }
   }

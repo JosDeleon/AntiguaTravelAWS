@@ -49,7 +49,7 @@ exports.insert = (req, res) => {
                 username : req.body.username,
                 password : req.body.password,
                 correo : req.body.correo,
-                rol : req.body.rol,
+                rol : 'T',
                 nacimiento : req.body.nacimiento,
                 genero : req.body.genero,
                 img : req.body.img
