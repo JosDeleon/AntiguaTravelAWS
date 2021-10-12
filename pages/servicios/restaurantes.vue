@@ -177,7 +177,7 @@
           </v-col>
 
           <v-col cols="12"
-                 lg="4"
+                 lg="6"
                  md="6"
                  sm="6"
                  v-for="(restaurante, i) in restaurantes.listado"

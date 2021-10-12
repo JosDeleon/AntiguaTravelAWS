@@ -13,7 +13,7 @@
           />
         </v-col>
 
-        <v-col cols="9" lg="3" sm="6" md="6">
+        <v-col cols="9" xl="3" lg="4" sm="6" md="6">
 
           <v-card style="border-radius:15px;" elevation="0" outlined class="pa-6">
 
