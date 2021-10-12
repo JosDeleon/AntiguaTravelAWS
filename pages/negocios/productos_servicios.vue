@@ -45,9 +45,12 @@
       <v-data-table
         :headers="productos.tabla.headers"
         :items="productos.listado"
-        item-key="productoId"
-        sort-by="productoId"
+        item-key="id"
+        sort-by="id"
         sort-desc
+        :expanded.sync="productos.tabla.expanded"
+        :single-expand="false"
+        show-expand
         class="elevation-1"
         style="border-radius: 10px;"
         :loading="productos.tabla.loading"
@@ -123,7 +126,8 @@
                 label="Negocio Actual"
                 item-value="id"
                 item-text="nombre"
-                @change="SeleccionarNegocio"
+                return-object
+                @change="ObtenerProductos"
                 outlined
                 dense
                 color="black"
@@ -173,7 +177,8 @@
               label="Negocio Actual"
               item-value="negocioId"
               item-text="nombre"
-              @change="SeleccionarNegocio"
+              return-object
+              @change="ObtenerProductos"
               outlined
               dense
               color="black"
@@ -184,8 +189,6 @@
               </v-icon>
             </v-select>
           </v-col>
-
-
 
         </template>
 
@@ -198,34 +201,49 @@
             <v-icon left>
               fa fa-cube
             </v-icon>
-            {{ item.nombreProducto }}
+            {{ item.nombre }}
           </v-chip>
         </template>
 
-        <template v-slot:[`item.sku`]="{ item }">
+        <template v-slot:[`item.precio`]="{ item }">
           <v-chip
             class="ma-2"
-            color="error"
+            color="green"
             outlined
           >
             <v-icon left>
-              fa fa-barcode
+              fa fa-money-bill-wave
             </v-icon>
-            {{ item.sku }}
+            Q. {{ item.valor }}
           </v-chip>
         </template>
 
-        <template v-slot:[`item.categoria`]="{ item }">
-          <v-chip
-            class="ma-2"
-            color="grey darken-3"
-            outlined
-          >
-            <v-icon left>
-              fa fa-object-group
-            </v-icon>
-            {{ item.categoria === 'I' ? 'Inventariable' : 'No Inventariable' }}
-          </v-chip>
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <span class="font-weight-bold" style="font-size: 16px;"> Descripción del Producto o Servicio: </span> {{ item.descripcion }}
+          </td>
+        </template>
+
+        <template v-slot:[`item.caracteristicas`]="{ item }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="grey"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="MostrarDialogoEditar(item)"
+              >
+                <v-icon
+                  color="grey"
+                >
+                  fa fa-code-branch
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Listado de Características</span>
+          </v-tooltip>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
@@ -272,7 +290,7 @@
           v-model="productos.tabla.pagina"
           :length="productos.tabla.conteoPaginas"
           :total-visible="7"
-          color="black"
+          color="complementario"
           circle
         />
       </div>
@@ -385,7 +403,7 @@
               color="black"
             />
 
-            <div class="mb-6" v-if="productos.seleccionado.id > 0">
+            <div class="mb-6" v-if="!productos.seleccionado.id > 0">
               <h3 class="mt-1 hidden-sm-and-down black--text">
                 Características del Producto
                 <div class="subheading mt-2" style="font-family: Poppins, sans-serif;">
@@ -408,9 +426,10 @@
             </div>
 
             <div
-              v-for="(caracteristica, i) in productos.seleccionado.caracteristicas"
+              v-for="(caracteristica, i) in productos.seleccionado.carac && productos.seleccionado.carac.length
+                      ? productos.seleccionado.carac : []"
               :key="i"
-              v-if="productos.seleccionado.productoId > 0"
+              v-if="!productos.seleccionado.id > 0"
             >
               <IconPicker v-model="caracteristica.dialogo" :icono.sync="caracteristica.icono" />
               <v-row>
@@ -467,7 +486,7 @@
               <v-divider class="mb-5" />
             </div>
 
-            <div v-if="productos.seleccionado.productoId > 0">
+            <div v-if="!productos.seleccionado.id > 0">
 
               <v-btn outlined
                      class="hidden-sm-and-down"
@@ -527,6 +546,7 @@
 </template>
 
 <script>
+
 export default {
 
   layout: 'admin_negocio',
@@ -539,6 +559,7 @@ export default {
 
   mounted(){
     this.ObtenerNegocios()
+    this.$store.commit('setRutaActual', 'Productos y Servicios')
   },
 
   middleware: 'VerificarTieneNegocio',
@@ -563,9 +584,13 @@ export default {
       productos: {
         tabla: {
           headers: [
-            { text: 'Nombre', value: 'nombre', align: 'center'},
+            { text: 'Nombre', value: 'nombre', align: 'center' },
+            { text: 'Precio', value: 'precio', align: 'center' },
+            { text: 'Descripción', value: 'data-table-expand', sortable: false, align: 'center' },
+            { text: 'Características', value: 'caracteristicas', sortable: false, align: 'center'},
             { text: 'Acciones', value: 'actions', sortable: false, align: 'center'},
           ],
+          expanded: [],
           busqueda: null,
           busqueda_texto: null,
           check: false,
@@ -575,7 +600,7 @@ export default {
           productosPorPagina: 10
         },
         listado: [],
-        seleccionado: { caracteristicas: [] }
+        seleccionado: { carac: [] }
       },
       proveedores: [],
       llanta: {
@@ -598,12 +623,12 @@ export default {
     async ObtenerProductos(){
 
       let params = {
-        negocioId: this.negocios.seleccionado.id
+        id: this.negocios.seleccionado.id
       }
 
-//      this.productos.tabla.loading = true
+      this.productos.tabla.loading = true
 
-      await this.$api.get("/productos", params).then(data => {
+      await this.$api.post("/productos", params).then(data => {
 
         this.productos.tabla.loading = false
         this.productos.listado = data
@@ -640,25 +665,22 @@ export default {
 
     },
 
-    SeleccionarNegocio(){
-
-
-
-    },
-
     MostrarDialogoNuevo(){
       this.dialogos.producto = true
       this.$refs.frmProducto?.resetValidation()
     },
+
     MostrarDialogoEditar(producto){
       this.productos.seleccionado = Object.assign({}, producto)
       this.dialogos.producto = true
       this.$refs.frmProducto?.resetValidation()
     },
+
     CerrarDialogoProducto(){
-      this.productos.seleccionado = { caracteristicas: [] }
+      this.productos.seleccionado = { carac: [] }
       this.dialogos.producto = false
     },
+
     async GuardarProducto(){
 
       if(this.$refs.frmProducto.validate()){
@@ -686,14 +708,17 @@ export default {
       }
 
     },
+
     async ActualizarProducto(){
 
     },
+
     async EliminarProducto(producto){
 
     },
+
     AddCaracteristica(){
-      this.productos.seleccionado.caracteristicas.push(
+      this.productos.seleccionado.carac.push(
         {
           idCaracteristica: -1,
           nombre: '',
@@ -704,16 +729,18 @@ export default {
       )
       this.$forceUpdate()
     },
+
     async RemoverCaracteristica(caracteristica, index){
       if(caracteristica.caracteristicasID > 0){
         //codigo
         console.log()
       }
       else{
-        this.productos.seleccionado.caracteristicas.splice(index, 1)
+        this.productos.seleccionado.carac.splice(index, 1)
       }
       this.$forceUpdate()
     },
+
     LimpiarBusqueda(){
       this.productos.tabla.busqueda = null
       this.productos.tabla.busqueda_texto = null

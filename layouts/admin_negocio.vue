@@ -1,5 +1,7 @@
 <template>
+
   <v-app dark style="background: #F5F5F5;">
+
     <v-navigation-drawer
       v-model="drawer"
       :clipped="clipped"
@@ -9,9 +11,10 @@
       color="secondary"
       width="350"
     >
+
       <v-list>
 
-        <v-list-item link>
+        <v-list-item link :to="'/usuario/cuenta'">
           <v-list-item-avatar>
             <v-img src="https://cdn.vuetifyjs.com/images/lists/2.jpg"></v-img>
           </v-list-item-avatar>
@@ -19,7 +22,23 @@
             <v-list-item-title class="text-h6">
               {{ usuario_autenticado.nombre }}
             </v-list-item-title>
-            <v-list-item-subtitle>Administrar negocios</v-list-item-subtitle>
+            <v-list-item-subtitle>
+              <v-icon size="20" class="mr-1"> fa fa-user-cog </v-icon>
+              Administrador de negocios
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list-item link :to="'/negocios/mensajes'">
+          <v-list-item-avatar>
+            <v-icon>fa fa-envelope</v-icon>
+          </v-list-item-avatar>
+          <v-list-item-content>
+            <v-list-item-title class="text-h6">
+              Bandeja de Entrada
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -42,12 +61,25 @@
     <v-app-bar dark color="secondary" elevation="0"
                :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon large @click.stop="drawer = !drawer" />
-      <div class="hidden-sm-and-down">
-        <v-toolbar-title v-text="'Antigua Travel'" />
+      <div class="ml-2">
+
+        <v-row class="mb-n9" align="center">
+
+          <v-col>
+            <h3 class="hidden-sm-and-down">Antigua Travel</h3>
+            <h4 class="hidden-md-and-up">Antigua Travel</h4>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <span class="hidden-sm-and-down"> {{ $store.state.rutaActual }} </span>
+            <span style="font-size: 15px;" class="hidden-md-and-up"> {{ $store.state.rutaActual }} </span>
+          </v-col>
+        </v-row>
+
       </div>
-      <div class="hidden-md-and-up">
-        <v-toolbar-title style="font-size: 16px;" v-text="'Antigua Travel'" />
-      </div>
+
       <v-progress-circular indeterminate v-show="$store.state.loading"
                            class="mx-2" color="white" />
       <v-spacer />
@@ -93,11 +125,7 @@
 
 <script>
 export default {
-  /*head(){
-    return{
-      titleTemplate: ""
-    };
-  },*/
+
   mounted() {
 
     this.ObtenerAuth()
@@ -113,7 +141,7 @@ export default {
         {
           no: 1,
           icon: 'fa fa-home',
-          title: 'Dashboard',
+          title: 'Inicio',
           to: '/negocios/dashboard'
         },
         {

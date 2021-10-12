@@ -198,7 +198,7 @@
               ></v-img>
 
               <v-card-title>
-                <h4>
+                <h4 class="mr-2">
                   {{ restaurante.nombre }}
                 </h4>
                 <v-spacer/>
@@ -260,6 +260,17 @@
                     fa fa-compass
                   </v-icon>
                   Explorar
+                </v-btn>
+
+                <v-btn
+                  color="black"
+                  outlined
+                  @click="EnviarMensaje(restaurante)"
+                >
+                  <v-icon left color="primary darken-2">
+                    fa fa-paper-plane
+                  </v-icon>
+                  Contactar
                 </v-btn>
 
               </v-card-actions>
@@ -402,16 +413,27 @@
       </v-card>
     </v-dialog>
 
+    <v-overlay :value="$store.state.loading">
+      <v-progress-circular
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
+
   </v-container>
 
 </template>
 
 <script>
 
+import * as Axios from "axios";
+
 export default {
 
   mounted() {
     this.ObtenerRestaurantes()
+    this.ObtenerAuth()
+    console.log(JSON.parse(sessionStorage.getItem('usuario')))
   },
 
   data(){
@@ -432,6 +454,7 @@ export default {
         { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
         { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
       ],
+      auth: {},
       range: [1,1000],
       markers: [],
       places: [],
@@ -462,6 +485,96 @@ export default {
         } )
 
       } )
+
+    },
+
+    async ObtenerAuth(){
+      this.auth = await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    },
+
+    async EnviarMensaje(restaurante){
+
+      let negocioFound = {id: 0}
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === restaurante.id );
+      }
+
+      if(negocioFound.id > 0){
+        this.$alert.warning("No puedes enviar mensajes a tu negocio",
+          "Contacto Fallido")
+      }
+      else{
+        await this.$api.post("/usuario/info", { id: restaurante.usuarioId })
+          .then(async data => {
+            let encargado = data
+            try {
+
+              const chatsRef = this.$fire.database.ref('Chats')
+                .child("chat"+this.auth.id+"-"+encargado.id)
+              let chat = {
+                usuario: "id"+this.auth.id,
+                negocio: "id"+encargado.id,
+                key_negocio: '',
+                ultimoMensaje: ''
+              }
+
+              const userChatsRef = this.$fire.database.ref('userChats')
+                .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+              const encargadoChatsRef = this.$fire.database.ref('userChats')
+                .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+              const negociosRef = this.$fire.database.ref('Negocios').child("id"+encargado.id)
+
+              Axios.get(negociosRef.toString() + '.json').then(async response => {
+
+                let keys = Object.keys(response.data)
+                keys.forEach( key => {
+
+                  if(restaurante.id === response.data[key].negocioId){
+                    chat.key_negocio = key
+                  }
+
+                } )
+
+                Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                  let keys = []
+                  if(response.data && response.data.length > 0)
+                    keys = Object.keys(response.data)
+                  let found = false
+                  let llave = ''
+
+                  keys.forEach( key => {
+
+                    if(chat.key_negocio === response.data[key].key_negocio){
+                      found = true
+                      llave = key
+                    }
+
+                  } )
+
+                  if(!found)
+                    await chatsRef.push(chat)
+                  else
+                    await chatsRef.child(llave).set(chat)
+
+                })
+
+                await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+              })
+
+              this.$router.push({path: '/usuario/mensajes'})
+
+            } catch (e) {
+              console.error(e)
+            }
+          })
+      }
 
     },
 

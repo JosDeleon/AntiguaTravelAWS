@@ -595,10 +595,12 @@
 
 <script>
 import md5 from "crypto-js/md5";
+import * as Axios from "axios";
 export default {
 
   mounted() {
     this.usuario = JSON.parse(sessionStorage.getItem('usuario')) ?? { id: -1 }
+    this.ObtenerNegociosAuth()
   },
 
   data () {
@@ -694,6 +696,86 @@ export default {
 
   methods: {
 
+    async ObtenerNegociosAuth(){
+
+      if(JSON.parse(sessionStorage.getItem('usuario'))){
+
+        await this.$api.post('/negocios/usuario',
+          { usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id })
+          .then( async data => {
+
+            this.$store.commit('setNegocios', data)
+
+            const negociosRef = this.$fire.database.ref('Negocios').child("id" +
+              JSON.parse(sessionStorage.getItem('usuario')).id)
+
+            Axios.get(negociosRef.toString() + '.json').then(async response => {
+
+              let llaves = []
+              if(response.data && response.data.length > 0)
+                llaves = Object.keys(response.data)
+
+              for (const negocio of data) {
+
+                if (llaves && llaves.length > 0) {
+
+                  let found = false
+
+                  let llaveFound = ''
+
+                  for (const llave of llaves) {
+
+                    if (negocio.id === response.data[llave].negocioId) {
+                      found = true
+                      llaveFound = llave
+                    }
+
+                  }
+
+                  if (found) {
+                    let neg = {
+                      negocioId: negocio.id,
+                      adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                      image: '',
+                      nombreNegocio: negocio.nombre
+                    }
+
+                    await negociosRef.child(llaveFound).set(neg)
+
+                  }
+                  else {
+                    let neg = {
+                      negocioId: negocio.id,
+                      adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                      image: '',
+                      nombreNegocio: negocio.nombre
+                    }
+
+                    await negociosRef.push(neg)
+                  }
+
+                } else {
+                  let neg = {
+                    negocioId: negocio.id,
+                    adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                    image: '',
+                    nombreNegocio: negocio.nombre
+                  }
+
+                  negociosRef.push(neg)
+                }
+
+              }
+
+            })
+
+
+          })
+
+      }
+
+    },
+
     VerificarForma(){
       if(this.helpers.step === 1 && this.$refs.formaDatos.validate()){
         this.helpers.step++
@@ -720,6 +802,7 @@ export default {
         }
 
       }
+
     },
 
     MostrarDialogoOpcionesNegocio(tipo) {
@@ -739,12 +822,19 @@ export default {
 
       }
 
+      else if(tipo === 'M'){
+
+        this.$router.push({ path: '/usuario/mensajes' })
+
+      }
+
       else if(tipo === 'L'){
 
         this.$alert.confirm('¿Estás seguro que deseas cerrar sesión?',
           'Cerrar Sesión').then(async () => {
           sessionStorage.removeItem('usuario')
           this.usuario = { id: -1 }
+          this.$store.commit('setNegocios', [])
         });
 
 
@@ -784,14 +874,6 @@ export default {
     },
 
     RegistrarUsuario(){
-      //Así se hacen los posts:
-      /* this.$api.post('URL', params).then( data => {
-            //Aquí se escribe lo que pasa al recibir la data
-            //Si viene un json, asi se acceden a las keys: data.llaveQueQueres
-          }).catch( data => {
-            //Se obtienen los errores en la petición
-          })
-      */
       let params = {
         nombre: this.form.nombre,
         telefono: this.form.telefono,
@@ -807,22 +889,49 @@ export default {
         this.CerrarDialogoRegistro()
       }).catch(err => console.log(err))
     },
+
     CambiarPassword(){
 
     },
 
-    Login(){
+    Login(firebaseReg = false){
       let params = {
         username: this.form.username,
         password: md5(this.form.password) + ''
       }
       this.helpers.loading = true
-      this.$api.post('/signin', params).then( data => {
-        console.log(data);
-        if(data.accessToken){
+
+      this.$api.post('/signin', params).then( async data => {
+        if (data.accessToken) {
           sessionStorage.setItem('usuario', JSON.stringify(data));
 
           this.usuario = JSON.parse(sessionStorage.getItem('usuario'))
+
+          this.ObtenerNegociosAuth()
+
+          await this.$api.post("/usuario/info", { id: this.usuario.id } )
+            .then(async data => {
+              try{
+
+                const usersRef = this.$fire.database.ref('Users').child("id"+data.id)
+
+                let user = {
+
+                  username: data.username,
+                  image: '',
+                  correo: data.correo,
+                  nombre: data.nombre
+
+                }
+
+                await usersRef.set(user)
+
+              }
+              catch (e) {
+                console.error(e)
+              }
+            })
+
           this.helpers.loading = false
           this.CerrarDialogoLogin()
           /*

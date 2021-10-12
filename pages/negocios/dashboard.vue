@@ -1,11 +1,6 @@
 <template>
 
   <v-container fluid>
-    {{icono}}
-    <v-btn color="accent" large @click.stop="iconDialog=true" >
-      Click
-    </v-btn>
-    <IconPicker v-model="iconDialog" :icono.sync="icono" />
 
   </v-container>
 
@@ -13,11 +8,11 @@
 
 <script>
 
-import IconPicker from "~/components/IconPicker"
-
 export default {
 
-  components: {IconPicker},
+  mounted() {
+    this.$store.commit('setRutaActual', 'Inicio')
+  },
 
   layout: 'admin_negocio',
 
@@ -32,8 +27,7 @@ export default {
 
   data(){
     return{
-      iconDialog: false,
-      icono: ''
+
     }
   },
 
