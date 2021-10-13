@@ -80,7 +80,7 @@
 
     <div v-if="!tags.buscadas.check">
 
-      <v-row class="mt-5">
+      <v-row class="mt-5" v-if="negocios.listado.sitios && negocios.listado.sitios.length > 0">
 
         <v-col cols="12" sm="10" md="8">
 
@@ -244,7 +244,7 @@
 
       </v-row>
 
-      <v-row class="mt-5">
+      <v-row class="mt-5" v-if="negocios.listado.hoteles && negocios.listado.hoteles.length > 0">
 
         <v-col cols="12" sm="10" md="8">
 
@@ -360,7 +360,7 @@
 
       <v-row class="mt-5">
 
-        <v-col cols="12">
+        <v-col cols="12" v-if="negocios.listado.restaurantes && negocios.listado.restaurantes.length > 0">
 
           <h2 class="mb-5 black--text">
             Restaurantes que tal vez te gusten
@@ -630,11 +630,9 @@
 
     </div>
 
-    <div v-else>
+    <div v-else class="mt-2">
 
       <v-btn
-        v-bind="attrs"
-        v-on="on"
         color="secondary"
         @click="LimpiarBusqueda"
         outlined
@@ -654,7 +652,7 @@
           <v-col cols="12">
 
             <h2 class="mb-5 black--text">
-              Encontramos los siguientes destinos turísticos con tu busqueda
+              Encontramos los siguientes guías turísticos con tu busqueda
             </h2>
 
           </v-col>
@@ -686,10 +684,10 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-              <span :class="VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ?
-              'red--text' : 'green--text'">
-                {{ VerificarHora(sitio.abre, sitio.cierra) }}
-              </span> -
+                  <span :class="VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ?
+                  'red--text' : 'green--text'">
+                    {{ VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                  </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-chip outlined color="black" small v-bind="attrs" v-on="on">

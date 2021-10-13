@@ -607,7 +607,7 @@
         <v-card-text class="pa-4">
 
           <v-img
-            :src="productos.seleccionado.nuevaImagen ? productos.seleccionado.nuevaImagen : null"
+            :src="productos.seleccionado.nuevaImagen ? productos.seleccionado.nuevaImagen : '/imagen-no-disponible.png'"
             style="border-radius:10px;"
           >
 

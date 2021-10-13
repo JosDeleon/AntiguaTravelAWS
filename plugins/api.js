@@ -22,7 +22,6 @@ export default ({ app, store, $axios }, inject) => {
           //withCredentials: true,
           timeout: this.timeout
         }
-        console.log(data)
         config.data = data ?? null
         processRequest($axios.get(process.env.API + service, config),resolve,reject)
       })

@@ -1,5 +1,6 @@
 <template>
   <v-app>
+
     <v-navigation-drawer
       v-model="drawer"
       :clipped="clipped"
@@ -27,6 +28,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+
     <v-app-bar
       fixed
       app
@@ -173,10 +175,19 @@
               v-bind="attrs"
               v-on="on"
             >
-              <v-avatar color="grey" size="30">
+
+              <v-avatar size="30" color="transparent" v-if="usuario.img">
+
+                <v-img :src="usuario.img" />
+
+              </v-avatar>
+
+              <v-avatar color="grey" size="30" v-else>
+
                 <v-icon dark color="white" size="18">
                   fa fa-user
                 </v-icon>
+
               </v-avatar>
 
             </v-btn>
@@ -211,6 +222,7 @@
               </v-btn>
             </v-list-item>
           </v-list>
+
         </v-menu>
 
       </v-btn-toggle>
@@ -495,7 +507,7 @@
               }}
             </h3>
 
-            <v-form ref="FormaLogin">
+            <v-form ref="FormaLogin" @submit.prevent="Login">
 
               <v-text-field
                 label="Nombre de Usuario"
@@ -591,6 +603,7 @@
     </template>
 
   </v-app>
+
 </template>
 
 <script>
@@ -600,6 +613,14 @@ export default {
 
   mounted() {
     this.usuario = JSON.parse(sessionStorage.getItem('usuario')) ?? { id: -1 }
+    if(this.usuario.id > 0){
+      this.$fire.storage.ref(
+        'usuarios/'+JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
+      ).getDownloadURL().then((url) => {
+        this.usuario.img = url
+        this.$forceUpdate()
+      })
+    }
     this.ObtenerNegociosAuth()
   },
 
@@ -882,6 +903,12 @@ export default {
           sessionStorage.setItem('usuario', JSON.stringify(data));
 
           this.usuario = JSON.parse(sessionStorage.getItem('usuario'))
+
+          this.$fire.storage.ref('usuarios/'+this.usuario.id + "/foto-perfil")
+            .getDownloadURL().then((url) => {
+            this.usuario.img = url
+            this.$forceUpdate()
+          })
 
           this.ObtenerNegociosAuth()
 
