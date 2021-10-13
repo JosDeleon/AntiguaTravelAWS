@@ -47,14 +47,12 @@
           <h4 class="mt-1 text-wrap primary-text hidden-sm-and-down"
               style="text-align:justify; text-justify: inter-word;"
           >
-            Por favor ingrese su nombre de usuario para recibir en su correo electrónico, las instrucciones
-            para restablecer la contraseña de su cuenta
+            Por favor ingrese su correo electrónico para recibir las instrucciones para restablecer la contraseña de su cuenta
           </h4>
           <h4 class="mt-1 text-wrap primary-text hidden-md-and-up"
               style="text-align:justify; text-justify: inter-word;"
           >
-            Por favor ingrese su nombre de usuario para recibir en su correo electrónico, las instrucciones
-            para restablecer la contraseña de su cuenta
+            Por favor ingrese su correo electrónico para recibir las instrucciones para restablecer la contraseña de su cuenta
           </h4>
         </v-layout>
 
@@ -65,7 +63,7 @@
               v-model="correo"
               :rules="[ v => v && v.length > 0 || 'El nombre de usuario es obligatorio' ]"
               label="Correo Electrónico"
-              prepend-inner-icon="fa fa-user"
+              prepend-inner-icon="fa fa-envelope"
               style="border-radius:10px;"
           />
 
@@ -128,17 +126,6 @@
         }
 
       },
-
-      GenerarPassword(length) {
-        let result = ' ';
-        let characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        const charactersLength = characters.length;
-        for ( let i = 0; i < length; i++ ) {
-          result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-
-        return result;
-      }
 
     }
 

@@ -1,4 +1,5 @@
 <template>
+
   <v-app>
 
     <v-navigation-drawer
@@ -537,13 +538,11 @@
 
             </v-form>
 
-            <a class="ml-8" @click="CambiarPassword">
-              <span class="text-caption black--text font-weight-bold"
-                    style="text-decoration: underline;"
-              >
-              ¿Olvidaste tu contraseña?
-            </span>
-            </a>
+            <div class="mb-6 mt-n2 ml-n4">
+
+              <ForgotPassword />
+
+            </div>
 
           </v-card-text>
 
@@ -566,6 +565,7 @@
       </v-dialog>
 
       <Nuxt />
+
     </v-main>
 
     <template>
@@ -607,8 +607,11 @@
 </template>
 
 <script>
+
 import md5 from "crypto-js/md5";
-import * as Axios from "axios";
+
+import ForgotPassword from "@/components/ForgotPassword";
+
 export default {
 
   mounted() {
@@ -622,6 +625,12 @@ export default {
       })
     }
     this.ObtenerNegociosAuth()
+  },
+
+  components: {
+
+    ForgotPassword
+
   },
 
   data () {

@@ -54,19 +54,10 @@
 
               </v-form>
 
-              <div class="mb-6 mt-n5 ml-n2">
-                <v-btn
-                  text
-                  color="primary"
-                  @click="CambiarPassword"
-                  style="background-color: transparent;"
-                >
-                  <span class="text-caption black--text font-weight-bold"
-                        style="text-decoration: underline;"
-                  >
-                      ¿Olvidaste tu contraseña?
-                  </span>
-                </v-btn>
+              <div class="mb-6 mt-n2 ml-n4">
+
+                <ForgotPassword />
+
               </div>
 
               <v-btn color="secondary"
@@ -101,18 +92,26 @@
 
 <script>
 import md5 from "crypto-js/md5";
+import ForgotPassword from "@/components/ForgotPassword";
 
 export default {
+
   mounted() {
     this.checkLogin()
   },
+
   head(){
     return{
       titleTemplate: "Antigua Travel | Inicio de Sesión"
     };
   },
+
+  components: { ForgotPassword },
+
   middleware: 'LoginConNegocio',
+
   layout: 'empty',
+
   data(){
     return {
       helpers: {
@@ -130,6 +129,7 @@ export default {
       loading: false
     }
   },
+
   methods: {
     async login() {
       if(this.$refs.formaLogin.validate()){
