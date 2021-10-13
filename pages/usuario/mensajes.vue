@@ -430,6 +430,7 @@ export default {
           this.$store.commit('setHideMessageField', true)
         }
 
+
       }, (errorObject) => {
         console.log('La lectura en la DB fallo: ' + errorObject.name);
       });

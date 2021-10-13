@@ -2,7 +2,6 @@
 
   <v-container fluid>
 
-
     <v-row dense>
 
       <v-col cols="12" lg="3" class="mt-12" >
@@ -165,14 +164,14 @@
 
         <v-row>
 
-          <v-col cols="6" class="mt-12" v-if="destinos.listado && destinos.listado.length === 0">
+          <v-col cols="6" class="mt-12" v-if="hoteles.listado && hoteles.listado.length === 0">
             <v-alert
               border="left"
               colored-border
               type="warning"
               elevation="2"
             >
-              Lo sentimos, aún no hay destinos disponibles para mostrar.
+              Lo sentimos, aún no hay hoteles disponibles para mostrar.
             </v-alert>
           </v-col>
 
@@ -180,7 +179,7 @@
                  lg="4"
                  md="6"
                  sm="6"
-                 v-for="(destino, i) in destinos.listado"
+                 v-for="(hotel, i) in hoteles.listado"
                  :key="i"
           >
 
@@ -193,19 +192,19 @@
               outlined
             >
               <v-img
-                max-height="300"
-                :src="destino.src"
+                height="200"
+                :src="hotel.src"
               ></v-img>
 
               <v-card-title>
                 <h4>
-                  {{ destino.nombre }}
+                  {{ hotel.nombre }}
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(hotel.abre, hotel.cierra) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                    {{ VerificarHora(hotel.abre, hotel.cierra) }}
                   </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -214,11 +213,11 @@
                         Horarios
                       </v-chip>
                     </template>
-                    <span> Todos los días de {{ $moment(destino.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(destino.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                    <span> Todos los días de {{ $moment(hotel.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(hotel.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
                   </v-tooltip>
-
                 </h6>
+
               </v-card-title>
 
               <v-card-text>
@@ -240,11 +239,11 @@
                 </v-row>
 
                 <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(destino.tags)}}
+                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(hotel.tags)}}
                 </div>
 
-                <div>{{ destino.descripcion ? destino.descripcion :
-                  "Este destino turístico no cuenta con una descripción" }}</div>
+                <div>{{ hotel.descripcion ? hotel.descripcion :
+                  "Este hotel no cuenta con una descripción" }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -254,7 +253,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="InformacionProducto(hotel)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -265,7 +264,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click="EnviarMensaje(destino)"
+                  @click="EnviarMensaje(hotel)"
                 >
                   <v-icon left color="primary darken-2">
                     fa fa-paper-plane
@@ -431,7 +430,7 @@ import * as Axios from "axios";
 export default {
 
   mounted() {
-    this.ObtenerDestinos()
+    this.ObtenerHoteles()
     this.ObtenerAuth()
   },
 
@@ -445,7 +444,7 @@ export default {
         mapSearch: null,
         busqueda: null
       },
-      destinos: {
+      hoteles: {
         listado: []
       },
       filtros: [
@@ -468,7 +467,7 @@ export default {
 
   methods: {
 
-    async EnviarMensaje(guia){
+    async EnviarMensaje(hotel){
 
       let login = true
 
@@ -482,7 +481,7 @@ export default {
       let negocioFound = {id: 0}
 
       if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
-        negocioFound = this.$store.state.negocios.find( n => n.id === guia.id );
+        negocioFound = this.$store.state.negocios.find( n => n.id === hotel.id );
       }
 
       if(login){
@@ -492,13 +491,13 @@ export default {
             "Contacto Fallido")
         }
         else{
-          await this.$api.post("/usuario/info", { id: guia.usuarioId })
+          await this.$api.post("/usuario/info", { id: hotel.usuarioId })
             .then(async data => {
               let encargado = data
               try {
 
                 const chatsRef = this.$fire.database.ref(
-                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+guia.id
+                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+hotel.id
                 )
 
                 Axios.get(chatsRef.toString() + '.json').then(async response => {
@@ -507,7 +506,7 @@ export default {
                     let chat = {
                       usuario: "id"+this.auth.id,
                       negocio: "id"+encargado.id,
-                      key_negocio: 'idNegocio'+guia.id,
+                      key_negocio: 'idNegocio'+hotel.id,
                       ultimoMensaje: ''
                     }
 
@@ -543,22 +542,28 @@ export default {
         { id: JSON.parse(sessionStorage.getItem('usuario')).id })
     },
 
-    async ObtenerDestinos(){
+    async ObtenerHoteles(){
 
-      await this.$api.post("/negocios/categoria", { categoria: "D" }).then( data => {
+      await this.$api.post("/negocios/categoria", { categoria: "H" }).then( data => {
 
-        this.destinos.listado = data
+        this.hoteles.listado = data
         let cont = 0
-        this.destinos.listado.forEach( destino => {
+        this.hoteles.listado.forEach( hotel => {
 
-          destino.showCardTags = false
-          destino.src = "https://cdn.vuetifyjs.com/images/lists/"+(cont+1)+".jpg"
-          destino.tags = ["Al aire libre"]
+          hotel.showCardTags = false
+          hotel.src = "https://picsum.photos/500/300?image="+(cont+35)
+          hotel.tags = ["Eco-hotel"]
           cont++
 
         } )
 
       } )
+
+    },
+
+    InformacionProducto(hotel){
+
+      this.$router.push({ path: '/servicios/guias/'+hotel.id })
 
     },
 
@@ -570,6 +575,7 @@ export default {
         afterTime = this.$moment(cierra, format);
 
       if (time.isBetween(beforeTime, afterTime)) {
+
         return "Abierto"
 
       } else {

@@ -2,7 +2,6 @@
 
   <v-container fluid>
 
-
     <v-row dense>
 
       <v-col cols="12" lg="3" class="mt-12" >
@@ -165,14 +164,14 @@
 
         <v-row>
 
-          <v-col cols="6" class="mt-12" v-if="rentas.listado && rentas.listado.length === 0">
+          <v-col cols="6" class="mt-12" v-if="destinos.listado && destinos.listado.length === 0">
             <v-alert
               border="left"
               colored-border
               type="warning"
               elevation="2"
             >
-              Lo sentimos, aún no hay lugares de rentas de autos disponibles para mostrar.
+              Lo sentimos, aún no hay destinos disponibles para mostrar.
             </v-alert>
           </v-col>
 
@@ -180,7 +179,7 @@
                  lg="4"
                  md="6"
                  sm="6"
-                 v-for="(renta, i) in rentas.listado"
+                 v-for="(destino, i) in destinos.listado"
                  :key="i"
           >
 
@@ -193,19 +192,19 @@
               outlined
             >
               <v-img
-                height="200"
-                :src="renta.src"
+                max-height="300"
+                :src="destino.src"
               ></v-img>
 
               <v-card-title>
                 <h4>
-                  {{ renta.nombre }}
+                  {{ destino.nombre }}
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(renta.abre, renta.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(renta.abre, renta.cierra) }}
+                    {{ VerificarHora(destino.abre, destino.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -214,11 +213,11 @@
                         Horarios
                       </v-chip>
                     </template>
-                    <span> Todos los días de {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                    <span> Todos los días de {{ $moment(destino.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(destino.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
                   </v-tooltip>
-                </h6>
 
+                </h6>
               </v-card-title>
 
               <v-card-text>
@@ -240,10 +239,11 @@
                 </v-row>
 
                 <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(renta.tags)}}
+                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(destino.tags)}}
                 </div>
 
-                <div>Small plates, salads & sandwiches - an intimate setting with 12 indoor seats plus patio seating.</div>
+                <div>{{ destino.descripcion ? destino.descripcion :
+                  "Este destino turístico no cuenta con una descripción" }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -253,7 +253,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="InformacionProducto(destino)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -264,7 +264,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click="EnviarMensaje(renta)"
+                  @click="EnviarMensaje(destino)"
                 >
                   <v-icon left color="primary darken-2">
                     fa fa-paper-plane
@@ -430,7 +430,7 @@ import * as Axios from "axios";
 export default {
 
   mounted() {
-    this.ObtenerRentaAutos()
+    this.ObtenerDestinos()
     this.ObtenerAuth()
   },
 
@@ -444,7 +444,7 @@ export default {
         mapSearch: null,
         busqueda: null
       },
-      rentas: {
+      destinos: {
         listado: []
       },
       filtros: [
@@ -467,7 +467,7 @@ export default {
 
   methods: {
 
-    async EnviarMensaje(renta){
+    async EnviarMensaje(guia){
 
       let login = true
 
@@ -481,7 +481,7 @@ export default {
       let negocioFound = {id: 0}
 
       if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
-        negocioFound = this.$store.state.negocios.find( n => n.id === renta.id );
+        negocioFound = this.$store.state.negocios.find( n => n.id === guia.id );
       }
 
       if(login){
@@ -491,13 +491,13 @@ export default {
             "Contacto Fallido")
         }
         else{
-          await this.$api.post("/usuario/info", { id: hotel.usuarioId })
+          await this.$api.post("/usuario/info", { id: guia.usuarioId })
             .then(async data => {
               let encargado = data
               try {
 
                 const chatsRef = this.$fire.database.ref(
-                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+hotel.id
+                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+guia.id
                 )
 
                 Axios.get(chatsRef.toString() + '.json').then(async response => {
@@ -506,7 +506,7 @@ export default {
                     let chat = {
                       usuario: "id"+this.auth.id,
                       negocio: "id"+encargado.id,
-                      key_negocio: 'idNegocio'+hotel.id,
+                      key_negocio: 'idNegocio'+guia.id,
                       ultimoMensaje: ''
                     }
 
@@ -542,22 +542,28 @@ export default {
         { id: JSON.parse(sessionStorage.getItem('usuario')).id })
     },
 
-    async ObtenerRentaAutos(){
+    async ObtenerDestinos(){
 
-      await this.$api.post("/negocios/categoria", { categoria: "RC" }).then( data => {
+      await this.$api.post("/negocios/categoria", { categoria: "D" }).then( data => {
 
-        this.rentas.listado = data
+        this.destinos.listado = data
         let cont = 0
-        this.rentas.listado.forEach( renta => {
+        this.destinos.listado.forEach( destino => {
 
-          renta.showCardTags = false
-          renta.src = "https://picsum.photos/500/300?image="+(cont+35)
-          renta.tags = ["Al aire libre"]
+          destino.showCardTags = false
+          destino.src = "https://cdn.vuetifyjs.com/images/lists/"+(cont+1)+".jpg"
+          destino.tags = ["Al aire libre"]
           cont++
 
         } )
 
       } )
+
+    },
+
+    InformacionProducto(guia){
+
+      this.$router.push({ path: '/servicios/guias/'+guia.id })
 
     },
 
@@ -569,7 +575,6 @@ export default {
         afterTime = this.$moment(cierra, format);
 
       if (time.isBetween(beforeTime, afterTime)) {
-
         return "Abierto"
 
       } else {
