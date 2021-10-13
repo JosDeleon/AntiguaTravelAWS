@@ -469,57 +469,70 @@ export default {
 
     async EnviarMensaje(hotel){
 
+      let login = true
+
+      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
+          "Contacto Fallido")
+        login = false
+        return
+      }
+
       let negocioFound = {id: 0}
 
       if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
         negocioFound = this.$store.state.negocios.find( n => n.id === hotel.id );
       }
 
-      if(negocioFound.id > 0){
-        this.$alert.warning("No puedes enviar mensajes a tu negocio",
-          "Contacto Fallido")
-      }
-      else{
-        await this.$api.post("/usuario/info", { id: hotel.usuarioId })
-          .then(async data => {
-            let encargado = data
-            try {
+      if(login){
 
-              const chatsRef = this.$fire.database.ref(
-                'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+hotel.id
-              )
+        if(negocioFound.id > 0){
+          this.$alert.warning("No puedes enviar mensajes a tu negocio",
+            "Contacto Fallido")
+        }
+        else{
+          await this.$api.post("/usuario/info", { id: hotel.usuarioId })
+            .then(async data => {
+              let encargado = data
+              try {
 
-              Axios.get(chatsRef.toString() + '.json').then(async response => {
+                const chatsRef = this.$fire.database.ref(
+                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+hotel.id
+                )
 
-                if(!response.data){
-                  let chat = {
-                    usuario: "id"+this.auth.id,
-                    negocio: "id"+encargado.id,
-                    key_negocio: 'idNegocio'+hotel.id,
-                    ultimoMensaje: ''
+                Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                  if(!response.data){
+                    let chat = {
+                      usuario: "id"+this.auth.id,
+                      negocio: "id"+encargado.id,
+                      key_negocio: 'idNegocio'+hotel.id,
+                      ultimoMensaje: ''
+                    }
+
+                    const userChatsRef = this.$fire.database.ref('userChats')
+                      .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                    const encargadoChatsRef = this.$fire.database.ref('userChats')
+                      .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                    await chatsRef.set(chat)
+
+                    await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                    await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
                   }
 
-                  const userChatsRef = this.$fire.database.ref('userChats')
-                    .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+                  this.$router.push({path: '/usuario/mensajes'})
 
-                  const encargadoChatsRef = this.$fire.database.ref('userChats')
-                    .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+                })
 
-                  await chatsRef.set(chat)
+              } catch (e) {
+                console.error(e)
+              }
+            })
+        }
 
-                  await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
-                  await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
-
-                }
-
-                this.$router.push({path: '/usuario/mensajes'})
-
-              })
-
-            } catch (e) {
-              console.error(e)
-            }
-          })
       }
 
     },
