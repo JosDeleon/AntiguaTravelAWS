@@ -16,7 +16,7 @@
 
         <v-list-item link :to="'/usuario/cuenta'">
           <v-list-item-avatar>
-            <v-img src="https://cdn.vuetifyjs.com/images/lists/2.jpg"></v-img>
+            <v-img :src="usuario_autenticado.img ? usuario_autenticado.img : '/no-pf.png'" />
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title class="text-h6">
@@ -58,6 +58,7 @@
       </v-list>
 
     </v-navigation-drawer>
+
     <v-app-bar dark color="secondary" elevation="0"
                :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon large @click.stop="drawer = !drawer" />
@@ -136,6 +137,7 @@
     </v-footer>
 
   </v-app>
+
 </template>
 
 <script>
@@ -146,6 +148,7 @@ export default {
     this.ObtenerAuth()
 
   },
+
   data() {
     return {
       clipped: false,
@@ -167,6 +170,12 @@ export default {
         },
         {
           no: 3,
+          icon: 'fa fa-images',
+          title: 'Galeria de Imágenes',
+          to: '/negocios/galeria'
+        },
+        {
+          no: 4,
           icon: 'fa fa-cubes',
           title: 'Productos y Servicios',
           to: '/negocios/productos_servicios'
@@ -184,6 +193,15 @@ export default {
       this.usuario_autenticado = await this.$api.post("/usuario/info",
         { id: JSON.parse(sessionStorage.getItem('usuario')).id })
 
+      if(this.usuario_autenticado.id > 0){
+        this.$fire.storage.ref(
+          'usuarios/'+this.usuario_autenticado.id + "/foto-perfil"
+        ).getDownloadURL().then((url) => {
+          this.usuario_autenticado.img = url
+          this.$forceUpdate()
+        })
+      }
+
     },
 
     async logoutUser(){
@@ -199,6 +217,7 @@ export default {
         console.error(e.message)
       }
     }
+
   },
 }
 </script>

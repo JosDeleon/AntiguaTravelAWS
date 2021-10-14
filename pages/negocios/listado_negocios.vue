@@ -501,7 +501,20 @@ export default {
 
       if(this.$refs.frmNegocio.validate()){
 
+        let params = {
 
+          id: this.negocios.seleccionado.id,
+          nombre: this.negocios.seleccionado.nombre,
+          descripcion: this.negocios.seleccionado.descripcion,
+          valor: this.negocios.seleccionado.id,
+
+        }
+
+        this.$api.put("/negocio", params).then(data => {
+
+
+
+        })
 
       }
 

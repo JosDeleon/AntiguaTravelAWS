@@ -171,7 +171,7 @@
               type="warning"
               elevation="2"
             >
-              Lo sentimos, aún no hay destinos disponibles para mostrar.
+              Lo sentimos, aún no hay guías turísticos disponibles para mostrar.
             </v-alert>
           </v-col>
 

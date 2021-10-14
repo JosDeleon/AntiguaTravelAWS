@@ -680,18 +680,24 @@ export default {
           response.ref.getDownloadURL().then(async (downloadURL) => {
 
             let params = {
+
+              id: this.auth.id,
               nombre: this.auth.nombre,
               telefono: this.auth.telefono,
               username: this.auth.username,
-              correo: this.auth.email,
+              correo: this.auth.correo,
               nacimiento: this.auth.nacimiento,
               genero: this.auth.genero.valor,
               img: downloadURL
 
             }
 
-            this.cargando = false
-            this.$router.push({path: '/'})
+            await this.$api.put("/usuario", params).then( data => {
+
+              this.cargando = false
+              this.$router.push({path: '/'})
+
+            } )
 
           })
 

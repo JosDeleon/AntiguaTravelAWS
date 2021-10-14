@@ -50,6 +50,7 @@ export default ({ app, store, $axios }, inject) => {
         let config = {
           //withCredentials: true,
           timeout: this.timeout,
+          data: params
         }
         processRequest($axios.put(process.env.API + service,params,config),resolve,reject)
       })
