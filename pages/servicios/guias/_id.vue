@@ -640,7 +640,7 @@
 
         <v-card-text class="pa-4">
 
-          
+
 
         </v-card-text>
 
