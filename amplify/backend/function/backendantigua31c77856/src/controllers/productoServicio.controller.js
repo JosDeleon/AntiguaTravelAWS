@@ -52,14 +52,29 @@ exports.getProducto = (req, res) => {
     });
 }
 
-exports.getProductos = (req, res) => {
-    Producto.findAll({
-        where : { negocioId : req.body.negocioId }
+exports.getProductos = async (req, res) => {
+    await Producto.findAll({
+        where : { negocioId : req.body.id }
     })
     .then(async (productos) => {
         if(!productos){
             return res.status(404).send({ message : 'Productos no econtrados.'});
         }
+        /*
+        productos.forEach( producto => {
+            Caracteristca.findAll({
+                where : {
+                    productoServicioId : producto.id
+                }
+            }).then( caracteristicas => {
+                producto.push({ carac : caracteristicas})
+                console.log('==========================PRODUCTO==========================', producto)
+            }).catch( err => {
+                res.status(500).send({ message : err.message});        
+            })
+        })
+        */
+
         res.status(200).send(productos);
     })
     .catch(err => {
@@ -90,3 +105,17 @@ exports.deleteProducts = (req, res) => {
         res.status(500).send({ message : err.message});
     });
 };
+
+exports.update = (req, res) => {
+    Producto.update({
+        nombre : req.body.nombre,
+        descripcion : req.body.descripcion,
+        valor : req.body.valor,
+        img : req.body.img
+    },
+    {
+        where : {
+            id : req.body.id
+        }
+    })
+}

@@ -1,5 +1,6 @@
 const db = require("../models");
 const Usuario = db.usuario; 
+const Negocio = db.negocio;
 const jwt = require('jsonwebtoken');
 const RefreshToken = db.refreshToken;
 const config = require('../config/auth.config');
@@ -62,13 +63,77 @@ exports.insert = (req, res) => {
     });
 };
 
-exports.delete = (req, res) => {
-    Usuario.destroy({
+exports.password = async (req, res) => {
+    Usuario.findOne({
+        where : { id : req.body.id }
+    })
+    .then( usuario => {
+        if(!usuario){
+            return res.status(404).send({ message : "Usuario no Encontrado"});
+        }
+
+        if(req.body.password == usuario.password){
+            Usuario.update({
+                password : req.body.newPassword
+            },
+            {
+                where : { id : req.body.id }
+            })
+            .then( () => {
+                res.status(200).send({ message : "Actualizado" });
+            })
+            .catch( err => {
+                res.status(500).send({ message : err.message })
+            })
+        }else{
+            return res.status(500).send({ message : "Password Error"});
+        }
+    })
+    .catch( err => {
+        res.status(500).send({ message : err.message });
+    });
+}
+
+exports.update = async (req, res) => {
+    await Usuario.update({
+        nombre : req.body.nombre,
+        telefono : req.body.telefono,
+        username : req.body.username,
+        correo : req.body.correo,
+        nacimiento : req.body.nacimiento,
+        genero : req.body.genero,
+        img : req.body.img
+    },
+    {
+        where : {
+            id : req.body.id
+        }
+    })
+    .then(() => {
+        res.status(200).send({ message : "Actualizado!"});
+    })
+    .catch( err => {
+        res.status(500).send({ message : err.message })
+    })
+}
+
+exports.delete = async (req, res) => {
+    await Usuario.destroy({
         where : {
             id : req.body.id
         }
     }).then(() => {
-        res.send({ message : 'Usuario Eliminado Correctamente!!!'});
+        Negocio.destroy({
+            where : {
+                usuarioId : req.body.id
+            }
+        })
+        .then( () => {
+            res.status(200).send({ message : 'Eliminado'});
+        })
+        .catch( err => {
+            res.status(500).send({ message : err.message});
+        })
     }).catch(err =>{
         res.status(500).send({ message : err.message});
     });
@@ -117,7 +182,6 @@ exports.signin = (req, res) => {
         });
     })
     .catch( err => {
-        console.log("500 ERROR => ", err);
         res.status(500).send({ message : err.message });
     });
 };
@@ -158,4 +222,4 @@ exports.refreshToken = async (req, res) => {
     } catch (err) {
         return res.status(500).send({ message: err });
     }
-  };
+};

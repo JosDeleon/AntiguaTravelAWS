@@ -104,6 +104,7 @@ exports.insert = async (req, res) => {
         cierra : req.body.cierra,
         telefono : req.body.telefono,
         descripcion : req.body.descripcion,
+        img : req.body.img,
         aut : 'f',
         lat : req.body.coordenadas.latitud,
         lng : req.body.coordenadas.longitud,
@@ -199,13 +200,12 @@ exports.update = (req, res) => {
         cierra : req.body.cierra,
         telefono : req.body.telefono,
         descripcion : req.body.descripcion,
+        img : req.body.img,     
         lat : req.body.coordenadas.latitud,
-        lng : req.body.coordenadas.longitud,
+        lng : req.body.coordenadas.longitud
     },
     {
-        where : {
-            id : req.body.id
-        }
+        where : { id : req.body.id }
     })
     .then(() => {
         res.status(200).send({ message : "Actualizado!"});

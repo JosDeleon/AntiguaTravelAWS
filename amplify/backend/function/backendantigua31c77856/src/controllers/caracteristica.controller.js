@@ -16,7 +16,7 @@ exports.insert = async (req, res) => {
 }
 
 exports.get = async (req, res) => {
-    Caracteristca.findAll({
+    await Caracteristca.findAll({
         where : {
             productoServicioId : req.body.productoId
         }
@@ -38,6 +38,21 @@ exports.delete = async (req, res) => {
     .then( () => {
         res.status(200).send({ message : 'Eliminado!!'})
     })
+    .catch( err => {
+        res.status(500).send({ message : err.message})
+    })
+}
+
+exports.update = async (req, res) => {
+    Caracteristca.update({
+        nombre : req.body.nombre,
+        valor : req.body.valor,
+        icono : req.body.icono
+    }, 
+    {
+        where : { id : req.body.id }
+    })
+    .then( () => {})
     .catch( err => {
         res.status(500).send({ message : err.message})
     })
