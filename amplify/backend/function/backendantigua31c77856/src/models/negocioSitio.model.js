@@ -26,6 +26,9 @@ module.exports = (sequelize, Sequelize) => {
         descripcion : {
             type : Sequelize.STRING
         },
+        img : {
+            type : Sequelize.STRING
+        },
         aut : { 
             type : Sequelize.CHAR
         },

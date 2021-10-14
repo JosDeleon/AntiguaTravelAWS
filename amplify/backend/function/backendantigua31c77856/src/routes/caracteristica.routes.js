@@ -6,4 +6,6 @@ module.exports = (app) => {
     app.post('/api/carte/producto', controller.get)
 
     app.delete('/api/carte', controller.delete)
+    
+    app.put('/api/carte', controller.update)
 }

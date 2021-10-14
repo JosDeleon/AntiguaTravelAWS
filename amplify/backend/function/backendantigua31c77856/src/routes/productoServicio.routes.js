@@ -10,4 +10,6 @@ module.exports = (app) =>{
     app.delete('/api/producto', controller.delete);
 
     app.delete('/api/productos', controller.deleteProducts);
+
+    app.put('/api/producto', controller.update)
 }

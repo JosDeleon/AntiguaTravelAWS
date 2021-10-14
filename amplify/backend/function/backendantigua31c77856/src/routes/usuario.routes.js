@@ -13,4 +13,8 @@ module.exports = function (app) {
     app.post('/api/regfreshToken', controller.refreshToken);
     
     app.delete('/api/usuario', controller.delete);
+
+    app.put('/api/usuario', controller.update)
+
+    app.put('/api/usuario/password', controller.password)
 }

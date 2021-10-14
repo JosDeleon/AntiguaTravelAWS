@@ -41,3 +41,16 @@ exports.get = async (req, res) => {
         res.status(500).send({message : err.message})
     })
 }
+
+exports.businessesTags = async (req, res) => {
+    await Tags.findAll({
+        where : {
+            negocioId : req.body.negocioId
+        }
+    })
+    .then( tags => {
+        res.status(200).send(tags)
+    }).catch( err => {
+        res.status(500).send({message : err.message})       
+    })
+}
