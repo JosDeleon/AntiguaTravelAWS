@@ -4,7 +4,7 @@
 
     <v-row dense>
 
-      <v-col cols="12" lg="3" class="mt-12" >
+      <v-col cols="12" xl="3" lg="4" class="mt-12" >
 
         <v-card style="border-radius:10px;"
                 max-width="400"
@@ -160,7 +160,7 @@
 
       </v-col>
 
-      <v-col cols="12" lg="9">
+      <v-col cols="12" xl="9" lg="8">
 
         <v-row>
 
@@ -193,7 +193,8 @@
             >
               <v-img
                 height="200"
-                :src="hotel.src"
+                contain
+                :src="hotel.img ? hotel.img : '/imagen-no-disponible.png'"
               ></v-img>
 
               <v-card-title>
@@ -486,7 +487,7 @@ export default {
 
       if(login){
 
-        if(negocioFound.id > 0){
+        if(negocioFound && negocioFound.id > 0){
           this.$alert.warning("No puedes enviar mensajes a tu negocio",
             "Contacto Fallido")
         }
@@ -551,7 +552,6 @@ export default {
         this.hoteles.listado.forEach( hotel => {
 
           hotel.showCardTags = false
-          hotel.src = "https://picsum.photos/500/300?image="+(cont+35)
           hotel.tags = ["Eco-hotel"]
           cont++
 
@@ -563,7 +563,7 @@ export default {
 
     InformacionProducto(hotel){
 
-      this.$router.push({ path: '/servicios/guias/'+hotel.id })
+      this.$router.push({ path: '/servicios/hoteles/'+hotel.id })
 
     },
 

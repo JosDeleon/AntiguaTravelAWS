@@ -55,7 +55,7 @@ export default {
       if(this.mensaje.trim() !== ''){
 
         const mensajeRef = this.$fire.database.ref('chatMessages')
-          .child(this.$store.state.usuarioChatActual.idChat)
+          .child(this.$store.state.usuarioChatActual.chat)
 
         const chatRef = this.$fire.database.ref('Chats')
           .child(this.$store.state.usuarioChatActual.chat)

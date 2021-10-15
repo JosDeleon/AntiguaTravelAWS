@@ -12,7 +12,7 @@
           size="100"
           tile
         >
-          <v-img v-if="renta.img" :src="renta.img" style="border-radius:10px;" />
+          <v-img v-if="cambista.img" :src="cambista.img" style="border-radius:10px;" />
           <v-img v-else :src="'/imagen-no-disponible.png'"></v-img>
         </v-avatar>
 
@@ -27,10 +27,10 @@
             <v-list-item-title>
 
               <h1 class="black--text hidden-sm-and-down" style="font-size: 24px;">
-                {{ renta.nombre }}
+                {{ cambista.nombre }}
               </h1>
               <h3 class="black--text hidden-md-and-up" style="font-size: 20px;">
-                {{ renta.nombre }}
+                {{ cambista.nombre }}
               </h3>
 
 
@@ -70,10 +70,10 @@
 
                 <div class="grey--text mt-1 text-wrap">
 
-                  <v-icon class="mx-1" small color="black"> fa fa-map-marker-alt </v-icon>{{ renta.direccion }} |
+                  <v-icon class="mx-1" small color="black"> fa fa-map-marker-alt </v-icon>{{ cambista.direccion }} |
                   <v-icon class="mx-1" small color="black"> fa fa-phone </v-icon> (+502) {{ FormatTelefono() }} |
-                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon> {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
+                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon> {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
                                                                                     'red--text' : 'green--text'">
                     {{ VerificarHora() === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span>)
@@ -165,6 +165,7 @@
 
     <vue-gallery-slideshow :images="images" :index="index" @close="index = null" />
 
+
     <v-row :class="($vuetify.breakpoint.name === 'sm' ||
                     $vuetify.breakpoint.name === 'xs') ? 'my-5' : 'px-16 my-5'">
 
@@ -214,7 +215,7 @@
             <v-list-item class="ml-n4">
               <v-list-item-content>
                 <v-list-item-title class="font-weight-bold">Descripción</v-list-item-title>
-                <v-list-item-subtitle class="mt-2 text-wrap">{{ renta.descripcion }}</v-list-item-subtitle>
+                <v-list-item-subtitle class="mt-2 text-wrap">{{ cambista.descripcion }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
 
@@ -238,8 +239,8 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                        {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
+                        {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
+                        {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
                                                                                     'red--text' : 'green--text'">
                           {{ VerificarHora() === 'Cerrado' ? 'No disponible' : 'Disponible' }}</span>)
                       </v-list-item-title>
@@ -331,7 +332,7 @@
                       </v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                      <v-list-item-title class="text-wrap">Dirección: {{ renta.direccion }}</v-list-item-title>
+                      <v-list-item-title class="text-wrap">Dirección: {{ cambista.direccion }}</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
 
@@ -668,7 +669,7 @@ import VueGallerySlideshow from 'vue-gallery-slideshow';
 export default {
 
   mounted() {
-    this.ObtenerRentaAuto()
+    this.ObtenerCambista()
     this.$refs.slideGroup.setWidths()
   },
 
@@ -686,30 +687,6 @@ export default {
       },
 
       valoracion: {},
-
-      renta: {},
-
-      tags: '',
-
-      productos: {
-        listado: [],
-        seleccionado: {}
-      },
-
-      index: null,
-
-      images: [
-        'https://placekitten.com/801/800',
-        'https://placekitten.com/802/800',
-        'https://placekitten.com/803/800',
-        'https://placekitten.com/804/800',
-        'https://placekitten.com/805/800',
-        'https://placekitten.com/806/800',
-        'https://placekitten.com/807/800',
-        'https://placekitten.com/808/800',
-        'https://placekitten.com/809/800',
-        'https://placekitten.com/810/800'
-      ],
 
       helpers: {
         nonce: 1,
@@ -733,8 +710,31 @@ export default {
         disableDefaultUI: true,
       },
 
-    }
+      cambista: {},
 
+      tags: '',
+
+      productos: {
+        listado: [],
+        seleccionado: {}
+      },
+
+      index: null,
+
+      images: [
+        'https://placekitten.com/801/800',
+        'https://placekitten.com/802/800',
+        'https://placekitten.com/803/800',
+        'https://placekitten.com/804/800',
+        'https://placekitten.com/805/800',
+        'https://placekitten.com/806/800',
+        'https://placekitten.com/807/800',
+        'https://placekitten.com/808/800',
+        'https://placekitten.com/809/800',
+        'https://placekitten.com/810/800'
+      ]
+
+    }
   },
 
   methods: {
@@ -742,31 +742,31 @@ export default {
     async ObtenerProductos(){
 
       let params = {
-        id: this.renta.id
+        id: this.cambista.id
       }
 
       this.productos.listado = await this.$api.post("/productos", params)
 
     },
 
-    async ObtenerRentaAuto(){
+    async ObtenerCambista(){
 
-      await this.$api.post("/negocios/categoria", { categoria: "RC" }).then( data => {
+      await this.$api.post("/negocios/categoria", { categoria: "C" }).then( data => {
 
         data.forEach( negocio => {
 
           if(negocio.id === +this.$route.params.id){
 
-            this.renta = negocio
+            this.cambista = negocio
 
           }
 
         } )
 
-        this.marker.position.lat = +this.renta.lat
-        this.marker.position.lng = +this.renta.lng
-        this.center.lat = +this.renta.lat
-        this.center.lng = +this.renta.lng
+        this.marker.position.lat = +this.cambista.lat
+        this.marker.position.lng = +this.cambista.lng
+        this.center.lat = +this.cambista.lat
+        this.center.lng = +this.cambista.lng
         this.$forceUpdate()
         this.ObtenerProductos()
         this.ObtenerTags()
@@ -777,9 +777,9 @@ export default {
 
     async ObtenerTags(){
 
-      this.renta.tags = await this.$api.post("/tags/negocio", { negocioId: this.renta.id })
+      this.cambista.tags = await this.$api.post("/tags/negocio", { negocioId: this.cambista.id })
 
-      this.renta.tags.forEach( tag => {
+      this.cambista.tags.forEach( tag => {
 
         this.tags += tag.tag + ", "
 
@@ -832,18 +832,18 @@ export default {
     GaleriaImagenes(){
 
       this.index = null
-      this.$router.push({ path: '/servicios/renta_autos/galeria?id='+this.renta.id })
+      this.$router.push({ path: '/servicios/cambistas/galeria?id='+this.cambista.id })
 
     },
 
     VerificarHora(){
 
-      if(this.renta && this.renta.abre && this.renta.cierra){
+      if(this.cambista && this.cambista.abre && this.cambista.cierra){
 
         var format = 'hh:mm:ss'
         var time = this.$moment(this.$moment(),format),
-          beforeTime = this.$moment(this.renta.abre, format),
-          afterTime = this.$moment(this.renta.cierra, format);
+          beforeTime = this.$moment(this.cambista.abre, format),
+          afterTime = this.$moment(this.cambista.cierra, format);
 
         if (time.isBetween(beforeTime, afterTime)) {
           return "Abierto"
@@ -860,9 +860,9 @@ export default {
 
     FormatTelefono(){
 
-      if(this.renta.telefono){
+      if(this.cambista.telefono){
 
-        return this.renta.telefono.substring(0, 4) + " " + this.renta.telefono.substring(4)
+        return this.cambista.telefono.substring(0, 4) + " " + this.cambista.telefono.substring(4)
 
       }
 
@@ -870,7 +870,7 @@ export default {
 
     Regresar(){
 
-      this.$router.push({ path: '/servicios/renta_autos' })
+      this.$router.push({ path: '/servicios/cambistas' })
 
     }
 

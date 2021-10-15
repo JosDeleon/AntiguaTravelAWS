@@ -164,22 +164,22 @@
 
         <v-row>
 
-          <v-col cols="6" class="mt-12" v-if="restaurantes.listado && restaurantes.listado.length === 0">
+          <v-col cols="6" class="mt-12" v-if="cambistas.listado && cambistas.listado.length === 0">
             <v-alert
               border="left"
               colored-border
               type="warning"
               elevation="2"
             >
-              Lo sentimos, aún no hay restaurantes disponibles para mostrar.
+              Lo sentimos, aún no hay cambistas disponibles para mostrar.
             </v-alert>
           </v-col>
 
           <v-col cols="12"
-                 lg="6"
+                 lg="4"
                  md="6"
                  sm="6"
-                 v-for="(restaurante, i) in restaurantes.listado"
+                 v-for="(cambista, i) in cambistas.listado"
                  :key="i"
           >
 
@@ -192,20 +192,19 @@
               outlined
             >
               <v-img
-                height="200"
-                contain
-                :src="restaurante.img ? restaurante.img : '/imagen-no-disponible.png'"
-              />
+                max-height="300"
+                :src="cambista.img ? cambista.img : '/imagen-no-disponible.png'"
+              ></v-img>
 
               <v-card-title>
-                <h4 class="mr-2">
-                  {{ restaurante.nombre }}
+                <h4>
+                  {{ cambista.nombre }}
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
+                    {{ VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -214,8 +213,8 @@
                         Horarios
                       </v-chip>
                     </template>
-                    <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                    <span> Todos los días de {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
                   </v-tooltip>
 
                 </h6>
@@ -240,11 +239,11 @@
                 </v-row>
 
                 <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(restaurante.tags)}}
+                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(cambista.tags)}}
                 </div>
 
-                <div>{{ restaurante.descripcion ? restaurante.descripcion :
-                  "Este restaurante no cuenta con una descripción" }}</div>
+                <div>{{ cambista.descripcion ? cambista.descripcion :
+                  "Este cambista turístico no cuenta con una descripción" }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -254,7 +253,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click="InformacionProducto(restaurante)"
+                  @click="InformacionProducto(cambista)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -265,7 +264,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click="EnviarMensaje(restaurante)"
+                  @click="EnviarMensaje(cambista)"
                 >
                   <v-icon left color="primary darken-2">
                     fa fa-paper-plane
@@ -426,90 +425,64 @@
 
 <script>
 
-import * as Axios from "axios";
+  import * as Axios from "axios";
 
-export default {
+  export default {
 
-  mounted() {
-    this.ObtenerRestaurantes()
-    this.ObtenerAuth()
-  },
-
-  data(){
-    return{
-      dialogos: {
-        mapa: false
-      },
-      helpers: {
-        nonce: 1,
-        mapSearch: null,
-        busqueda: null
-      },
-      restaurantes: {
-        listado: []
-      },
-      filtros: [
-        { texto: 'Hora Planeada', icono: 'fa fa-clock' },
-        { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
-        { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
-      ],
-      auth: {},
-      range: [1,1000],
-      markers: [],
-      places: [],
-      currentPlace: null,
-      marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
-      center: { lat: 14.55706946331603, lng: -90.73366553217345 },
-      mapOptions: {
-        disableDefaultUI: true,
-      }
-    }
-  },
-
-  methods: {
-
-    async ObtenerRestaurantes(){
-
-      await this.$api.post("/negocios/categoria", { categoria: "R" }).then( data => {
-
-        this.restaurantes.listado = data
-        let cont = 0
-        this.restaurantes.listado.forEach( restaurante => {
-
-          restaurante.showCardTags = false
-          restaurante.tags = ["Comida rápida"]
-          cont++
-
-        } )
-
-      } )
-
+    mounted() {
+      this.ObtenerCambistas()
+      this.ObtenerAuth()
     },
 
-    async ObtenerAuth(){
-      this.auth = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    data(){
+      return{
+        dialogos: {
+          mapa: false
+        },
+        helpers: {
+          nonce: 1,
+          mapSearch: null,
+          busqueda: null
+        },
+        cambistas: {
+          listado: []
+        },
+        filtros: [
+          { texto: 'Hora Planeada', icono: 'fa fa-clock' },
+          { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
+          { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
+        ],
+        range: [1,1000],
+        markers: [],
+        places: [],
+        currentPlace: null,
+        marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
+        center: { lat: 14.55706946331603, lng: -90.73366553217345 },
+        mapOptions: {
+          disableDefaultUI: true,
+        },
+        auth: {}
+      }
     },
 
-    async EnviarMensaje(restaurante){
+    methods: {
 
-      let login = true
+      async EnviarMensaje(cambista){
 
-      if(!JSON.parse(sessionStorage.getItem('usuario'))){
-        this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
-          "Contacto Fallido")
-        login = false
-        return
-      }
+        let login = true
 
-      let negocioFound = {}
-      negocioFound.id = 0
+        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+          this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
+            "Contacto Fallido")
+          login = false
+          return
+        }
 
-      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
-        negocioFound = this.$store.state.negocios.find( n => n.id === restaurante.id );
-      }
+        let negocioFound = {id: 0}
 
-      try {
+        if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+          negocioFound = this.$store.state.negocios.find( n => n.id === cambista.id );
+        }
 
         if(login){
 
@@ -518,13 +491,13 @@ export default {
               "Contacto Fallido")
           }
           else{
-            await this.$api.post("/usuario/info", { id: restaurante.usuarioId })
+            await this.$api.post("/usuario/info", { id: cambista.usuarioId })
               .then(async data => {
                 let encargado = data
                 try {
 
                   const chatsRef = this.$fire.database.ref(
-                    'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+restaurante.id
+                    'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+cambista.id
                   )
 
                   Axios.get(chatsRef.toString() + '.json').then(async response => {
@@ -533,7 +506,7 @@ export default {
                       let chat = {
                         usuario: "id"+this.auth.id,
                         negocio: "id"+encargado.id,
-                        key_negocio: 'idNegocio'+restaurante.id,
+                        key_negocio: 'idNegocio'+cambista.id,
                         ultimoMensaje: ''
                       }
 
@@ -562,121 +535,139 @@ export default {
 
         }
 
-      }
-      catch(e){
-        console.error(e)
-      }
+      },
 
-    },
+      async ObtenerAuth(){
+        this.auth = await this.$api.post("/usuario/info",
+          { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+      },
 
-    InformacionProducto(restaurante){
+      async ObtenerCambistas(){
 
-      this.$router.push({ path: '/servicios/restaurantes/'+restaurante.id })
+        await this.$api.post("/negocios/categoria", { categoria: "C" }).then( data => {
 
-    },
+          this.cambistas.listado = data
+          let cont = 0
+          this.cambistas.listado.forEach( destino => {
 
-    VerificarHora(abre, cierra){
+            destino.showCardTags = false
+            destino.tags = ["Al aire libre"]
+            cont++
 
-      var format = 'hh:mm:ss'
-      var time = this.$moment(this.$moment(),format),
-        beforeTime = this.$moment(abre, format),
-        afterTime = this.$moment(cierra, format);
+          } )
 
-      if (time.isBetween(beforeTime, afterTime)) {
-        return "Abierto"
+        } )
 
-      } else {
+      },
 
-        return "Cerrado"
+      InformacionProducto(cambista){
 
-      }
+        this.$router.push({ path: '/servicios/cambistas/'+cambista.id })
 
-    },
+      },
 
-    MostrarDialogoMapa(){
-      this.dialogos.mapa = true
-    },
+      VerificarHora(abre, cierra){
 
-    CerrarDialogoMapa(){
-      this.dialogos.mapa = false
-    },
+        var format = 'hh:mm:ss'
+        var time = this.$moment(this.$moment(),format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
 
-    StringTags(tags){
+        if (time.isBetween(beforeTime, afterTime)) {
+          return "Abierto"
 
-      let tagg = ""
+        } else {
 
-      let count = 1
+          return "Cerrado"
 
-      tags.forEach(tag => {
-
-        if(count === tags.length){
-          tagg += tag;
-        }
-        else{
-          tagg = tagg + tag + ', '
-          count++;
         }
 
-      })
+      },
 
-      return tagg
+      MostrarDialogoMapa(){
+        this.dialogos.mapa = true
+      },
 
-    },
+      CerrarDialogoMapa(){
+        this.dialogos.mapa = false
+      },
 
-    setPlace(place) {
-      this.currentPlace = place;
-      if (this.currentPlace) {
-        const marker = {
-          lat: this.currentPlace.geometry.location.lat(),
-          lng: this.currentPlace.geometry.location.lng()
-        };
-        this.markers.push({ position: marker });
-        this.places.push(this.currentPlace);
-        this.marker.position = marker;
-        this.currentPlace = null;
-        this.panToMarker()
+      StringTags(tags){
+
+        let tagg = ""
+
+        let count = 1
+
+        tags.forEach(tag => {
+
+          if(count === tags.length){
+            tagg += tag;
+          }
+          else{
+            tagg = tagg + tag + ', '
+            count++;
+          }
+
+        })
+
+        return tagg
+
+      },
+
+      setPlace(place) {
+        this.currentPlace = place;
+        if (this.currentPlace) {
+          const marker = {
+            lat: this.currentPlace.geometry.location.lat(),
+            lng: this.currentPlace.geometry.location.lng()
+          };
+          this.markers.push({ position: marker });
+          this.places.push(this.currentPlace);
+          this.marker.position = marker;
+          this.currentPlace = null;
+          this.panToMarker()
+        }
+      },
+
+      //detects location from browser
+      geolocate() {
+        navigator.geolocation.getCurrentPosition((position) => {
+          this.marker.position = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          this.center.lat = position.coords.latitude
+          this.center.lng = position.coords.longitude
+
+          this.panToMarker();
+        });
+      },
+
+      //sets the position of marker when dragged
+      handleMarkerDrag(e) {
+        this.marker.position = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+      },
+
+      //Moves the map view port to marker
+      panToMarker() {
+        this.$refs.mapRef.panTo(this.marker.position);
+        try {
+          this.$refs.mapRef.setZoom(18);
+        }
+        catch (e) {
+
+        }
+      },
+
+      //Moves the marker to click position on the map
+      handleMapClick(e) {
+        this.marker.position = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        console.log(e);
       }
-    },
 
-    //detects location from browser
-    geolocate() {
-      navigator.geolocation.getCurrentPosition((position) => {
-        this.marker.position = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-
-        this.center.lat = position.coords.latitude
-        this.center.lng = position.coords.longitude
-
-        this.panToMarker();
-      });
-    },
-
-    //sets the position of marker when dragged
-    handleMarkerDrag(e) {
-      this.marker.position = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-    },
-
-    //Moves the map view port to marker
-    panToMarker() {
-      this.$refs.mapRef.panTo(this.marker.position);
-      try {
-        this.$refs.mapRef.setZoom(18);
-      }
-      catch (e) {
-
-      }
-    },
-
-    //Moves the marker to click position on the map
-    handleMapClick(e) {
-      this.marker.position = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      console.log(e);
     }
 
   }
-
-}
 
 </script>

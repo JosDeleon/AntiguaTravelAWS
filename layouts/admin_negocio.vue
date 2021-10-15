@@ -24,7 +24,7 @@
             </v-list-item-title>
             <v-list-item-subtitle>
               <v-icon size="20" class="mr-1"> fa fa-user-cog </v-icon>
-              Administrador de negocios
+              Administrar Cuenta
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -92,9 +92,24 @@
             v-bind="attrs"
             v-on="on"
             icon
-            @click="$router.push({path: '/'})"
+            @click="$router.push({path: '/negocios/dashboard'})"
           >
             <v-icon>fa fa-home</v-icon>
+          </v-btn>
+        </template>
+        <span>Regresar a Inicio</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            dark
+            v-bind="attrs"
+            v-on="on"
+            icon
+            @click="$router.push({path: '/'})"
+          >
+            <v-icon>fa fa-globe</v-icon>
           </v-btn>
         </template>
         <span>Regresar al sitio</span>
@@ -179,6 +194,12 @@ export default {
           icon: 'fa fa-cubes',
           title: 'Productos y Servicios',
           to: '/negocios/productos_servicios'
+        },
+        {
+          no: 5,
+          icon: 'fa fa-calendar-week',
+          title: 'Reservaciones',
+          to: '/negocios/reservaciones'
         },
       ],
       miniVariant: false,

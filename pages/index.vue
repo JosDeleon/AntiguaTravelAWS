@@ -10,7 +10,7 @@
 
           <v-img
             height="250"
-            src="https://www.teahub.io/photos/full/161-1616360_santa-catalina-arch-antigua-agua-volcano-guatemala-santa.jpg"
+            src="/banner-principal.jpg"
             style="border-radius:10px;"
           >
 
@@ -112,7 +112,7 @@
           >
             <v-img
               max-height="300"
-              :src="`https://cdn.vuetifyjs.com/images/lists/${i+1}.jpg`"
+              :src="sitio.img ? sitio.img : '/imagen-no-disponible.png'"
             />
 
             <v-card-title>
@@ -178,7 +178,142 @@
               <v-btn
                 color="black"
                 outlined
-                @click=""
+                @click="IrInformacionNegocio('T', sitio.id)"
+              >
+                <v-icon left color="secondary">
+                  fa fa-compass
+                </v-icon>
+                Explorar
+              </v-btn>
+
+            </v-card-actions>
+
+          </v-card>
+
+        </v-col>
+
+      </v-row>
+
+      <v-row class="mt-5">
+
+        <v-col cols="12" v-if="negocios.listado.cambistas && negocios.listado.cambistas.length > 0">
+
+          <h2 class="mb-5 black--text">
+            Cambia tu dinero con los mejores cambistas de la Antigua
+          </h2>
+
+        </v-col>
+
+        <v-col cols="12"
+               lg="4"
+               md="6"
+               v-for="(cambista, i) in negocios.listado.cambistas"
+               :key="i"
+               v-if="i < 4"
+        >
+
+          <v-card
+            style="border-radius:10px;"
+            class="mx-auto my-4"
+            max-width="400"
+            min-width="400"
+            elevation="0"
+            outlined
+          >
+            <v-img
+              height="200"
+              :src="cambista.img ? cambista.img : '/imagen-no-disponible.png'"
+            >
+
+              <template v-slot:placeholder>
+                <v-sheet>
+                  <v-skeleton-loader type="card" />
+                </v-sheet>
+              </template>
+
+            </v-img>
+
+            <v-card-title>
+              <h4>
+                {{ cambista.nombre }}
+              </h4>
+              <v-spacer/>
+              <h6>
+              <span :class="VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ?
+              'red--text' : 'green--text'">
+                {{ VerificarHora(cambista.abre, cambista.cierra) }}
+              </span> -
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
+                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                      Horarios
+                    </v-chip>
+                  </template>
+                  <span> Todos los días de {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                </v-tooltip>
+
+              </h6>
+            </v-card-title>
+
+            <v-card-text>
+
+              <div v-if="!loading.restaurantes">
+
+                <v-row
+                  align="center"
+                  class="mx-0"
+                >
+                  <v-rating
+                    :value="4.5"
+                    color="secondary"
+                    dense
+                    half-increments
+                    hover
+                  />
+
+                  <div class="grey--text ms-4">
+                    4.5 (413 valoraciones)
+                  </div>
+                </v-row>
+
+                <div class="mt-5">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                  {{ CalcularDistancia(cambista.lng, cambista.lat) }} km
+            </span> de ti
+                </div>
+
+                <div class="mt-2">
+                  {{ cambista.descripcion }}
+                </div>
+
+              </div>
+
+              <v-sheet
+                :color="`grey ${theme.isDark ? 'darken-2' : 'lighten-4'}`"
+                class="pa-3"
+                v-else
+              >
+                <v-skeleton-loader
+                  class="mx-auto"
+                  type="card"
+                />
+              </v-sheet>
+
+            </v-card-text>
+
+            <v-divider class="my-4"/>
+
+            <v-card-actions>
+
+              <v-btn
+                color="black"
+                outlined
+                @click="IrInformacionNegocio('C', cambista.id)"
               >
                 <v-icon left color="secondary">
                   fa fa-compass
@@ -202,7 +337,7 @@
 
             <v-img
               height="500"
-              src="https://martsam.com/wp-content/uploads/2020/06/bannerant.jpg"
+              src="/banner-negocios.jpg"
               style="border-radius:10px;"
               gradient="to top right, rgba(100,115,201,.33), rgba(25,32,72,.7)"
             >
@@ -276,7 +411,8 @@
           >
             <v-img
               height="200"
-              :src="`https://picsum.photos/500/300?image=${i + 10}`"
+              contain
+              :src="hotel.img ? hotel.img : '/imagen-no-disponible.png'"
             />
 
             <v-card-title>
@@ -342,7 +478,7 @@
               <v-btn
                 color="black"
                 outlined
-                @click=""
+                @click="IrInformacionNegocio('H', hotel.id)"
               >
                 <v-icon left color="secondary">
                   fa fa-compass
@@ -371,7 +507,7 @@
         <v-col cols="12"
                lg="4"
                md="6"
-               v-for="(retaurante, i) in negocios.listado.restaurantes"
+               v-for="(restaurante, i) in negocios.listado.restaurantes"
                :key="i"
                v-if="i < 4"
         >
@@ -386,7 +522,8 @@
           >
             <v-img
               height="200"
-              :src="`https://picsum.photos/500/300?image=${i + 10}`"
+              contain
+              :src="restaurante.img ? restaurante.img : '/imagen-no-disponible.png'"
             >
 
               <template v-slot:placeholder>
@@ -399,13 +536,13 @@
 
             <v-card-title>
               <h4>
-                {{ retaurante.nombre }}
+                {{ restaurante.nombre }}
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(retaurante.abre, retaurante.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(retaurante.abre, retaurante.cierra) }}
+                {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
               </span> -
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
@@ -414,8 +551,8 @@
                       Horarios
                     </v-chip>
                   </template>
-                  <span> Todos los días de {{ $moment(retaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(retaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                  <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
                 </v-tooltip>
 
               </h6>
@@ -447,12 +584,12 @@
                     fa fa-map-marker-alt
                   </v-icon>
                   Se encuentra a <span class="font-weight-bold">
-              {{ CalcularDistancia(retaurante.lng, retaurante.lat) }} km
+              {{ CalcularDistancia(restaurante.lng, restaurante.lat) }} km
             </span> de ti
                 </div>
 
                 <div class="mt-2">
-                  {{ retaurante.descripcion }}
+                  {{ restaurante.descripcion }}
                 </div>
 
               </div>
@@ -477,7 +614,7 @@
               <v-btn
                 color="black"
                 outlined
-                @click=""
+                @click="IrInformacionNegocio('R', restaurante.id)"
               >
                 <v-icon left color="secondary">
                   fa fa-compass
@@ -521,7 +658,8 @@
           >
             <v-img
               height="200"
-              :src="`https://picsum.photos/500/300?image=${i + 10}`"
+              contain
+              :src="renta.img ? renta.img : '/imagen-no-disponible.png'"
             >
 
               <template v-slot:placeholder>
@@ -582,12 +720,12 @@
                     fa fa-map-marker-alt
                   </v-icon>
                   Se encuentra a <span class="font-weight-bold">
-              {{ CalcularDistancia(retaurante.lng, retaurante.lat) }} km
+                {{ CalcularDistancia(renta.lng, renta.lat) }} km
             </span> de ti
                 </div>
 
                 <div class="mt-2">
-                  {{ retaurante.descripcion }}
+                  {{ renta.descripcion }}
                 </div>
 
               </div>
@@ -612,7 +750,7 @@
               <v-btn
                 color="black"
                 outlined
-                @click=""
+                @click="IrInformacionNegocio('RC', renta.id)"
               >
                 <v-icon left color="secondary">
                   fa fa-compass
@@ -675,7 +813,8 @@
             >
               <v-img
                 height="200"
-                :src="`https://picsum.photos/500/300?image=${i + 10}`"
+                contain
+                :src="sitio && sitio.img ? sitio.img : '/imagen-no-disponible.png'"
               />
 
               <v-card-title>
@@ -741,7 +880,120 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="IrInformacionNegocio('T', sitio.id)"
+                >
+                  <v-icon left color="secondary">
+                    fa fa-compass
+                  </v-icon>
+                  Explorar
+                </v-btn>
+
+              </v-card-actions>
+
+            </v-card>
+
+          </v-col>
+
+        </v-row>
+
+        <v-row class="mt-5" v-if="tags.buscadas.negocios.cambistas &&
+                                  tags.buscadas.negocios.cambistas.length > 0"
+        >
+
+          <v-col cols="12">
+
+            <h2 class="mb-5 black--text">
+              Encontramos los siguientes cambistas con tu busqueda
+            </h2>
+
+          </v-col>
+
+          <v-col cols="12"
+                 lg="4"
+                 md="6"
+                 v-for="(cambista, i) in tags.buscadas.negocios.cambistas"
+                 :key="i"
+                 v-if="i < 4"
+          >
+
+            <v-card
+              style="border-radius:10px;"
+              class="mx-auto my-4"
+              max-width="400"
+              min-width="400"
+              elevation="0"
+              outlined
+            >
+              <v-img
+                height="200"
+                contain
+                :src="cambista.img ? cambista.img : '/imagen-no-disponible.png'"
+              />
+
+              <v-card-title>
+                <h4>
+                  {{ cambista.nombre }}
+                </h4>
+                <v-spacer/>
+                <h6>
+                  <span :class="VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ?
+                  'red--text' : 'green--text'">
+                    {{ VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                  </span> -
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
+                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                        Horarios
+                      </v-chip>
+                    </template>
+                    <span> Todos los días de {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                  </v-tooltip>
+
+                </h6>
+              </v-card-title>
+
+              <v-card-text>
+                <v-row
+                  align="center"
+                  class="mx-0"
+                >
+                  <v-rating
+                    :value="4.5"
+                    color="secondary"
+                    dense
+                    half-increments
+                    hover
+                  />
+
+                  <div class="grey--text ms-4">
+                    4.5 (413 valoraciones)
+                  </div>
+                </v-row>
+
+                <div class="mt-5">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                  {{ CalcularDistancia(cambista.lng, cambista.lat) }} km
+            </span> de ti
+                </div>
+
+                <div class="mt-2">
+                  {{ cambista.descripcion }}
+                </div>
+              </v-card-text>
+
+              <v-divider class="my-4"/>
+
+              <v-card-actions>
+
+                <v-btn
+                  color="black"
+                  outlined
+                  @click="IrInformacionNegocio('C', cambista.id)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -787,7 +1039,8 @@
             >
               <v-img
                 height="200"
-                :src="`https://picsum.photos/500/300?image=${i + 10}`"
+                contain
+                :src="hotel.img ? hotel.img : '/imagen-no-disponible.png'"
               />
 
               <v-card-title>
@@ -853,7 +1106,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="IrInformacionNegocio('H', hotel.id)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -884,7 +1137,7 @@
           <v-col cols="12"
                  lg="4"
                  md="6"
-                 v-for="(retaurante, i) in tags.buscadas.negocios.restaurantes"
+                 v-for="(restaurante, i) in tags.buscadas.negocios.restaurantes"
                  :key="i"
                  v-if="i < 4"
           >
@@ -899,7 +1152,8 @@
             >
               <v-img
                 height="200"
-                :src="`https://picsum.photos/500/300?image=${i + 10}`"
+                contain
+                :src="restaurante.img ? restaurante.img : '/imagen-no-disponible.png'"
               >
 
                 <template v-slot:placeholder>
@@ -912,13 +1166,13 @@
 
               <v-card-title>
                 <h4>
-                  {{ retaurante.nombre }}
+                  {{ restaurante.nombre }}
                 </h4>
                 <v-spacer/>
                 <h6>
-              <span :class="VerificarHora(retaurante.abre, retaurante.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(retaurante.abre, retaurante.cierra) }}
+                {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
               </span> -
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -927,8 +1181,8 @@
                         Horarios
                       </v-chip>
                     </template>
-                    <span> Todos los días de {{ $moment(retaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(retaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
+                    <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
+                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
                   </v-tooltip>
 
                 </h6>
@@ -960,12 +1214,12 @@
                       fa fa-map-marker-alt
                     </v-icon>
                     Se encuentra a <span class="font-weight-bold">
-              {{ CalcularDistancia(retaurante.lng, retaurante.lat) }} km
+              {{ CalcularDistancia(restaurante.lng, restaurante.lat) }} km
             </span> de ti
                   </div>
 
                   <div class="mt-2">
-                    {{ retaurante.descripcion }}
+                    {{ restaurante.descripcion }}
                   </div>
 
                 </div>
@@ -990,7 +1244,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="IrInformacionNegocio('R', restaurante.id)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -1036,7 +1290,8 @@
             >
               <v-img
                 height="200"
-                :src="`https://picsum.photos/500/300?image=${i + 10}`"
+                contain
+                :src="alquiler.img ? alquiler.img : '/imagen-no-disponible.png'"
               />
 
               <v-card-title>
@@ -1102,7 +1357,7 @@
                 <v-btn
                   color="black"
                   outlined
-                  @click=""
+                  @click="IrInformacionNegocio('RC', alquiler.id)"
                 >
                   <v-icon left color="secondary">
                     fa fa-compass
@@ -1178,6 +1433,7 @@ export default {
             hoteles: [],
             alquilerAutos: [],
             destinosTuristicos: [],
+            cambistas: [],
             seleccionado: {}
           }
         }
@@ -1232,6 +1488,10 @@ export default {
                 case 'D' :
                   if(this.tags.buscadas.negocios.destinosTuristicos.indexOf(item) < 0)
                     this.tags.buscadas.negocios.destinosTuristicos.push(item);
+                  break;
+                case 'C' :
+                  if(this.tags.buscadas.negocios.cambistas.indexOf(item) < 0)
+                    this.tags.buscadas.negocios.cambistas.push(item);
                   break;
                 case 'RC' :
                   if(this.tags.buscadas.negocios.alquilerAutos.indexOf(item) < 0)
@@ -1324,6 +1584,26 @@ export default {
 
     IrRegistro(){
       this.$router.push({ path: '/negocios/registro' })
+    },
+
+    IrInformacionNegocio(categoria, id){
+
+      if(categoria === 'T'){
+        this.$router.push({ path: '/servicios/guias/'+id })
+      }
+      else if(categoria === 'R'){
+        this.$router.push({ path: '/servicios/restaurantes/'+id })
+      }
+      else if(categoria === 'H'){
+        this.$router.push({ path: '/servicios/hoteles/'+id })
+      }
+      else if(categoria === 'C'){
+        this.$router.push({ path: '/servicios/cambistas/'+id })
+      }
+      else{
+        this.$router.push({ path: '/servicios/renta_autos/'+id })
+      }
+
     },
 
     LimpiarBusqueda(){

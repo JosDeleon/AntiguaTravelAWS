@@ -1127,6 +1127,31 @@ export default {
 
     async ActualizarProducto(){
 
+      if(this.$refs.frmProducto.validate()){
+
+        let params = {
+
+          id: this.productos.seleccionado.id,
+          nombre: this.productos.seleccionado.nombre,
+          descripcion: this.productos.seleccionado.descripcion,
+          valor: this.productos.seleccionado.valor,
+          img: this.productos.seleccionado.img
+
+        }
+
+        await this.$api.put("/producto", params).then(data => {
+
+          this.ObtenerProductos()
+          this.CerrarDialogoProducto()
+          this.$alert.exito('El producto fue actualizado exitosamente', 'Producto Actualizado')
+
+        }).catch(data => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+        })
+
+      }
+
     },
 
     async EliminarProducto(producto){

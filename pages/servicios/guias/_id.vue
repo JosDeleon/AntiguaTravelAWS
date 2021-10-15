@@ -125,11 +125,12 @@
             <v-container fill-height v-if="i === 0">
 
               <v-layout justify-start align-end>
-
-              <span class="white--text" @click="GaleriaImagenes">
-                <v-icon color="white"> fa fa-images</v-icon>
-                Ver todas las imágenes ({{ images.length }})
-              </span>
+                <a style="text-decoration:none;">
+                  <span class="white--text" @click="GaleriaImagenes">
+                    <v-icon color="white"> fa fa-images</v-icon>
+                    Ver todas las imágenes ({{ images.length }})
+                  </span>
+                </a>
 
               </v-layout>
 
@@ -149,10 +150,12 @@
 
         <v-layout justify-start align-end>
 
-              <span class="white--text" @click="GaleriaImagenes">
+              <a style="text-decoration:none;">
+                <span class="white--text" @click="GaleriaImagenes">
                 <v-icon color="white"> fa fa-images</v-icon>
                 Ver todas las imágenes ({{ images.length }})
               </span>
+              </a>
 
         </v-layout>
 
@@ -329,7 +332,7 @@
                       </v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
-                      <v-list-item-title>Dirección: {{ guia.direccion }}</v-list-item-title>
+                      <v-list-item-title class="text-wrap">Dirección: {{ guia.direccion }}</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
 
