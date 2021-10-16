@@ -1,6 +1,5 @@
-const AWS  = require('aws-sdk')
-const SES = new AWS.SES()
-const webConfig = require('../config/webSite.config')
+const AWS = require('aws-sdk');
+const SES = new AWS.SES();
 const db = require('../models');
 const Reserva = db.reservacion;
 const Usuario = db.usuario
@@ -117,7 +116,7 @@ exports.solicitar = async (req, res) => {
                 }
 
                 try {
-                    await SES.sendEmail(params).promise();
+                    SES.sendEmail(params).promise();
                     return res.status(200).send({ message : 'Solicitud Enviada'});
                 } catch (error) {
                     return res.status(400).send({ message : error});
