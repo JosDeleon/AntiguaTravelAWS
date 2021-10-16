@@ -1473,6 +1473,7 @@ export default {
             this.tags.buscadas.negocios.hoteles = []
             this.tags.buscadas.negocios.alquilerAutos = []
             this.tags.buscadas.negocios.destinosTuristicos = []
+            this.tags.buscadas.negocios.cambistas = []
 
             data.forEach(item=>{
 
@@ -1615,6 +1616,7 @@ export default {
         this.tags.buscadas.negocios.restaurantes = []
         this.tags.buscadas.negocios.hoteles = []
         this.tags.buscadas.negocios.alquilerAutos = []
+        this.tags.buscadas.negocios.cambistas = []
         this.tags.buscadas.negocios.destinosTuristicos = []
         this.ObtenerTags()
         this.ObtenerNegocios()
