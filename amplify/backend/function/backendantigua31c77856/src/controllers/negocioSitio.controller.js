@@ -105,7 +105,7 @@ exports.insert = async (req, res) => {
         telefono : req.body.telefono,
         descripcion : req.body.descripcion,
         img : req.body.img,
-        aut : 'f',
+        aut : 'v',
         lat : req.body.coordenadas.latitud,
         lng : req.body.coordenadas.longitud,
         usuarioId : req.body.usuarioId
@@ -117,7 +117,7 @@ exports.insert = async (req, res) => {
 
         Tags.bulkCreate(insertTags)
         .then(() => {
-            Usuario.findOne({
+            /*Usuario.findOne({
                 where : {
                     id : req.body.usuarioId
                 }
@@ -157,6 +157,8 @@ exports.insert = async (req, res) => {
             .catch( err => {
                 res.status(500).send({ message : err.message })
             })
+            */
+            return res.status(200).send({ message : 'Negocio Registrado!!'});
         })
         .catch( err => {
             res.status(500).send({ message : err.message })    

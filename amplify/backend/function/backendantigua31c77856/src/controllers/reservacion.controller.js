@@ -1,5 +1,10 @@
+const AWS  = require('aws-sdk')
+const SES = new AWS.SES()
+const webConfig = require('../config/webSite.config')
 const db = require('../models');
 const Reserva = db.reservacion;
+const Usuario = db.usuario
+const Negocio = db.negocio
 const Op = db.Sequelize.Op;
 
 exports.insert = (req, res) => {
@@ -75,3 +80,58 @@ exports.deleteReservas = (req, res) => {
         res.status(500).send({ message : err.message});
     });
 };
+
+exports.solicitar = async (req, res) => {
+    await Usuario.findOne({
+        where : { id : req.body.usuarioId }
+    })
+    .then( (cliente) => {
+        Negocio.findOne({
+            where : { id : req.body.negocioId }
+        })
+        .then( (negocio) => {
+            Usuario.findOne({
+                where : { id : negocio.usuarioId }
+            }).then( (propietario) => {
+                const destino = propietario.correo
+
+                var params = {
+                    Destination : {
+                        ToAddresses : [
+                            destino,
+                        ]
+                    },
+                    Message : {
+                        Body : {
+                            Text : {
+                                Charset: "UTF-8",
+                                Data: `El cliente ${cliente.nombre} solicita la siguiente reservación: \n Cantidad de personas : ${req.body.cantidad} \n Fecha : ${req.body.fecha} \n Hora : ${req.body.hora} \n Observaciones del Cliente : ${req.body.observacion }\n Información de contacto del cliente: \n Telefono : ${cliente.telefono}\n Correo : ${cliente.correo}`
+                            }
+                        },
+                        Subject: {
+                            Charset: 'UTF-8',
+                            Data: 'Solicitud de Reservación'
+                        }
+                    },
+                    Source: 'antiguatravelservice@gmail.com',   
+                }
+
+                try {
+                    await SES.sendEmail(params).promise();
+                    return res.status(200).send({ message : 'Solicitud Enviada'});
+                } catch (error) {
+                    return res.status(400).send({ message : error});
+                }
+
+            }).catch( err => {
+                res.status(500).send({ message : err.message })
+            })
+        })
+        .catch( err => {
+            res.status(500).send({ message : err.message })
+        })
+    })
+    .catch( err => {
+        res.status(500).send({ message : err.message })
+    })
+}
