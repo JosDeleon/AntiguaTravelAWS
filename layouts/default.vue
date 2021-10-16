@@ -958,23 +958,13 @@ export default {
 
           this.helpers.loading = false
           this.CerrarDialogoLogin()
-          /*
-            Data que vas a recibir cuando se complete el login
-            {
-              id: 3,
-              username: 'JPinulito2',
-              correo: 'JPinulito2@correo.com',
-              accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywia…xNjd9.CjAeMfGTdFOjbnlwYvEcPiige1kQ36xgluE0Awg26pQ',
-              refreshToken: '7d3e2f72-5c4f-45cd-90eb-14e1aa1f7351'
-            }
-
-            Podes obetener esos datos lo podes hacer con JSON.parse(sessionStorage.getItem('usuario')).accessToken
-
-            A partir de aqui ya podes redirigir por un login correcto
-          */
         }
-      }).catch(data => {
-        this.$alert.error(data.message, 'Inicio de Sesión Fallido')
+        else{
+          this.$alert.error(data.message, 'Inicio de Sesión Fallido')
+          this.helpers.loading = false
+        }
+      }).catch(err => {
+        this.$alert.error(err.response.data.message, 'Inicio de Sesión Fallido')
         this.helpers.loading = false
       })
     }

@@ -579,7 +579,7 @@ export default {
         required: value => !!value || 'La contraseña es obligatoria',
         requiredVerify: value => !!value || 'Es obligatorio confirmar la contraseña',
         min: value => value && value.length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
-        verificarPassword: value => value === this.form.password || 'Las contraseñas no son iguales'
+        verificarPassword: value => value === this.form.nuevaPassword || 'Las contraseñas no son iguales'
       },
 
       ajustes: {
@@ -757,7 +757,31 @@ export default {
 
     },
 
-    ActualizarPassword(){
+    async ActualizarPassword(){
+
+      if(this.$refs.frmCambioPassword.validate()){
+
+        this.cargando = true
+
+        let params = {
+          id: this.auth.id,
+          password: md5(this.form.password) + '',
+          newPassword: md5(this.form.nuevaPassword) + ''
+        }
+
+        await this.$api.put("/usuario/password", params).then(data => {
+
+          this.cargando = false
+          this.form = {}
+          this.$refs.frmCambioPassword?.resetValidation()
+          this.$alert.exito("La contraseña fue actualizada exitosamente", "Contraseña Actualizada")
+
+        }).catch(({ data }) => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+        })
+
+      }
 
     },
 
