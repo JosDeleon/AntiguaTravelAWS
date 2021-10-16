@@ -16,14 +16,14 @@
             v-on="on"
             icon
             color="black"
-            @click="$router.push({path: '/'})"
+            @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
           >
             <v-icon color="black">
               fa fa-arrow-left
             </v-icon>
           </v-btn>
         </template>
-        <span>Regresar a Inicio</span>
+        <span>Regresar</span>
       </v-tooltip>
       <v-toolbar-title v-text="'Perfil de Usuario'" />
 
@@ -665,52 +665,94 @@ export default {
       this.$forceUpdate()
     },
 
-    ActualizarUsuario(){
+    async ActualizarUsuario() {
 
       this.cargando = true
 
-      if(this.auth.nuevaImagen){
+      if (this.auth.nuevaImagen) {
 
         const imagenRef = this.$fire.storage.ref(
-          'usuarios/'+JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
+          'usuarios/' + JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
         )
 
-        imagenRef.put(this.auth.archivo).then( response => {
+        imagenRef.put(this.auth.archivo).then(response => {
 
           response.ref.getDownloadURL().then(async (downloadURL) => {
 
             let params = {
+
+              id: this.auth.id,
               nombre: this.auth.nombre,
               telefono: this.auth.telefono,
               username: this.auth.username,
-              correo: this.auth.email,
+              correo: this.auth.correo,
               nacimiento: this.auth.nacimiento,
               genero: this.auth.genero.valor,
               img: downloadURL
 
             }
 
-            this.cargando = false
-            this.$router.push({path: '/'})
+            await this.$api.put("/usuario", params).then(data => {
+
+              const usersRef = this.$fire.database.ref('Users').child("id" + this.auth.id)
+
+              let user = {
+
+                username: this.auth.username,
+                image: downloadURL,
+                correo: this.auth.correo,
+                nombre: this.auth.nombre
+
+              }
+
+              usersRef.set(user)
+
+              this.cargando = false
+              this.$router.push({path: '/'})
+
+            })
 
           })
 
-        } )
+        })
 
-      }
+      } else {
 
-      else {
         let params = {
-        nombre: this.auth.nombre,
-        telefono: this.auth.telefono,
-        username: this.auth.username,
-        correo: this.auth.email,
-        nacimiento: this.auth.nacimiento,
-        genero: this.auth.genero.valor,
-        img: this.auth.img
 
-      }
-        this.cargando = false
+          id: this.auth.id,
+          nombre: this.auth.nombre,
+          telefono: this.auth.telefono,
+          username: this.auth.username,
+          correo: this.auth.correo,
+          nacimiento: this.auth.nacimiento,
+          genero: this.auth.genero.valor,
+          img: this.auth.img
+
+        }
+
+        this.cargando = true
+
+        await this.$api.put("/usuario", params).then(data => {
+
+          const usersRef = this.$fire.database.ref('Users').child("id" + this.auth.id)
+
+          let user = {
+
+            username: this.auth.username,
+            image: this.auth.img ? this.auth.img : '',
+            correo: this.auth.correo,
+            nombre: this.auth.nombre
+
+          }
+
+          usersRef.set(user)
+
+          this.cargando = false
+          this.$router.push({path: '/'})
+
+        })
+
       }
 
     },

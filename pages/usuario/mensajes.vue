@@ -107,6 +107,21 @@
       <v-app-bar-nav-icon color="secondary"
                           @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0"
       />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="secondary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+            icon
+            @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+          >
+            <v-icon color="secondary"> fa fa-arrow-left </v-icon>
+          </v-btn>
+        </template>
+        <span>Regresar</span>
+      </v-tooltip>
       <v-avatar size="50" v-if="chat_pool && chat_pool.length > 0">
         <v-img :src="negocios && chat_pool[seleccionado] &&
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
@@ -219,6 +234,7 @@
       </v-row>
     </v-layout>
 
+
   </v-container>
 
 </template>
@@ -272,7 +288,7 @@ export default {
 
       this.$store.commit('setUsuarioChatActual', this.chat_pool[this.seleccionado])
       this.mensajesRef = this.$fire.database.ref("chatMessages")
-        .child(this.$store.state.usuarioChatActual.idChat)
+        .child(this.$store.state.usuarioChatActual.chat)
       this.ObtenerMensajes()
 
     },
@@ -421,7 +437,7 @@ export default {
 
         if(this.chat_pool.length > 0){
           this.mensajesRef = this.$fire.database.ref("chatMessages")
-            .child(this.chat_pool[0].idChat)
+            .child(this.chat_pool[0].chat)
           this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
           this.$store.commit('setHideMessageField', false)
           this.ObtenerMensajes()

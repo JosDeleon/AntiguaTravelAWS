@@ -16,7 +16,7 @@
 
         <v-list-item link :to="'/usuario/cuenta'">
           <v-list-item-avatar>
-            <v-img src="https://cdn.vuetifyjs.com/images/lists/2.jpg"></v-img>
+            <v-img :src="usuario_autenticado.img ? usuario_autenticado.img : '/no-pf.png'" />
           </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title class="text-h6">
@@ -24,7 +24,7 @@
             </v-list-item-title>
             <v-list-item-subtitle>
               <v-icon size="20" class="mr-1"> fa fa-user-cog </v-icon>
-              Administrador de negocios
+              Administrar Cuenta
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -58,6 +58,7 @@
       </v-list>
 
     </v-navigation-drawer>
+
     <v-app-bar dark color="secondary" elevation="0"
                :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon large @click.stop="drawer = !drawer" />
@@ -91,9 +92,24 @@
             v-bind="attrs"
             v-on="on"
             icon
-            @click="$router.push({path: '/'})"
+            @click="$router.push({path: '/negocios/dashboard'})"
           >
             <v-icon>fa fa-home</v-icon>
+          </v-btn>
+        </template>
+        <span>Regresar a Inicio</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            dark
+            v-bind="attrs"
+            v-on="on"
+            icon
+            @click="$router.push({path: '/'})"
+          >
+            <v-icon>fa fa-globe</v-icon>
           </v-btn>
         </template>
         <span>Regresar al sitio</span>
@@ -136,6 +152,7 @@
     </v-footer>
 
   </v-app>
+
 </template>
 
 <script>
@@ -146,6 +163,7 @@ export default {
     this.ObtenerAuth()
 
   },
+
   data() {
     return {
       clipped: false,
@@ -167,9 +185,21 @@ export default {
         },
         {
           no: 3,
+          icon: 'fa fa-images',
+          title: 'Galeria de Imágenes',
+          to: '/negocios/galeria'
+        },
+        {
+          no: 4,
           icon: 'fa fa-cubes',
           title: 'Productos y Servicios',
           to: '/negocios/productos_servicios'
+        },
+        {
+          no: 5,
+          icon: 'fa fa-calendar-week',
+          title: 'Reservaciones',
+          to: '/negocios/reservaciones'
         },
       ],
       miniVariant: false,
@@ -183,6 +213,15 @@ export default {
 
       this.usuario_autenticado = await this.$api.post("/usuario/info",
         { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+
+      if(this.usuario_autenticado.id > 0){
+        this.$fire.storage.ref(
+          'usuarios/'+this.usuario_autenticado.id + "/foto-perfil"
+        ).getDownloadURL().then((url) => {
+          this.usuario_autenticado.img = url
+          this.$forceUpdate()
+        })
+      }
 
     },
 
@@ -199,6 +238,7 @@ export default {
         console.error(e.message)
       }
     }
+
   },
 }
 </script>

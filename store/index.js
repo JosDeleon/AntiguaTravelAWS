@@ -3,7 +3,8 @@ export const state = () => ({
   usuarioChatActual: {},
   negocios: [],
   hideMessageField: false,
-  rutaActual: ''
+  rutaActual: '',
+  galeriaAdminNegocios: []
 })
 
 export const mutations = {
@@ -22,4 +23,7 @@ export const mutations = {
   setRutaActual(state, value){
     state.rutaActual = value
   },
+  setGaleriaAdminNegocios(state, value){
+    state.galeriaAdminNegocios = value
+  }
 }

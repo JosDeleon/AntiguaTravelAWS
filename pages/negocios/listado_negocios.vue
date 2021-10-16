@@ -236,7 +236,7 @@
           v-model="negocios.tabla.pagina"
           :length="negocios.tabla.conteoPaginas"
           :total-visible="7"
-          color="secondary"
+          color="complementario"
           circle
         />
       </div>
@@ -273,6 +273,42 @@
                   Información del Negocio
                 </h3>
               </div>
+
+              <v-row justify="center" align="center" class="my-5">
+
+                <v-col cols="12" align="center">
+
+                  <v-avatar color="grey" :size="($vuetify.breakpoint.name === 'sm' ||
+                                               $vuetify.breakpoint.name === 'xs') ? 150 : 250"
+                  >
+
+                    <v-img :src="negocios.seleccionado.nuevaImagen ? negocios.seleccionado.nuevaImagen : negocios.seleccionado.img"
+                           v-if="negocios.seleccionado.img"
+                    />
+
+                    <v-img :src="negocios.seleccionado.nuevaImagen ? negocios.seleccionado.nuevaImagen : '/imagen-no-disponible.png' " v-else />
+
+                  </v-avatar>
+
+                </v-col>
+
+                <v-btn
+                  color="tertiary"
+                  @click="SeleccionarImagen"
+                >
+                  <v-icon left color="white">fas fa-image</v-icon>
+                  <div class="white--text">Cambiar Imagen</div>
+                </v-btn>
+
+                <input
+                  ref="uploader"
+                  class="d-none"
+                  type="file"
+                  accept="image/*"
+                  @change="onFileChanged"
+                />
+
+              </v-row>
 
               <v-text-field
                 outlined
@@ -497,11 +533,116 @@ export default {
 
     },
 
+    SeleccionarImagen() {
+      window.addEventListener('focus', () => {
+      }, { once: true })
+
+      this.$refs.uploader.click()
+    },
+
+    onFileChanged(e) {
+      this.negocios.seleccionado.nuevaImagen = URL.createObjectURL(e.target.files[0])
+      this.negocios.seleccionado.archivo = e.target.files[0]
+      this.$forceUpdate()
+    },
+
+
     async ActualizarNegocio(){
 
       if(this.$refs.frmNegocio.validate()){
 
+        let params = {
 
+          id: this.negocios.seleccionado.id,
+          nombre: this.negocios.seleccionado.nombre,
+          categoria: this.negocios.seleccionado.categoria,
+          direccion: this.negocios.seleccionado.direccion,
+          abre: this.negocios.seleccionado.abre,
+          cierra: this.negocios.seleccionado.cierra,
+          telefono: this.negocios.seleccionado.telefono,
+          descripcion: this.negocios.seleccionado.descripcion,
+          coordenadas: {
+            latitud: this.negocios.seleccionado.lat,
+            longitud: this.negocios.seleccionado.lng
+          }
+
+        }
+
+        if (this.negocios.seleccionado.nuevaImagen) {
+
+          const imagenRef = this.$fire.storage.ref(
+            'negocios/' + this.negocios.seleccionado.id + "/foto-perfil"
+          )
+
+          imagenRef.put(this.negocios.seleccionado.archivo).then(response => {
+
+            response.ref.getDownloadURL().then(async (downloadURL) => {
+
+              params.img = downloadURL
+
+              this.$api.put("/negocio", params).then(data => {
+
+                const negocioRef = this.$fire.database.ref('Negocios')
+                  .child("id"+JSON.parse(sessionStorage.getItem('usuario')).id)
+                .child("idNegocio"+this.negocios.seleccionado.id)
+
+                let negocio = {
+
+                  adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                  image: downloadURL,
+                  negocioId: this.negocios.seleccionado.id,
+                  nombreNegocio: this.negocios.seleccionado.nombre
+
+                }
+
+                negocioRef.set(negocio)
+
+                this.ObtenerNegocios()
+                this.$alert.exito("El negocio fue actualizado exitosamente", "Negocio Actualizado")
+                this.CerrarDialogoNegocio()
+
+              }).catch(data => {
+                console.error(data)
+                this.$alert.error('Ocurrió un error en el registro, vuelve a intentarlo', 'Error Interno')
+              })
+
+            })
+
+          })
+
+        }
+
+        else{
+
+          params.img = this.negocios.seleccionado.img
+
+          this.$api.put("/negocio", params).then(data => {
+
+            const negocioRef = this.$fire.database.ref('Negocios')
+              .child("id"+JSON.parse(sessionStorage.getItem('usuario')).id)
+              .child("idNegocio"+this.negocios.seleccionado.id)
+
+            let negocio = {
+
+              adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+              image: this.negocios.seleccionado.img ?? '',
+              negocioId: this.negocios.seleccionado.id,
+              nombreNegocio: this.negocios.seleccionado.nombre
+
+            }
+
+            negocioRef.set(negocio)
+
+            this.ObtenerNegocios()
+            this.$alert.exito("El negocio fue actualizado exitosamente", "Negocio Actualizado")
+            this.CerrarDialogoNegocio()
+
+          }).catch(data => {
+            console.error(data)
+            this.$alert.error('Ocurrió un error en el registro, vuelve a intentarlo', 'Error Interno')
+          })
+
+        }
 
       }
 

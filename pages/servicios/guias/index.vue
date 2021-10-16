@@ -4,7 +4,7 @@
 
     <v-row dense>
 
-      <v-col cols="12" lg="3" class="mt-12" >
+      <v-col cols="12" xl="3" lg="4" class="mt-12" >
 
         <v-card style="border-radius:10px;"
                 max-width="400"
@@ -160,7 +160,7 @@
 
       </v-col>
 
-      <v-col cols="12" lg="9">
+      <v-col cols="12" xl="9" lg="8">
 
         <v-row>
 
@@ -171,7 +171,7 @@
               type="warning"
               elevation="2"
             >
-              Lo sentimos, aún no hay destinos disponibles para mostrar.
+              Lo sentimos, aún no hay guías turísticos disponibles para mostrar.
             </v-alert>
           </v-col>
 
@@ -193,7 +193,7 @@
             >
               <v-img
                 max-height="300"
-                :src="destino.src"
+                :src="destino.img ? destino.img : '/imagen-no-disponible.png'"
               ></v-img>
 
               <v-card-title>
@@ -486,7 +486,7 @@ export default {
 
       if(login){
 
-        if(negocioFound.id > 0){
+        if(negocioFound && negocioFound.id > 0){
           this.$alert.warning("No puedes enviar mensajes a tu negocio",
             "Contacto Fallido")
         }
@@ -551,7 +551,6 @@ export default {
         this.destinos.listado.forEach( destino => {
 
           destino.showCardTags = false
-          destino.src = "https://cdn.vuetifyjs.com/images/lists/"+(cont+1)+".jpg"
           destino.tags = ["Al aire libre"]
           cont++
 

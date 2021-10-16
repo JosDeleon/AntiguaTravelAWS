@@ -26,6 +26,18 @@ export default ({ app, store, $axios }, inject) => {
         processRequest($axios.get(process.env.API + service, config),resolve,reject)
       })
     },
+    getWithData (service, data = {}){
+      store.commit('setLoading',true)
+      return new Promise((resolve, reject) => {
+        let config = {
+          data: data,
+          //withCredentials: true,
+          timeout: this.timeout
+        }
+
+        processRequest($axios.get(process.env.API + service, config),resolve,reject)
+      })
+    },
     post (service, params = {}, files = false){
       store.commit('setLoading',true)
       return new Promise((resolve, reject) => {
@@ -50,6 +62,7 @@ export default ({ app, store, $axios }, inject) => {
         let config = {
           //withCredentials: true,
           timeout: this.timeout,
+          data: params
         }
         processRequest($axios.put(process.env.API + service,params,config),resolve,reject)
       })

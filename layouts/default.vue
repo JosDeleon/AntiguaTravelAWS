@@ -8,7 +8,7 @@
       fixed
       app
       light
-      class="hidden-md-and-up"
+      class="hidden-lg-and-up"
       temporary
     >
       <v-list>
@@ -41,7 +41,7 @@
     >
 
       <v-btn icon rounded @click.stop="drawer = !drawer"
-             class="hidden-md-and-up mt-12"
+             class="hidden-lg-and-up mt-12"
       >
         <v-icon color="black">
           fa fa-bars
@@ -230,7 +230,7 @@
 
       <template v-slot:extension>
         <v-tabs
-          class="hidden-sm-and-down"
+          class="hidden-md-and-down"
           v-model="tabs"
           centered
           color="tertiary"
@@ -713,6 +713,12 @@ export default {
           title: 'Guías Turísticos',
           to: '/servicios/guias'
         },
+        {
+          no: 6,
+          icon: 'fa fa-comments-dollar',
+          title: 'Cambistas',
+          to: '/servicios/cambistas'
+        },
       ],
       title: 'Antigua Travel'
     }
@@ -744,7 +750,7 @@ export default {
               let neg = {
                 negocioId: negocio.id,
                 adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
-                image: '',
+                image: negocio.img ?? '',
                 nombreNegocio: negocio.nombre
               }
 
@@ -831,6 +837,12 @@ export default {
       else if(tipo === 'M'){
 
         this.$router.push({ path: '/usuario/mensajes' })
+
+      }
+
+      else if(tipo === 'R'){
+
+        this.$router.push({ path: '/usuario/reservaciones' })
 
       }
 
@@ -930,7 +942,7 @@ export default {
                 let user = {
 
                   username: data.username,
-                  image: '',
+                  image: data.img ?? '',
                   correo: data.correo,
                   nombre: data.nombre
 

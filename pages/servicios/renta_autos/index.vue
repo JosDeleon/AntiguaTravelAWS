@@ -4,7 +4,7 @@
 
     <v-row dense>
 
-      <v-col cols="12" lg="3" class="mt-12" >
+      <v-col cols="12" xl="3" lg="4" class="mt-12" >
 
         <v-card style="border-radius:10px;"
                 max-width="400"
@@ -160,7 +160,7 @@
 
       </v-col>
 
-      <v-col cols="12" lg="9">
+      <v-col cols="12" xl="9" lg="8">
 
         <v-row>
 
@@ -193,7 +193,8 @@
             >
               <v-img
                 height="200"
-                :src="renta.src"
+                contain
+                :src="renta.img ? renta.img : '/imagen-no-disponible.png'"
               ></v-img>
 
               <v-card-title>
@@ -242,7 +243,7 @@
                   <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(renta.tags)}}
                 </div>
 
-                <div>Small plates, salads & sandwiches - an intimate setting with 12 indoor seats plus patio seating.</div>
+                <div>{{ renta.descripcion }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -550,7 +551,6 @@ export default {
         this.rentas.listado.forEach( renta => {
 
           renta.showCardTags = false
-          renta.src = "https://picsum.photos/500/300?image="+(cont+35)
           renta.tags = ["Al aire libre"]
           cont++
 

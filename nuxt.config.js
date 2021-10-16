@@ -40,7 +40,8 @@ export default {
     { src: '~/plugins/alert.js', mode: 'client' },
     { src: '~/plugins/SearchMaps.js', mode: 'client' },
     { src: '~/plugins/maps.js', mode: 'client' },
-    { src: '~/plugins/moment.js', mode: 'client' }
+    { src: '~/plugins/moment.js', mode: 'client' },
+    { src: '~/plugins/VViewer.js', mode: 'client' },
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

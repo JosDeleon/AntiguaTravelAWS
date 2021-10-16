@@ -148,6 +148,22 @@
         }}
       </v-toolbar-title>
       <v-toolbar-title v-else v-text="'No hay mensajes para mostrar'" />
+      <v-spacer />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="secondary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+            icon
+            @click="$router.push({path: '/negocios/dashboard'})"
+          >
+            <v-icon color="secondary">fa fa-home</v-icon>
+          </v-btn>
+        </template>
+        <span>Regresar al Inicio</span>
+      </v-tooltip>
     </v-app-bar>
 
     <v-list-item-group>
@@ -283,7 +299,7 @@ export default {
 
       this.$store.commit('setUsuarioChatActual', this.chat_pool[this.seleccionado])
       this.mensajesRef = this.$fire.database.ref("chatMessages")
-        .child(this.$store.state.usuarioChatActual.idChat)
+        .child(this.$store.state.usuarioChatActual.chat)
       this.ObtenerMensajes()
 
     },
@@ -432,7 +448,7 @@ export default {
 
         if(this.chat_pool.length > 0){
           this.mensajesRef = this.$fire.database.ref("chatMessages")
-            .child(this.chat_pool[0].idChat)
+            .child(this.chat_pool[0].chat)
           this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
           this.$store.commit('setHideMessageField', false)
           this.ObtenerMensajes()
