@@ -28,9 +28,46 @@
 
               <h1 class="black--text hidden-sm-and-down" style="font-size: 24px;">
                 {{ renta.nombre }}
+
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="EnviarMensaje"
+                    >
+                      <v-icon color="primary darken-2">
+                        fa fa-paper-plane
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Contactar</span>
+                </v-tooltip>
+
               </h1>
               <h3 class="black--text hidden-md-and-up" style="font-size: 20px;">
                 {{ renta.nombre }}
+
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="EnviarMensaje"
+                    >
+                      <v-icon color="primary darken-2" small>
+                        fa fa-paper-plane
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Contactar</span>
+                </v-tooltip>
               </h3>
 
 
@@ -620,42 +657,16 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="dialogos.valoracion"
-              transition="fab-transition"
-              scrollable
-              persistent
-              max-width="550px"
-    >
-      <v-card>
-
-        <v-toolbar elevation="0" dense color="transparent">
-
-          <v-btn icon @click="CerrarDialogoValoracion">
-            <v-icon>fa fa-times</v-icon>
-          </v-btn>
-
-          <v-layout justify-center>
-            <h4> Escribe una reseña acerca de este guía </h4>
-          </v-layout>
-
-        </v-toolbar>
-
-        <v-card-text class="pa-4">
-
-
-
-        </v-card-text>
-
-      </v-card>
-
-    </v-dialog>
-
     <v-overlay :value="$store.state.loading">
       <v-progress-circular
         indeterminate
         size="64"
       ></v-progress-circular>
     </v-overlay>
+
+    <Valoracion v-model="dialogos.valoracion" :puntuacion.sync="valoracion.puntuacion"
+                :valoracion.sync="valoracion" :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
+    />
 
   </v-container>
 
@@ -664,15 +675,18 @@
 <script>
 
 import VueGallerySlideshow from 'vue-gallery-slideshow';
+import Valoracion from "@/components/renta_autos/Valoracion";
+import * as Axios from "axios";
 
 export default {
 
   mounted() {
     this.ObtenerRentaAuto()
+    this.ObtenerValoraciones()
     this.$refs.slideGroup.setWidths()
   },
 
-  components: { VueGallerySlideshow },
+  components: { VueGallerySlideshow, Valoracion },
 
   data() {
 
@@ -685,7 +699,9 @@ export default {
 
       },
 
-      valoracion: {},
+      valoracion: { puntuacion: 0 },
+
+      valoraciones: [],
 
       renta: {},
 
@@ -733,11 +749,96 @@ export default {
         disableDefaultUI: true,
       },
 
+      auth: {}
+
     }
 
   },
 
   methods: {
+
+    async ObtenerAuth(){
+      this.auth = await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    },
+
+    async EnviarMensaje(){
+
+      let login = true
+
+      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
+          "Contacto Fallido")
+        login = false
+        return
+      }
+
+      let negocioFound = {}
+      negocioFound.id = 0
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === this.renta.id );
+      }
+
+      try {
+
+        if(login){
+
+          if(negocioFound && negocioFound.id > 0){
+            this.$alert.warning("No puedes enviar mensajes a tu negocio",
+              "Contacto Fallido")
+          }
+          else{
+            await this.$api.post("/usuario/info", { id: this.renta.usuarioId })
+              .then(async data => {
+                let encargado = data
+                try {
+
+                  const chatsRef = this.$fire.database.ref(
+                    'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+ this.renta.id
+                  )
+
+                  Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                    if(!response.data){
+                      let chat = {
+                        usuario: "id"+this.auth.id,
+                        negocio: "id"+encargado.id,
+                        key_negocio: 'idNegocio'+this.renta.id,
+                        ultimoMensaje: ''
+                      }
+
+                      const userChatsRef = this.$fire.database.ref('userChats')
+                        .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                      const encargadoChatsRef = this.$fire.database.ref('userChats')
+                        .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                      await chatsRef.set(chat)
+
+                      await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                      await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+                    }
+
+                    this.$router.push({path: '/usuario/mensajes?id=' + this.renta.id })
+
+                  })
+
+                } catch (e) {
+                  console.error(e)
+                }
+              })
+          }
+
+        }
+
+      }
+      catch(e){
+        console.error(e)
+      }
+
+    },
 
     async ObtenerProductos(){
 
@@ -786,6 +887,16 @@ export default {
       })
 
       this.tags = this.tags.substring(0, this.tags.length-2)
+
+    },
+
+    async ObtenerValoraciones(){
+
+      let params = {
+        negocioId: +this.$route.params.id
+      }
+
+      this.valoraciones = this.$api.get("/valoraciones", params)
 
     },
 

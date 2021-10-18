@@ -2,50 +2,32 @@
 
   <v-container fluid>
 
-    <v-file-input
-      v-model="imagen"
-      color="black"
-      label="Imagen del Producto"
-      placeholder="Selecciona la imagen de tu producto"
-      prepend-icon="fa fa-file-image"
-      persistent-hint
-      hint="Opcional"
+    <v-btn icon @click="dialogo = true">
+      <v-icon>
+        {{ icono && icono !== '' ? icono : 'fa fa-info' }}
+      </v-icon>
+    </v-btn>
+
+    <v-text-field
       outlined
       dense
-      accept="image/*"
-      truncate-length="50"
-      show-size
-      counter
+      v-model="icono"
+      :rules="[ v => v && v.length > 0 || 'El icono es obligatorio' ]"
+      label="Icono"
+      color="black"
+      prepend-icon="fa fa-icons"
+      @click="dialogo = true"
     >
-      <template v-slot:selection="{ index, text }">
-        <v-chip
-          v-if="index < 2"
-          color="secondary"
-          dark
-          label
-          small
-        >
-          {{ text }}
-        </v-chip>
 
-        <span
-          v-else-if="index === 2"
-          class="text-overline grey--text text--darken-3 mx-2"
-        >
-                  +{{ productos.seleccionado.imagen.length - 2 }} Archivo(s)
-                </span>
+      <template v-slot:append>
+
+        <v-icon>
+          {{ icono }}
+        </v-icon>
+
       </template>
 
-    </v-file-input>
-
-    <v-btn
-      color="black"
-      text
-      @click="Guardar"
-    >
-      <v-icon left>fa fa-check</v-icon>
-      Guardar
-    </v-btn>
+    </v-text-field>
 
   </v-container>
 
@@ -65,7 +47,8 @@ export default {
 
     return {
 
-      imagen: null
+      icono: '',
+      dialogo: false
 
     }
 
@@ -74,22 +57,6 @@ export default {
   layout: 'empty',
 
   methods: {
-
-    Guardar(){
-
-      const imagenRef = this.$fire.storage.ref('usuario/id1').child("foto_perfil")
-
-      imagenRef.put(this.imagen).then( response => {
-
-        response.ref.getDownloadURL().then((downloadURL) => {
-
-          console.log(downloadURL)
-
-        })
-
-      } )
-
-    }
 
   }
 

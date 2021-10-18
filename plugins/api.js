@@ -12,7 +12,7 @@ export default ({ app, store, $axios }, inject) => {
   }
 
   const api = {
-    timeout: 5000,
+    timeout: 10000,
     outboxing: false,
     get (service, params = {}, data = null){
       store.commit('setLoading',true)

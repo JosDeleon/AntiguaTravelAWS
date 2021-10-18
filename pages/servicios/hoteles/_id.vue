@@ -28,11 +28,44 @@
 
               <h1 class="black--text hidden-sm-and-down" style="font-size: 24px;">
                 {{ hotel.nombre }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="EnviarMensaje"
+                    >
+                      <v-icon color="primary darken-2">
+                        fa fa-paper-plane
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Contactar</span>
+                </v-tooltip>
               </h1>
               <h3 class="black--text hidden-md-and-up" style="font-size: 20px;">
                 {{ hotel.nombre }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="EnviarMensaje"
+                    >
+                      <v-icon color="primary darken-2" small>
+                        fa fa-paper-plane
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Contactar</span>
+                </v-tooltip>
               </h3>
-
 
             </v-list-item-title>
 
@@ -658,6 +691,10 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <Valoracion v-model="dialogos.valoracion" :puntuacion.sync="valoracion.puntuacion"
+                :valoracion.sync="valoracion" :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
+    />
+
   </v-container>
 
 </template>
@@ -665,15 +702,18 @@
 <script>
 
 import VueGallerySlideshow from 'vue-gallery-slideshow';
+import Valoracion from "@/components/hoteles/Valoracion";
+import * as Axios from "axios";
 
 export default {
 
   mounted() {
     this.ObtenerHotel()
+    this.ObtenerValoraciones()
     this.$refs.slideGroup.setWidths()
   },
 
-  components: { VueGallerySlideshow },
+  components: { VueGallerySlideshow, Valoracion },
 
   data() {
 
@@ -686,7 +726,9 @@ export default {
 
       },
 
-      valoracion: {},
+      valoracion: { puntuacion: 0 },
+
+      valoraciones: [],
 
       helpers: {
         nonce: 1,
@@ -732,12 +774,97 @@ export default {
         'https://placekitten.com/808/800',
         'https://placekitten.com/809/800',
         'https://placekitten.com/810/800'
-      ]
+      ],
+
+      auth: {}
 
     }
   },
 
   methods: {
+
+    async ObtenerAuth(){
+      this.auth = await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+    },
+
+    async EnviarMensaje(){
+
+      let login = true
+
+      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
+          "Contacto Fallido")
+        login = false
+        return
+      }
+
+      let negocioFound = {}
+      negocioFound.id = 0
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === this.hotel.id );
+      }
+
+      try {
+
+        if(login){
+
+          if(negocioFound && negocioFound.id > 0){
+            this.$alert.warning("No puedes enviar mensajes a tu negocio",
+              "Contacto Fallido")
+          }
+          else{
+            await this.$api.post("/usuario/info", { id: this.hotel.usuarioId })
+              .then(async data => {
+                let encargado = data
+                try {
+
+                  const chatsRef = this.$fire.database.ref(
+                    'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+ this.hotel.id
+                  )
+
+                  Axios.get(chatsRef.toString() + '.json').then(async response => {
+
+                    if(!response.data){
+                      let chat = {
+                        usuario: "id"+this.auth.id,
+                        negocio: "id"+encargado.id,
+                        key_negocio: 'idNegocio'+this.hotel.id,
+                        ultimoMensaje: ''
+                      }
+
+                      const userChatsRef = this.$fire.database.ref('userChats')
+                        .child("id"+this.auth.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                      const encargadoChatsRef = this.$fire.database.ref('userChats')
+                        .child("id"+encargado.id).child("chat"+this.auth.id+"-"+encargado.id)
+
+                      await chatsRef.set(chat)
+
+                      await userChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+                      await encargadoChatsRef.set("chat"+this.auth.id+"-"+encargado.id)
+
+                    }
+
+                    this.$router.push({path: '/usuario/mensajes?id=' + this.hotel.id })
+
+                  })
+
+                } catch (e) {
+                  console.error(e)
+                }
+              })
+          }
+
+        }
+
+      }
+      catch(e){
+        console.error(e)
+      }
+
+    },
 
     async ObtenerProductos(){
 
@@ -786,6 +913,16 @@ export default {
       })
 
       this.tags = this.tags.substring(0, this.tags.length-2)
+
+    },
+
+    async ObtenerValoraciones(){
+
+      let params = {
+        negocioId: +this.$route.params.id
+      }
+
+      this.valoraciones = this.$api.get("/valoraciones", params)
 
     },
 

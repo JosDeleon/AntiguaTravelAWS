@@ -1,22 +1,30 @@
 <template>
 
-  <v-dialog v-model="iconDialog"
-            transition="dialog-bottom-transition"
-            scrollable
-            max-width="900px"
-            :retain-focus="false"
+  <v-dialog max-width="700" v-model="dialogo"
+            transition="fab-transition" persistent
   >
-    <v-card>
 
-      <v-toolbar elevation="0" dense color="secondary" dark class="text-secondary">
-        <h3>Selecciona un icono</h3>
-        <v-spacer></v-spacer>
+    <v-card style="border-radius:15px;" elevation="0" outlined class="pa-6">
+
+      <v-toolbar elevation="0" dense color="transparent" class="hidden-sm-and-down">
+        <v-spacer/>
+        <h2> Selecciona un icono </h2>
+        <v-spacer/>
+        <v-btn icon @click.stop="CerrarDialogo">
+          <v-icon>fa fa-times</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <v-toolbar elevation="0" dense color="transparent" class="hidden-md-and-up">
+        <v-spacer/>
+        <h4> Selecciona un icono </h4>
+        <v-spacer/>
         <v-btn icon @click="CerrarDialogo">
           <v-icon>fa fa-times</v-icon>
         </v-btn>
       </v-toolbar>
 
-      <v-card-text>
+      <v-card-text class="pa-4">
 
         <v-text-field
           outlined
@@ -26,38 +34,56 @@
           placeholder="Buscar icono"
           prepend-inner-icon="fa fa-search"
           color="black"
-          class="elevation-0 my-4"
+          class="elevation-0 my-5"
           v-model="busqueda"
         />
 
         <v-row>
+
           <v-col v-for="(icon, i) in FiltrarIconos"
                  :key="i"
                  cols="1">
 
-            <v-lazy
-              v-model="activa"
-              :options="{threshold: .5}"
-              min-height="40"
-              transition="fade-transition"
-            >
+            <v-tooltip bottom>
 
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon v-bind="attrs" v-on="on" @click="SeleccionarIcono(icon)">
-                    <v-icon color="black">
-                      {{ icon }}
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>{{ LimpiarTextoIcono(icon) }}</span>
-              </v-tooltip>
+              <template v-slot:activator="{ on, attrs }">
 
-            </v-lazy>
+                <v-icon v-bind="attrs" v-on="on" color="secondary"
+                        @click="SeleccionarIcono(icon)">
+                  {{ icon }}
+                </v-icon>
+
+              </template>
+
+              <span>{{ LimpiarTextoIcono(icon) }}</span>
+
+            </v-tooltip>
+
           </v-col>
+
         </v-row>
+
       </v-card-text>
+
+      <v-layout justify-center>
+
+        <v-card-actions>
+
+          <v-btn color="primary" light block class="mt-2"
+                 style="border-radius:7px;" elevation="0"
+                 x-large @click="paginaActual += 1"
+          >
+            <div class="black--text" style="font-size: 15px;">
+              Cargar Más...
+            </div>
+          </v-btn>
+
+        </v-card-actions>
+
+      </v-layout>
+
     </v-card>
+
   </v-dialog>
 
 </template>
@@ -67,12 +93,15 @@
 export default {
 
   props: {
-    value: Boolean,
-    icono: String
+
+    value: String,
+    dialogo: Boolean
+
   },
+
   computed: {
 
-    iconDialog: {
+    icono: {
       get () {
         return this.value
       },
@@ -89,23 +118,42 @@ export default {
         return 0;
       }
 
-      let iconos = this.icons.filter((icono) => {
-        return (
-          icono.indexOf(this.busqueda.toLowerCase()) !== -1
-        );
-      });
+      let iconosPaginados = this.icons.slice(0, this.paginaActual * 24)
+
+      let iconos = []
+
+      if(this.busqueda && this.busqueda.trim() !== ''){
+        iconos = this.icons.filter((icono) => {
+          return (
+            icono.indexOf(this.busqueda.toLowerCase()) !== -1
+          );
+        });
+      }
+      else{
+        iconos = iconosPaginados.filter((icono) => {
+          return (
+            icono.indexOf(this.busqueda.toLowerCase()) !== -1
+          );
+        });
+      }
 
       iconos.sort(compare);
 
       return iconos;
     }
+
   },
 
-  data(){
-    return{
-      childIcon: this.icono,
+  data() {
+
+    return {
+
+      paginaActual: 1,
+
       busqueda: '',
+
       activa: false,
+
       icons: ["fas fa-address-book","fas fa-address-card","fas fa-adjust",
         "fas fa-air-freshener","fas fa-align-center","fas fa-align-justify","fas fa-align-left",
         "fas fa-align-right","fas fa-allergies","fas fa-ambulance",
@@ -174,23 +222,12 @@ export default {
         "fas fa-window-minimize","fas fa-window-restore","fas fa-wine-bottle","fas fa-wine-glass",
         "fas fa-wine-glass-alt","fas fa-won-sign","fas fa-wrench","fas fa-x-ray","fas fa-yen-sign","fas fa-yin-yang"
       ]
+
     }
+
   },
 
   methods: {
-
-    SeleccionarIcono(icon){
-      this.childIcon = icon
-      this.$emit('update:icono', this.childIcon)
-      this.CerrarDialogo()
-    },
-
-    CerrarDialogo(){
-
-      this.iconDialog = !this.iconDialog
-      this.$forceUpdate()
-
-    },
 
     LimpiarTextoIcono(icono){
       icono = icono.replace("fa", "")
@@ -200,6 +237,20 @@ export default {
       icono = icono.replace("sfa", "")
       icono = icono.replace("-", " ")
       return icono
+    },
+
+    SeleccionarIcono(seleccionado){
+
+      this.icono = seleccionado
+      this.CerrarDialogo()
+
+    },
+
+    CerrarDialogo(){
+
+      this.$emit('cerrar')
+      this.$forceUpdate()
+
     }
 
   }

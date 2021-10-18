@@ -486,18 +486,18 @@ export default {
 
       if(login){
 
-        if(negocioFound.id > 0){
+        if(negocioFound && negocioFound.id > 0){
           this.$alert.warning("No puedes enviar mensajes a tu negocio",
             "Contacto Fallido")
         }
         else{
-          await this.$api.post("/usuario/info", { id: hotel.usuarioId })
+          await this.$api.post("/usuario/info", { id: renta.usuarioId })
             .then(async data => {
               let encargado = data
               try {
 
                 const chatsRef = this.$fire.database.ref(
-                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+hotel.id
+                  'Chats/'+'chat' + this.auth.id+"-"+encargado.id + '/'+'idNegocio'+renta.id
                 )
 
                 Axios.get(chatsRef.toString() + '.json').then(async response => {
@@ -506,7 +506,7 @@ export default {
                     let chat = {
                       usuario: "id"+this.auth.id,
                       negocio: "id"+encargado.id,
-                      key_negocio: 'idNegocio'+hotel.id,
+                      key_negocio: 'idNegocio'+renta.id,
                       ultimoMensaje: ''
                     }
 
@@ -523,7 +523,7 @@ export default {
 
                   }
 
-                  this.$router.push({path: '/usuario/mensajes'})
+                  this.$router.push({path: '/usuario/mensajes?id=' + renta.id })
 
                 })
 

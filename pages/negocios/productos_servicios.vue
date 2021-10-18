@@ -198,7 +198,8 @@
             size="80"
             tile
           >
-            <v-img v-if="item.img" :src="item.img" style="border-radius:10px;" />
+            <v-img v-if="item.img" :lazy-src="item.img"
+                   :src="item.img" style="border-radius:10px;" />
             <v-img v-else :src="'/imagen-no-disponible.png'"></v-img>
           </v-avatar>
 
@@ -345,13 +346,13 @@
               transition="dialog-bottom-transition"
               scrollable
               persistent
-              max-width="900px"
+              max-width="1000px"
     >
 
       <v-card>
 
         <v-toolbar elevation="0" dense color="transparent">
-          <h3> {{ productos.seleccionado.idProductoServicio > 0 ? 'Editar' : 'Nuevo' }} Producto </h3>
+          <h3> {{ productos.seleccionado.id > 0 ? 'Editar' : 'Nuevo' }} Producto </h3>
           <v-spacer></v-spacer>
           <v-btn icon @click="CerrarDialogoProducto">
             <v-icon>fa fa-times</v-icon>
@@ -476,9 +477,15 @@
               :key="i"
               v-if="!productos.seleccionado.id > 0"
             >
-              <IconPicker v-model="caracteristica.dialogo" :icono.sync="caracteristica.icono" />
+
+
+
+              <IconPicker v-model="caracteristica.icono" :dialogo.sync="caracteristica.dialogo"
+                          @cerrar="CerrarIconPicker(caracteristica)"
+              />
+
               <v-row>
-                <v-col cols="12" lg="4" md="4" sm="4">
+                <v-col cols="12" xl="4" lg="4">
                   <v-text-field
                     outlined
                     dense
@@ -489,7 +496,7 @@
                     prepend-icon="fa fa-heading"
                   />
                 </v-col>
-                <v-col cols="12" lg="4" md="4" sm="4">
+                <v-col cols="12" xl="4" lg="4">
                   <v-text-field
                     outlined
                     dense
@@ -500,13 +507,27 @@
                     prepend-icon="fa fa-code-branch"
                   />
                 </v-col>
-                <v-col cols="12" lg="3" md="3" sm="3">
-                  <v-btn color="black" outlined class="mt-1" @click="caracteristica.dialogo = true">
-                    {{ caracteristica.icono == "" ? 'Seleccionar' : ''}} Icono
-                    <v-icon color="black" right>
-                      {{ caracteristica.icono }}
-                    </v-icon>
-                  </v-btn>
+                <v-col cols="12" xl="3" lg="3">
+                  <v-text-field
+                    outlined
+                    dense
+                    v-model="caracteristica.icono"
+                    :rules="[ v => v && v.length > 0 || 'El icono es obligatorio' ]"
+                    label="Icono"
+                    color="black"
+                    prepend-icon="fa fa-icons"
+                    @click="caracteristica.dialogo = true"
+                  >
+
+                    <template v-slot:append>
+
+                      <v-icon>
+                        {{ caracteristica.icono }}
+                      </v-icon>
+
+                    </template>
+
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" lg="1" md="1" sm="1">
 
@@ -528,7 +549,9 @@
 
                 </v-col>
               </v-row>
+
               <v-divider class="mb-5" />
+
             </div>
 
             <div v-if="!productos.seleccionado.id > 0">
@@ -564,10 +587,10 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="warning"
+            color="black"
             text
             @click="ActualizarProducto"
-            v-if="productos.seleccionado.productoID > 0"
+            v-if="productos.seleccionado.id > 0"
           >
             <v-icon left>fa fa-check</v-icon>
             Actualizar
@@ -607,6 +630,7 @@
         <v-card-text class="pa-4">
 
           <v-img
+            :lazy-src="productos.seleccionado.nuevaImagen ? productos.seleccionado.nuevaImagen : '/imagen-no-disponible.png'"
             :src="productos.seleccionado.nuevaImagen ? productos.seleccionado.nuevaImagen : '/imagen-no-disponible.png'"
             style="border-radius:10px;"
           >
@@ -673,7 +697,7 @@
               max-width="1100"
     >
 
-      <v-card>
+      <v-card :loading="loadCard">
 
         <v-toolbar elevation="0" dense color="transparent">
           <h3> Listado de Características </h3>
@@ -730,7 +754,9 @@
                       ? productos.seleccionado.carac : []"
               :key="i"
             >
-              <IconPicker v-model="caracteristica.dialogo" :icono.sync="caracteristica.icono" />
+              <IconPicker v-model="caracteristica.icono" :dialogo.sync="caracteristica.dialogo"
+                          @cerrar="CerrarIconPicker(caracteristica)"
+              />
 
               <v-row>
                 <v-col cols="12">
@@ -747,7 +773,7 @@
               </v-row>
 
               <v-row>
-                <v-col cols="12" lg="4" md="4" sm="4">
+                <v-col cols="12" xl="4" lg="4">
                   <v-text-field
                     outlined
                     dense
@@ -759,7 +785,7 @@
                     :disabled="caracteristica.id > 0"
                   />
                 </v-col>
-                <v-col cols="12" lg="4" md="4" sm="4">
+                <v-col cols="12" xl="4" lg="4">
                   <v-text-field
                     outlined
                     dense
@@ -771,16 +797,28 @@
                     :disabled="caracteristica.id > 0"
                   />
                 </v-col>
-                <v-col cols="12" lg="3" md="3" sm="3">
-                  <v-btn color="black" outlined class="mt-1"
-                         @click="AbrirIconPicker(caracteristica)"
-                         :disabled="caracteristica.id > 0"
+                <v-col cols="12" xl="3" lg="3">
+                  <v-text-field
+                    outlined
+                    dense
+                    v-model="caracteristica.icono"
+                    :rules="[ v => v && v.length > 0 || 'El icono es obligatorio' ]"
+                    label="Icono"
+                    color="black"
+                    prepend-icon="fa fa-icons"
+                    :disabled="caracteristica.id > 0"
+                    @click="AbrirIconPicker(caracteristica)"
                   >
-                    {{ caracteristica.icono == "" ? 'Seleccionar' : ''}} Icono
-                    <v-icon color="black" right>
-                      {{ caracteristica.icono }}
-                    </v-icon>
-                  </v-btn>
+
+                    <template v-slot:append>
+
+                      <v-icon>
+                        {{ caracteristica.icono }}
+                      </v-icon>
+
+                    </template>
+
+                  </v-text-field>
                 </v-col>
                 <v-col cols="12" lg="1" md="1" sm="1">
 
@@ -790,7 +828,7 @@
                              icon
                              v-bind="attrs"
                              v-on="on"
-                             @click="caracteristica.editar = !caracteristica.editar"
+                             @click="MostrarDialogoEditarCaracteristica(caracteristica)"
                       >
                         <v-icon color="black">
                           fa fa-pencil
@@ -842,6 +880,95 @@
 
     </v-dialog>
 
+    <v-dialog v-model="dialogos.editar_caracteristica"
+              transition="fab-transition"
+              scrollable
+              persistent
+              max-width="600"
+    >
+
+      <v-card>
+
+        <v-toolbar elevation="0" dense color="transparent">
+          <h3> Editar Característica </h3>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="CerrarDialogoEditarCaracteristica">
+            <v-icon>fa fa-times</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+
+          <IconPicker v-model="productos.caracteristica_seleccionada.icono" :dialogo.sync="productos.caracteristica_seleccionada.dialogo"
+                      @cerrar="productos.caracteristica_seleccionada.dialogo = false"
+          />
+
+          <v-form ref="frmEditarCaracteristica">
+
+            <v-text-field
+              outlined
+              dense
+              v-model="productos.caracteristica_seleccionada.nombre"
+              :rules="[ v => v && v.length > 0 || 'El nombre es obligatorio' ]"
+              label="Nombre"
+              color="black"
+              prepend-icon="fa fa-heading"
+            />
+
+            <v-text-field
+              outlined
+              dense
+              v-model="productos.caracteristica_seleccionada.valor"
+              :rules="[ v => v && v.length > 0 || 'El valor es obligatorio']"
+              label="Valor"
+              color="black"
+              prepend-icon="fa fa-code-branch"
+            />
+
+            <v-text-field
+              outlined
+              dense
+              v-model="productos.caracteristica_seleccionada.icono"
+              :rules="[ v => v && v.length > 0 || 'El icono es obligatorio' ]"
+              label="Icono"
+              color="black"
+              prepend-icon="fa fa-icons"
+              @click="productos.caracteristica_seleccionada.dialogo = true"
+            >
+
+              <template v-slot:append>
+
+                <v-icon>
+                  {{ productos.caracteristica_seleccionada.icono }}
+                </v-icon>
+
+              </template>
+
+            </v-text-field>
+
+          </v-form>
+
+        </v-card-text>
+
+        <v-card-actions>
+
+          <v-spacer />
+
+          <v-btn
+            color="black"
+            text
+            @click="ActualizarCaracteristica"
+          >
+            <v-icon left>fa fa-check</v-icon>
+            Actualizar
+          </v-btn>
+
+        </v-card-actions>
+
+      </v-card>
+
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -869,11 +996,14 @@ export default {
   data() {
     return {
       v:null,
+      loadCard: false,
       dialogos: {
         producto: false,
         detalles: false,
         caracteristicas: false,
-        imagen: false
+        editar_caracteristica: false,
+        imagen: false,
+        iconos: false
       },
       busqueda: {
         realizada: false,
@@ -903,7 +1033,8 @@ export default {
           productosPorPagina: 10
         },
         listado: [],
-        seleccionado: { carac: [] }
+        seleccionado: { carac: [] },
+        caracteristica_seleccionada: {}
       },
     }
   },
@@ -922,6 +1053,11 @@ export default {
 
         this.productos.tabla.loading = false
         this.productos.listado = data
+        this.productos.listado.forEach(producto => {
+
+          producto.img = producto.img + '#' + new Date().getTime()
+
+        })
 
       }).catch(data => {
         console.error(data)
@@ -970,7 +1106,16 @@ export default {
 
     AbrirIconPicker(caracteristica){
 
-      caracteristica.dialogo = true
+      let ind = this.productos.seleccionado.carac.indexOf(caracteristica)
+      this.productos.seleccionado.carac[ind].dialogo = true
+      this.$forceUpdate()
+
+    },
+
+    CerrarIconPicker(caracteristica){
+
+      let ind = this.productos.seleccionado.carac.indexOf(caracteristica)
+      this.productos.seleccionado.carac[ind].dialogo = false
       this.$forceUpdate()
 
     },
@@ -992,6 +1137,18 @@ export default {
 
       if(this.productos.seleccionado.archivo){
 
+        this.loadCard = true
+
+        let params = {
+
+          id: this.productos.seleccionado.id,
+          nombre: this.productos.seleccionado.nombre,
+          descripcion: this.productos.seleccionado.descripcion,
+          valor: this.productos.seleccionado.valor,
+          img: null
+
+        }
+
         if(this.productos.seleccionado.img){
 
           let primeraParte = this.productos.seleccionado.img.split("productos")[1].split("%2F")[1]
@@ -999,16 +1156,36 @@ export default {
           let ref = primeraParte.split("?")[0]
 
           const imagenRef = this.$fire.storage.ref('productos/'+ref)
+          imagenRef.delete()
 
-          imagenRef.put(this.productos.seleccionado.archivo).then( response => {
+          let idGenerado = (Math.random() + 1).toString(36).substring(2);
 
-            response.ref.getDownloadURL().then((downloadURL) => {
+          const nuevaRef = this.$fire.storage.ref('productos/'+idGenerado)
 
-              this.ObtenerProductos()
-              this.$alert.exito('La imagen fue actualizada exitosamente', 'Imagen Actualizada')
-              this.CerrarDialogoImagenProducto()
+          nuevaRef.put(this.productos.seleccionado.archivo).then( response => {
+
+            response.ref.getDownloadURL().then(async (downloadURL) => {
+
+              params.img = downloadURL
+
+              await this.$api.put("/producto", params).then(data => {
+
+                this.ObtenerProductos()
+                this.loadCard = false
+                this.CerrarDialogoImagenProducto()
+                this.$alert.exito('La imagen del producto fue actualizada exitosamente', 'Imagen Actualizada')
+
+              }).catch(data => {
+                console.error(data)
+                this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+              })
 
             })
+
+            this.ObtenerProductos()
+            this.loadCard = false
+            this.$alert.exito('La imagen fue actualizada exitosamente', 'Imagen Actualizada')
+            this.CerrarDialogoImagenProducto()
 
           })
 
@@ -1021,7 +1198,21 @@ export default {
 
           imagenRef.put(this.productos.seleccionado.archivo).then( response => {
 
-            response.ref.getDownloadURL().then((downloadURL) => {
+            response.ref.getDownloadURL().then(async (downloadURL) => {
+
+              params.img = downloadURL
+
+              await this.$api.put("/producto", params).then(data => {
+
+                this.ObtenerProductos()
+                this.loadCard = false
+                this.CerrarDialogoImagenProducto()
+                this.$alert.exito('La imagen del producto fue actualizada exitosamente', 'Imagen Actualizada')
+
+              }).catch(data => {
+                console.error(data)
+                this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+              })
 
               this.window.location.reload()
 
@@ -1048,6 +1239,14 @@ export default {
       this.productos.seleccionado = Object.assign({}, producto)
       this.dialogos.producto = true
       this.$refs.frmProducto?.resetValidation()
+    },
+
+    MostrarDialogoEditarCaracteristica(caracteristica){
+
+      this.productos.caracteristica_seleccionada = Object.assign({}, caracteristica)
+      this.dialogos.editar_caracteristica = true
+      this.$refs.frmEditarCaracteristica?.resetValidation()
+
     },
 
     MostrarDialogoCambiarImagen(producto){
@@ -1079,6 +1278,13 @@ export default {
 
       this.productos.seleccionado = { carac: [] }
       this.dialogos.imagen = false
+
+    },
+
+    CerrarDialogoEditarCaracteristica(){
+
+      this.dialogos.editar_caracteristica = false
+      this.productos.caracteristica_seleccionada = {}
 
     },
 
@@ -1140,6 +1346,34 @@ export default {
         }
 
         await this.$api.put("/producto", params).then(data => {
+
+          this.ObtenerProductos()
+          this.CerrarDialogoProducto()
+          this.$alert.exito('El producto fue actualizado exitosamente', 'Producto Actualizado')
+
+        }).catch(data => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelve a intentarlo', 'Error Interno')
+        })
+
+      }
+
+    },
+
+    async ActualizarCaracteristica(){
+
+      if(this.$refs.frmEditarCaracteristica.validate()){
+
+        let params = {
+
+          id: this.productos.caracteristica_seleccionada.id,
+          nombre: this.productos.caracteristica_seleccionada.nombre,
+          valor: this.productos.caracteristica_seleccionada.valor,
+          icono: this.productos.caracteristica_seleccionada.icono
+
+        }
+
+        await this.$api.put("/carte", params).then(data => {
 
           this.ObtenerProductos()
           this.CerrarDialogoProducto()

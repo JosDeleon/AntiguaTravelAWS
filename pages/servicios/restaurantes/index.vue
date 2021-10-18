@@ -550,7 +550,7 @@ export default {
 
                     }
 
-                    this.$router.push({path: '/usuario/mensajes'})
+                    this.$router.push({path: '/usuario/mensajes?id=' + restaurante.id })
 
                   })
 

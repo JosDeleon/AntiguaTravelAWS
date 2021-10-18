@@ -84,8 +84,13 @@
                   'Aún no hay mensajes en esta conversación' }}
                 </div>
                 <div v-else>
-                  {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
-                  'Aún no hay mensajes en esta conversación' }}
+                  <div v-if="chat.ultimoMensaje !== 'formReservacion'">
+                    {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
+                    'Aún no hay mensajes en esta conversación' }}
+                  </div>
+                  <div>
+                    Te enviaron un link de reservación
+                  </div>
                 </div>
               </v-list-item-subtitle>
             </v-list-item-content>
@@ -122,13 +127,13 @@
         </template>
         <span>Regresar</span>
       </v-tooltip>
-      <v-avatar size="50" v-if="chat_pool && chat_pool.length > 0">
+      <v-avatar size="45" v-if="chat_pool && chat_pool.length > 0" class="mr-2">
         <v-img :src="negocios && chat_pool[seleccionado] &&
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image :
                'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'"
-               width="100"
-               height="100"
+               min-width="100"
+               min-height="100"
                contain
                class="mr-2"
         />
@@ -180,6 +185,8 @@
               exact
               class="ma-2"
               link
+              inactive
+              v-if="mensaje.mensaje !== 'formReservacion'"
             >
               <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor === idAuth">
                 <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
@@ -190,6 +197,52 @@
               >
                 <v-list-item-title v-text="ObtenerNombreChat(mensaje.enviadoPor)" />
                 <v-list-item-subtitle class="text-wrap" v-text="mensaje.mensaje" />
+              </v-list-item-content>
+              <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor !== idAuth">
+                <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
+              </v-list-item-avatar>
+            </v-list-item>
+
+            <v-list-item exact class="ma-2" inactive v-else>
+              <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor === idAuth">
+                <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
+              </v-list-item-avatar>
+              <v-list-item-content :class="mensaje.enviadoPor !== idAuth ?
+                                     'text-right align-self-start' : null"
+                                   color="white"
+              >
+                <v-list-item-title v-text="ObtenerNombreChat(mensaje.enviadoPor)" />
+                <v-list-item-subtitle class="text-wrap">
+
+                  <v-card :to="'/negocios/reservaciones'" color="grey lighten-4" elevation="0"
+                          outlined style="border-radius:15px;" class="mt-2"
+                  >
+
+                    <v-layout justify-center>
+
+                      <v-card-title class="font-weight-bold">
+                        Formulario de Reservación
+                      </v-card-title>
+
+                    </v-layout>
+
+                    <v-card-subtitle class="mt-n5 text-justify">
+                      En el siguiente link podrás solicitar una reservación con nosotros
+                    </v-card-subtitle>
+
+                    <v-card-text>
+
+                      <v-layout justify-center>
+
+                        <v-img src="/logo-no-texto.png" contain max-height="200" max-width="200" />
+
+                      </v-layout>
+
+                    </v-card-text>
+
+                  </v-card>
+
+                </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-avatar class="align-center" v-if="mensaje.enviadoPor !== idAuth">
                 <v-img :src="ObtenerImagenChat(mensaje.enviadoPor)" />
@@ -285,7 +338,6 @@ export default {
   methods: {
 
     CambiarChat(){
-
       this.$store.commit('setUsuarioChatActual', this.chat_pool[this.seleccionado])
       this.mensajesRef = this.$fire.database.ref("chatMessages")
         .child(this.$store.state.usuarioChatActual.chat)
@@ -294,8 +346,6 @@ export default {
     },
 
     ObtenerNombreChat(idEnviado){
-
-      console.log(this.usuarios)
 
       if(this.chat_pool[this.seleccionado].negocio === idEnviado){
 
@@ -436,9 +486,29 @@ export default {
         })
 
         if(this.chat_pool.length > 0){
-          this.mensajesRef = this.$fire.database.ref("chatMessages")
-            .child(this.chat_pool[0].chat)
-          this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
+          if(this.$route.query.id && this.$route.query.id > 0){
+
+            this.chat_pool.forEach(chat => {
+
+              if(chat.key_negocio === ("idNegocio"+this.$route.query.id)){
+
+                this.seleccionado = this.chat_pool.indexOf(chat)
+
+                  this.mensajesRef = this.$fire.database.ref("chatMessages")
+                  .child(this.chat_pool[this.chat_pool.indexOf(chat)].chat)
+                this.$store.commit("setUsuarioChatActual", this.chat_pool[this.chat_pool.indexOf(chat)])
+
+              }
+
+            })
+
+          }
+          else{
+            this.mensajesRef = this.$fire.database.ref("chatMessages")
+              .child(this.chat_pool[0].chat)
+            this.$store.commit("setUsuarioChatActual", this.chat_pool[0])
+          }
+
           this.$store.commit('setHideMessageField', false)
           this.ObtenerMensajes()
         }
