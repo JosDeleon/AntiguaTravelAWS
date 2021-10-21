@@ -115,7 +115,7 @@
 
           <v-card-text class="pa-6" v-if="ajustes.seleccionado === 0">
 
-            <v-form ref="frmProducto">
+            <v-form ref="frmUser">
 
               <v-row justify="center" align="center">
 

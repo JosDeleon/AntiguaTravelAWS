@@ -77,17 +77,15 @@
               <v-row class="py-4 pl-2">
 
                 <v-rating
-                  :value="4.5"
+                  :value="hotel.puntuacionAvg"
                   color="secondary"
                   dense
-                  half-increments
-                  hover
+                  readonly
                 />
 
                 <div class="grey--text mt-1 ml-1">
-                  413 valoraciones |
+                  {{ hotel.totalValoraciones }} valoraciones |
                   <v-icon class="mx-1" small color="black"> fa fa-tags </v-icon>{{tags}}
-
                 </div>
 
               </v-row>
@@ -149,11 +147,11 @@
       </template>
 
 
-      <div v-for="(image, i) in images" :key="i">
+      <div v-for="(image, i) in galeria" :key="i">
 
         <v-slide-item>
 
-          <v-img class="ma-1" :src="image" @click="index = i" max-width="400" max-height="400" style="border-radius:10px;">
+          <v-img class="ma-1" :src="image" @click="index = i" min-height="400" max-width="500" max-height="400" style="border-radius:10px;">
 
             <v-container fill-height v-if="i === 0">
 
@@ -161,7 +159,7 @@
                 <a style="text-decoration:none;">
                   <span class="white--text" @click="GaleriaImagenes">
                     <v-icon color="white"> fa fa-images</v-icon>
-                    Ver todas las imágenes ({{ images.length }})
+                    Ver todas las imágenes ({{ galeria.length }})
                   </span>
                 </a>
 
@@ -177,7 +175,7 @@
 
     </v-slide-group>
 
-    <v-img class="ma-1 hidden-md-and-up mx-2" :src="images[0]" max-height="300" style="border-radius:10px;">
+    <v-img class="ma-1 hidden-md-and-up mx-2" :src="galeria[0]" max-height="300" style="border-radius:10px;">
 
       <v-container fill-height>
 
@@ -186,7 +184,7 @@
           <a style="text-decoration:none;">
                 <span class="white--text" @click="GaleriaImagenes">
                 <v-icon color="white"> fa fa-images</v-icon>
-                Ver todas las imágenes ({{ images.length }})
+                Ver todas las imágenes ({{ galeria.length }})
               </span>
           </a>
 
@@ -196,7 +194,7 @@
 
     </v-img>
 
-    <vue-gallery-slideshow :images="images" :index="index" @close="index = null" />
+    <vue-gallery-slideshow :images="galeria" :index="index" @close="index = null" />
 
 
     <v-row :class="($vuetify.breakpoint.name === 'sm' ||
@@ -226,19 +224,18 @@
             <v-row class="py-4 pl-3">
 
               <h2 class="black--text mt-1 mr-1">
-                4.5
+                {{ hotel.puntuacionAvg }}
               </h2>
 
               <v-rating
-                :value="4.5"
+                :value="hotel.puntuacionAvg"
                 color="secondary"
                 dense
-                half-increments
-                hover
+                readonly
               />
 
               <div class="grey--text mt-1 ml-1">
-                (413 valoraciones)
+                ({{ hotel.totalValoraciones }} valoraciones)
               </div>
 
             </v-row>
@@ -595,9 +592,86 @@
               colored-border
               type="warning"
               elevation="2"
+              v-if="valoraciones && valoraciones.length === 0"
             >
               Lo sentimos, este guía turístico aún no cuenta con reseñas
             </v-alert>
+
+            <v-list>
+
+              <v-divider />
+
+              <div v-for="(valoracion, v) in valoraciones"
+                   :key="valoracion.id"
+              >
+
+                <v-list-item class="mt-2 mb-1">
+
+                  <v-list-item-avatar>
+
+                    <v-img :src="valoracion.img ? valoracion.img : '/no-pf.png' " />
+
+                  </v-list-item-avatar>
+
+                  <v-list-item-content>
+
+                    <div>
+                      <v-row
+                        align="center"
+                        class="mx-0 mb-1 pl-n1"
+                      >
+                        <v-rating
+                          :value="valoracion.puntuacion"
+                          color="secondary"
+                          dense
+                          readonly
+                        />
+
+                        <div class="black--text">
+                          &mdash; escrita por {{ valoracion.nombre }}
+                        </div>
+                      </v-row>
+                    </div>
+
+                    <v-list-item-title v-text="valoracion.titulo" class="font-weight-bold" />
+                    <v-list-item-subtitle v-text="valoracion.comentario" class="black--text text-wrap text-justify" />
+                    <v-list-item-subtitle v-text="formatDate(valoracion.createdAt)" class="text-wrap text-justify" />
+
+                  </v-list-item-content>
+
+                  <v-list-item-action>
+
+                    <v-spacer/>
+
+                    <v-tooltip bottom v-if="VerificarValoracion(valoracion)">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          color="error"
+                          dark
+                          v-bind="attrs"
+                          v-on="on"
+                          icon
+                          @click="EliminarValoracion(valoracion)"
+                        >
+                          <v-icon
+                            color="error"
+                          >
+                            fas fa-trash
+                          </v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Eliminar Valoración</span>
+                    </v-tooltip>
+
+                  </v-list-item-action>
+
+                </v-list-item>
+
+                <v-divider />
+
+              </div>
+
+            </v-list>
 
           </v-card-text>
 
@@ -691,8 +765,8 @@
       ></v-progress-circular>
     </v-overlay>
 
-    <Valoracion v-model="dialogos.valoracion" :puntuacion.sync="valoracion.puntuacion"
-                :valoracion.sync="valoracion" :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
+    <Valoracion v-model="dialogos.valoracion" :valoracion.sync="valoracion"
+                :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
     />
 
   </v-container>
@@ -709,6 +783,7 @@ export default {
 
   mounted() {
     this.ObtenerHotel()
+    this.ObtenerGaleria()
     this.ObtenerValoraciones()
     this.$refs.slideGroup.setWidths()
   },
@@ -763,18 +838,7 @@ export default {
 
       index: null,
 
-      images: [
-        'https://placekitten.com/801/800',
-        'https://placekitten.com/802/800',
-        'https://placekitten.com/803/800',
-        'https://placekitten.com/804/800',
-        'https://placekitten.com/805/800',
-        'https://placekitten.com/806/800',
-        'https://placekitten.com/807/800',
-        'https://placekitten.com/808/800',
-        'https://placekitten.com/809/800',
-        'https://placekitten.com/810/800'
-      ],
+      galeria: [],
 
       auth: {}
 
@@ -782,6 +846,20 @@ export default {
   },
 
   methods: {
+
+    async ObtenerGaleria(){
+
+      await this.$api.post("/galeria/negocio",{ negocioId:  +this.$route.params.id }).then( data => {
+
+        data.forEach(imagen => {
+
+          this.galeria.push(imagen.img)
+
+        })
+
+      })
+
+    },
 
     async ObtenerAuth(){
       this.auth = await this.$api.post("/usuario/info",
@@ -922,8 +1000,78 @@ export default {
         negocioId: +this.$route.params.id
       }
 
-      this.valoraciones = this.$api.get("/valoraciones", params)
+      this.valoraciones = await this.$api.post("/valoraciones", params)
+      let valoracionesAvg = 0
 
+      for (const valoracion of this.valoraciones) {
+
+        valoracionesAvg += valoracion.puntuacion;
+
+        let userRef = this.$fire.database.ref("Users/id"+valoracion.usuarioId)
+
+        await userRef.on('value', (snapshot) => {
+          valoracion.nombre = snapshot.val().nombre
+          this.$forceUpdate()
+        })
+
+
+        await this.$fire.storage.ref('usuarios/' + valoracion.usuarioId + "/foto-perfil")
+          .getDownloadURL().then((url) => {
+
+            valoracion.img = url
+            this.$forceUpdate()
+
+          })
+
+      }
+
+      this.hotel.totalValoraciones = this.valoraciones.length
+      this.hotel.puntuacionAvg = (this.valoraciones.length > 0) ? valoracionesAvg / this.valoraciones.length : 0
+      this.$forceUpdate()
+
+    },
+
+    VerificarValoracion(valoracion){
+
+      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+
+        return false
+
+      }
+
+      else{
+
+        return JSON.parse(sessionStorage.getItem('usuario')).id === valoracion.usuarioId
+
+      }
+
+    },
+
+    async EliminarValoracion(valoracion){
+
+      this.$alert.confirm('¿Estás seguro que deseas eliminar esta valoración?',
+        'Eliminar Valoración').then(async () => {
+
+        let params = {
+
+          id: valoracion.id
+
+        }
+
+        await this.$api.delete("/valoracion", params).then(data => {
+
+          this.ObtenerValoraciones()
+          this.$alert.exito("La valoración fue eliminada exitosamente", "Valoración Eliminada")
+
+        })
+
+      })
+
+    },
+
+    formatDate(date){
+      return this.$moment.utc(date, 'YYYY-MM-DD h:mm:ss').format('dddd, LL [a las ] h:mm:ss a').charAt(0).toUpperCase() +
+        this.$moment.utc(date, 'YYYY-MM-DD h:mm:ss').format('dddd, LL [a las ] h:mm:ss a').slice(1)
     },
 
     async ObtenerCaracteristicas(){

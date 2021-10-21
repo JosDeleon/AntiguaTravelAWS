@@ -9,8 +9,8 @@
         <v-img
           min-height="800"
           max-height="1100"
-          src="https://www.collinsdictionary.com/images/full/tourguide_445046491.jpg"
-          lazy-src="https://www.collinsdictionary.com/images/full/tourguide_445046491.jpg"
+          src="https://soniahuamanrayme.webcindario.com/images/guia-de-turismo-21.jpg"
+          lazy-src="https://soniahuamanrayme.webcindario.com/images/guia-de-turismo-21.jpg"
           style="border-radius:10px;"
         >
 

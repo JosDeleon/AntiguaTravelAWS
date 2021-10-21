@@ -36,10 +36,9 @@
             <v-col cols="12" class="mt-n4 ml-n1">
 
               <v-rating
-                v-model="puntuacion"
+                v-model="rating"
                 color="secondary"
                 dense
-                half-increments
                 hover
                 size="35"
               />
@@ -100,59 +99,101 @@
 
 <script>
 
-  export default {
+export default {
 
-    props: {
-      value: Boolean,
-      valoracion: Object,
-      puntuacion: Number,
-      negocioId: Number
-    },
+  props: {
+    value: Boolean,
+    valoracion: Object,
+    negocioId: Number
+  },
 
-    computed: {
-      dialogo: {
-        get () {
-          return this.value
-        },
-        set (value) {
-          this.$emit('input', value)
-        }
+  computed: {
+    dialogo: {
+      get () {
+        return this.value
       },
+      set (value) {
+        this.$emit('input', value)
+      }
     },
+  },
 
-    methods: {
+  data: () => {
 
-      EnviarOpinion(){
+    return {
 
-        let params = {
-          puntuacion: this.puntuacion,
-          titulo : this.valoracion.titulo,
-          comentario : this.valoracion.comentario,
-          usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
-          negocioId : this.negocioId
+      rating: 0
+
+    }
+
+  },
+
+  methods: {
+
+    EnviarOpinion(){
+
+      let login = true
+
+      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        this.$alert.warning("No puedes enviar opiniones hasta que inicies sesión",
+          "Valoración Fallida")
+        login = false
+        return
+      }
+
+      let negocioFound = {}
+      negocioFound.id = 0
+
+      if(this.$store.state.negocios && this.$store.state.negocios.length > 0){
+        negocioFound = this.$store.state.negocios.find( n => n.id === this.negocioId );
+      }
+
+      if(login) {
+
+        if (negocioFound && negocioFound.id > 0) {
+          this.$alert.warning("No puedes enviar opiniones a tu propio negocio",
+            "Valoración Fallida")
         }
+        else{
 
-        this.$api.post("/valoracion", params).then(data => {
+          if(this.$refs.frmValoracion.validate()){
 
-          this.$alert.exito("El módulo fue creado exitosamente", "Módulo Creado")
-          this.$emit('refresh')
-          this.CerrarDialogo()
+            let params = {
+              puntuacion: this.rating,
+              titulo : this.valoracion.titulo,
+              comentario : this.valoracion.comentario,
+              usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
+              negocioId : this.negocioId
+            }
 
-        })
+            this.$api.post("/valoracion", params).then(data => {
 
-      },
+              this.$alert.exito("Tu opinión fue enviada exitosamente", "Opinión Enviada")
+              this.$emit('refresh')
+              this.CerrarDialogo()
 
-      CerrarDialogo(){
+            })
 
-        this.$emit('update:valoracion', { puntuacion: 0 })
-        this.$emit('update:puntuacion', 0)
-        this.$refs.frmValoracion?.resetValidation()
-        this.dialogo = false
+          }
+
+        }
 
       }
+
+    },
+
+    CerrarDialogo(){
+
+      this.$emit('update:valoracion', { puntuacion: 0 })
+      this.$emit('update:puntuacion', 0)
+      this.$refs.frmValoracion?.resetValidation()
+      this.dialogo = false
 
     }
 
   }
 
+}
+
 </script>
+

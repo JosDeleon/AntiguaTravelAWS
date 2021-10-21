@@ -17,7 +17,7 @@
 
     <v-btn
       color="black"
-      @click=""
+      @click="dialogos.agregar_galeria = true"
       outlined
       class="mb-n3"
       v-if="folder_seleccionado.id > 0"
@@ -87,8 +87,8 @@
             Archivos ({{ folder_seleccionado.titulo }})
           </v-subheader>
 
-          <div v-for="(folder, f) in []"
-               :key="f"
+          <div v-for="(imagen, i) in negocios.galeria"
+               :key="i"
           >
 
             <v-divider />
@@ -96,21 +96,21 @@
             <v-list-item>
               <v-list-item-avatar>
                 <v-icon
-                  class="grey lighten-1"
+                  class="secondary"
                   dark
                 >
-                  fa fa-folder
+                  fas fa-image
                 </v-icon>
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title v-text="folder.titulo"/>
-                <v-list-item-subtitle v-text=" folder.cantidadArchivos + ' imágenes agregadas'" />
+                <v-list-item-title class="text-wrap" v-text="formatImageName(imagen)"/>
+                <v-list-item-subtitle class="text-wrap" v-text="formatDate(imagen.createdAt)" />
               </v-list-item-content>
 
               <v-list-item-action>
-                <v-btn icon @click="folder_seleccionado = folder">
-                  <v-icon color="grey lighten-1">fa fa-info-circle</v-icon>
+                <v-btn icon @click="imagen_seleccionada = imagen">
+                  <v-icon color="complementario">fa fa-eye</v-icon>
                 </v-btn>
               </v-list-item-action>
 
@@ -120,27 +120,95 @@
 
           <v-divider />
 
+          <v-list-item v-if="negocios.galeria.length === 0">
+
+            <v-list-item-content>
+
+              <v-alert
+                type="info"
+                prominent
+                color="complementario"
+              >
+                Aún no se han agregado imagenes a la galería de este negocio
+              </v-alert>
+
+            </v-list-item-content>
+
+          </v-list-item>
+
         </v-list>
 
       </v-col>
 
       <v-col cols="12" xl="5" lg="4" md="8">
 
-        <v-card style="border-radius:15px;" elevation="0" outlined>
+        <v-card style="border-radius:15px;" elevation="0" outlined v-if="imagen_seleccionada.id > 0">
 
           <v-img
             max-height="400"
-            src="https://cdn.vuetifyjs.com/images/cards/cooking.png"
-          />
+            :src="imagen_seleccionada.img"
+            :lazy-src="imagen_seleccionada.img"
+          >
 
-          <v-card-actions>
+            <v-container>
 
-            <v-spacer />
+              <v-row align="center" justify="end">
 
-            <v-icon color="black"> fa fa-save </v-icon>
-            <v-icon color="error" class="mx-4"> fa fa-trash </v-icon>
+                <v-btn icon @click="imagen_seleccionada = {}">
+                  <v-icon color="white">fa fa-times</v-icon>
+                </v-btn>
+
+              </v-row>
+
+            </v-container>
+
+          </v-img>
+
+          <v-card-actions class="ml-7">
+
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="black"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  @click="DescargarImagen"
+                >
+                  <v-icon
+                    color="black"
+                  >
+                    fas fa-save
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Descargar Imagen</span>
+            </v-tooltip>
+
+            <v-tooltip bottom class="mx-4">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  color="error"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  icon
+                  @click="EliminarImagen"
+                >
+                  <v-icon
+                    color="error"
+                  >
+                    fas fa-trash
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Eliminar Imagen</span>
+            </v-tooltip>
 
           </v-card-actions>
+
+          <v-divider />
 
           <v-card-text>
 
@@ -152,30 +220,8 @@
                 </v-list-item-avatar>
 
                 <v-list-item-content>
-                  <v-list-item-title> Imagen #1</v-list-item-title>
+                  <v-list-item-title> {{ formatImageName(imagen_seleccionada) }} </v-list-item-title>
                   <v-list-item-subtitle> 420KB &mdash; Tipo de imagen png </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-list-item>
-                <v-list-item-avatar>
-                  <v-icon color="secondary"> fa fa-calendar-day </v-icon>
-                </v-list-item-avatar>
-
-                <v-list-item-content>
-                  <v-list-item-title> Fecha de creación</v-list-item-title>
-                  <v-list-item-subtitle> {{ $moment().format('L') }} </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-
-              <v-list-item>
-                <v-list-item-avatar>
-                  <v-icon color="amber darken-1"> fa fa-folder-open </v-icon>
-                </v-list-item-avatar>
-
-                <v-list-item-content>
-                  <v-list-item-title>Ubicación</v-list-item-title>
-                  <v-list-item-subtitle> /negocio/galería </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -189,6 +235,90 @@
 
     </v-row>
 
+    <v-dialog max-width="800" v-model="dialogos.agregar_galeria"
+              transition="fab-transition" persistent>
+
+      <v-card style="border-radius:15px;" elevation="0" outlined class="pa-6">
+
+        <v-toolbar elevation="0" dense color="transparent" class="hidden-sm-and-down">
+          <v-spacer/>
+          <h2>Agregar imágenes a galería</h2>
+          <v-spacer/>
+          <v-btn icon @click="CerrarDialogoAgregarGaleria">
+            <v-icon>fa fa-times</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-toolbar elevation="0" dense color="transparent" class="hidden-md-and-up">
+          <v-spacer/>
+          <h3>Agregar imágenes a galería</h3>
+          <v-spacer/>
+          <v-btn icon @click="CerrarDialogoAgregarGaleria">
+            <v-icon>fa fa-times</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-4">
+
+          <v-form ref="frmGaleria">
+
+            <v-text-field
+              outlined
+              v-model="folder_seleccionado.titulo"
+              label="Negocio seleccionado"
+              prepend-inner-icon="fa fa-briefcase"
+              style="border-radius:10px;"
+              color="black"
+              readonly
+            />
+
+            <v-file-input
+              outlined
+              accept="image/*"
+              v-model="negocios.imagenes"
+              :rules="[ v => !!v || 'Por favor ingrese una o más imágenes' ]"
+              label="Nuevas imágenes para galería"
+              prepend-inner-icon="fa fa-images"
+              :prepend-icon="null"
+              style="border-radius:10px;"
+              color="black"
+              multiple
+            >
+
+              <template v-slot:selection="{ text }">
+
+                <v-chip
+                  small
+                  label
+                  color="secondary"
+                >
+                  {{ text }}
+                </v-chip>
+
+              </template>
+
+            </v-file-input>
+
+          </v-form>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="secondary"
+            @click="AgregarImagenesGaleria"
+            large
+          >
+            <v-icon left>fa fa-folder-plus</v-icon>
+            Agregar imágenes
+          </v-btn>
+        </v-card-actions>
+
+      </v-card>
+
+    </v-dialog>
+
   </v-container>
 
 </template>
@@ -197,7 +327,7 @@
 
 import VueGallerySlideshow from 'vue-gallery-slideshow';
 
-  export default {
+export default {
 
     mounted() {
       this.$store.commit('setRutaActual', 'Galeria de Imágenes')
@@ -211,29 +341,25 @@ import VueGallerySlideshow from 'vue-gallery-slideshow';
     data() {
 
       return {
-        index: null,
-        images: [
-          'https://placekitten.com/801/800',
-          'https://placekitten.com/802/800',
-          'https://placekitten.com/803/800',
-          'https://placekitten.com/804/800',
-          'https://placekitten.com/805/800',
-          'https://placekitten.com/806/800',
-          'https://placekitten.com/807/800',
-          'https://placekitten.com/808/800',
-          'https://placekitten.com/809/800',
-          'https://placekitten.com/810/800'
-        ],
+
+        dialogos: {
+
+          agregar_galeria: false
+
+        },
 
         folders: [],
 
         folder_seleccionado: {},
 
+        imagen_seleccionada: {},
+
         negocios: {
 
           listado: [],
           seleccionado: {},
-          galeria: []
+          galeria: [],
+          imagenes: []
 
         }
 
@@ -245,13 +371,15 @@ import VueGallerySlideshow from 'vue-gallery-slideshow';
 
       async ObtenerGaleria(){
 
-        this.negocios.galeria = this.$api.get("/galeria",{ negocioId:  this.folder_seleccionado.id })
+        this.negocios.galeria = await this.$api.post("/galeria/negocio",{ negocioId:  this.folder_seleccionado.id })
 
       },
 
       async ObtenerNegociosAuth(){
 
         if(JSON.parse(sessionStorage.getItem('usuario'))){
+
+          this.folders = []
 
          this.negocios.listado = await this.$api.post('/negocios/usuario',
             { usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id })
@@ -273,6 +401,93 @@ import VueGallerySlideshow from 'vue-gallery-slideshow';
 
       },
 
+      async AgregarImagenesGaleria(){
+
+        if(this.negocios.imagenes && this.negocios.imagenes.length === 0){
+
+          this.$alert.warning("Debes de seleccionar una o más imágenes", 'Selecciona Imágenes')
+
+        }
+        else{
+
+          this.negocios.imagenes.forEach(imagen => {
+
+            const galeriaRef = this.$fire.storage.ref('negocios/'+this.folder_seleccionado.id+"/galeria/"
+              + imagen.name.split('.')[0])
+
+              galeriaRef.put(imagen).then( response => {
+
+                response.ref.getDownloadURL().then(async (downloadURL) => {
+
+                  let neg = this.negocios.galeria.find( n => n.img === downloadURL)
+
+                  if(!neg){
+                    let params = {
+
+                      negocioId: this.folder_seleccionado.id,
+                      img: downloadURL
+
+                    }
+
+                    await this.$api.post("/galeria", params).then(data => {
+
+                      this.ObtenerGaleria()
+
+                    })
+                  }
+
+                })
+
+              })
+
+          })
+
+          this.CerrarDialogoAgregarGaleria()
+          this.$alert.exito("Las imágenes fueron agregadas a la galería", 'Imágenes Agregadas')
+
+        }
+
+      },
+
+      async DescargarImagen(){
+
+        window.open(this.imagen_seleccionada.img, '_blank')
+
+      },
+
+      async EliminarImagen(){
+
+        this.$alert.confirm('¿Estás seguro que deseas eliminar esta imagen de la galería?',
+          'Eliminar Imagen').then(async () => {
+
+          let params = {
+
+            id: this.imagen_seleccionada.id
+
+          }
+
+          await this.$api.delete("/galeria/img", params).then(data => {
+
+            let imgRef = this.$fire.storage.refFromURL(this.imagen_seleccionada.img)
+            imgRef.delete()
+            this.imagen_seleccionada = {}
+            this.ObtenerGaleria()
+            this.$alert.exito("La imagen fue eliminada exitosamente", "Imagen Eliminada")
+
+          })
+
+        })
+
+      },
+
+      CerrarDialogoAgregarGaleria(){
+
+        this.dialogos.agregar_galeria = false
+        this.negocios.imagenes = []
+        this.$refs.frmGaleria?.resetValidation()
+
+      },
+
       async SeleccionarFolder(folder){
 
         this.folder_seleccionado = folder
@@ -281,9 +496,23 @@ import VueGallerySlideshow from 'vue-gallery-slideshow';
 
       },
 
+      formatDate(date){
+        return this.$moment.utc(date, 'YYYY-MM-DD h:mm:ss').format('dddd, LL [a las ] h:mm:ss a').charAt(0).toUpperCase() +
+          this.$moment.utc(date, 'YYYY-MM-DD h:mm:ss').format('dddd, LL [a las ] h:mm:ss a').slice(1)
+      },
+
+      formatImageName(imagen){
+
+        let primeraParte = imagen.img.split("negocios")[1].split("2F")[3]
+
+        return primeraParte.split("?")[0]
+
+      },
+
       LimpiarBusqueda(){
 
         this.folder_seleccionado = {}
+        this.ObtenerNegociosAuth()
 
       }
 

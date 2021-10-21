@@ -223,27 +223,24 @@
               <v-card-text>
                 <v-row
                   align="center"
-                  class="mx-0"
+                  class="mx-0 mb-2"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="destino.puntuacionAvg"
                     color="secondary"
                     dense
                     half-increments
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ destino.puntuacionAvg.toFixed(1) }} ({{ destino.totalValoraciones }}
+                    {{ destino.totalValoraciones > 1 ||  destino.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
 
-                <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(destino.tags)}}
-                </div>
-
                 <div>{{ destino.descripcion ? destino.descripcion :
-                  "Este destino turístico no cuenta con una descripción" }}</div>
+                  "Este guía turístico no cuenta con una descripción" }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -548,10 +545,34 @@ export default {
 
         this.destinos.listado = data
         let cont = 0
-        this.destinos.listado.forEach( destino => {
+        this.destinos.listado.forEach( async destino => {
+
+          let params = {
+            negocioId: destino.id
+          }
+
+          destino.totalValoraciones = 0
+          destino.puntuacionAvg = 0
+
+          await this.$api.post("/valoraciones", params).then(data => {
+
+            let valoracionesAvg = 0
+
+            data.forEach(valoracion => {
+
+              valoracionesAvg += valoracion.puntuacion;
+
+            })
+
+            destino.totalValoraciones = data.length
+
+            destino.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+            this.$forceUpdate()
+
+          })
 
           destino.showCardTags = false
-          destino.tags = ["Al aire libre"]
           cont++
 
         } )

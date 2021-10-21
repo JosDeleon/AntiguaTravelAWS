@@ -145,15 +145,15 @@
                 class="mx-0"
               >
                 <v-rating
-                  :value="4.5"
+                  :value="sitio.puntuacionAvg"
                   color="secondary"
                   dense
-                  half-increments
+
                   hover
                 />
 
                 <div class="grey--text ms-4">
-                  4.5 (413 valoraciones)
+                  {{ sitio.puntuacionAvg }} ({{ sitio.totalValoraciones }} valoraciones)
                 </div>
               </v-row>
 
@@ -266,15 +266,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ cambista.puntuacionAvg }} ({{ cambista.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -335,43 +335,59 @@
 
           <v-card style="border-radius:10px;" height="500">
 
-            <v-img
+            <v-carousel
+              cycle
+              interval="3000"
               height="500"
-              src="/banner-negocios.jpg"
-              style="border-radius:10px;"
-              gradient="to top right, rgba(100,115,201,.33), rgba(25,32,72,.7)"
+              hide-delimiter-background
+              show-arrows-on-hover
             >
+              <v-carousel-item
+                v-for="(slide, i) in slides"
+                :key="i"
+              >
 
-              <v-container fill-height>
-                <v-layout justify-start align-center>
-                  <v-row>
-                    <v-col cols="12">
-                      <h1 class="white--text">
-                        Atrevete a ser parte de algo grande
-                      </h1>
-                    </v-col>
-                    <v-col cols="12">
-                      <h3 class="white--text mt-n4">
-                        Dale la oportunidad a tu negocio de despegar de la mejor manera
-                      </h3>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-btn
-                        color="white"
-                        dark
-                        depressed
-                        @click="IrRegistro"
-                      >
-                        <div class="black--text font-weight-bold">
-                          Obtener Información
-                        </div>
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-layout>
-              </v-container>
+                <v-img
+                  height="500"
+                  :src="slide.src"
+                  style="border-radius:10px;"
+                  gradient="to top right, rgba(100,115,201,.33), rgba(25,32,72,.7)"
+                >
 
-            </v-img>
+                  <v-container fill-height class="pl-10">
+                    <v-layout justify-start align-center>
+                      <v-row>
+                        <v-col cols="12">
+                          <h1 class="white--text">
+                            {{ slide.titulo }}
+                          </h1>
+                        </v-col>
+                        <v-col cols="12">
+                          <h3 class="white--text mt-n4">
+                            {{ slide.subtitulo }}
+                          </h3>
+                        </v-col>
+                        <v-col cols="12">
+                          <v-btn
+                            color="white"
+                            dark
+                            depressed
+                            @click="IrRegistro(slide.tipo)"
+                          >
+                            <div class="black--text font-weight-bold">
+                              Obtener Información
+                            </div>
+                          </v-btn>
+                        </v-col>
+                      </v-row>
+                    </v-layout>
+                  </v-container>
+
+                </v-img>
+
+              </v-carousel-item>
+
+            </v-carousel>
 
           </v-card>
 
@@ -445,15 +461,15 @@
                 class="mx-0"
               >
                 <v-rating
-                  :value="4.5"
+                  :value="hotel.puntuacionAvg"
                   color="secondary"
                   dense
-                  half-increments
+
                   hover
                 />
 
                 <div class="grey--text ms-4">
-                  4.5 (413 valoraciones)
+                  {{ hotel.puntuacionAvg }} ({{ hotel.totalValoraciones }} valoraciones)
                 </div>
               </v-row>
 
@@ -567,15 +583,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="restaurante.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ restaurante.puntuacionAvg }} ({{ restaurante.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -703,15 +719,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="renta.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ renta.puntuacionAvg }} ({{ renta.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -847,15 +863,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="sitio.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ sitio.puntuacionAvg }} ({{ sitio.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -960,15 +976,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ cambista.puntuacionAvg }} ({{ cambista.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -1073,15 +1089,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="hotel.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ hotel.puntuacionAvg }} ({{ hotel.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -1197,15 +1213,15 @@
                     class="mx-0"
                   >
                     <v-rating
-                      :value="4.5"
+                      :value="restaurante.puntuacionAvg"
                       color="secondary"
                       dense
-                      half-increments
+
                       hover
                     />
 
                     <div class="grey--text ms-4">
-                      4.5 (413 valoraciones)
+                      {{ restaurante.puntuacionAvg }} ({{ restaurante.totalValoraciones }} valoraciones)
                     </div>
                   </v-row>
 
@@ -1324,15 +1340,15 @@
                   class="mx-0"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="alquiler.puntuacionAvg"
                     color="secondary"
                     dense
-                    half-increments
+
                     hover
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ alquiler.puntuacionAvg }} ({{ alquiler.totalValoraciones }} valoraciones)
                   </div>
                 </v-row>
 
@@ -1415,12 +1431,16 @@ export default {
   data(){
     return {
       model: null,
+
       tabs: null,
+
       loading:{
         restaurantes: false,
         hoteles: false
       },
+
       coords: { lat: 0, lng: 0 },
+
       tags: {
         lista: [],
         seleccionadas: [],
@@ -1438,13 +1458,34 @@ export default {
           }
         }
       },
+
       negocios: {
         listado: []
       },
+
       busqueda: null,
+
       botones: {
         seleccionado: null
-      }
+      },
+
+      slides:[
+        {
+          src: "/banner-negocios.jpg", titulo: "Atrevete a ser parte de algo grande",
+          subtitulo: "Dale la oportunidad a tu negocio de despegar de la mejor manera",
+          tipo: 'N'
+        },
+        {
+          src: "https://pix10.agoda.net/geo/city/18181/1_18181_02.jpg?s=1920x822", titulo: "Brinda experiencias inolvidables",
+          subtitulo: "Muestra a las personas los mejores destinos que tiene Guatemala",
+          tipo: 'G'
+        },
+        {
+          src: "https://thumbs.dreamstime.com/b/dollar-euro-banner-background-banknotes-hundred-bills-american-us-european-eu-cash-closeup-218060291.jpg", titulo: "Conviertete en un cambista confiable",
+          subtitulo: "Gana reputación como cambista y crece con nosotros",
+          tipo: 'C'
+        },
+      ]
     }
   },
 
@@ -1502,6 +1543,12 @@ export default {
 
             })
 
+            this.ObtenerValoracionesBusquedaRestaurantes()
+            this.ObtenerValoracionesBusquedaHoteles()
+            this.ObtenerValoracionesBusquedaGuias()
+            this.ObtenerValoracionesBusquedaAlquiler()
+            this.ObtenerValoracionesBusquedaCambistas()
+
           }
           catch (e) {
 
@@ -1522,11 +1569,342 @@ export default {
 
     async ObtenerNegocios(){
       this.loading.negocios = true
-      await this.$api.get('/negocios', {}).then(data=>{
-        this.loading_card = false
-        this.negocios.listado = data
-        this.loading.negocios = false
-      })
+      this.negocios.listado =  await this.$api.get('/negocios', {})
+      await this.ObtenerValoracionesRestaurantes()
+      await this.ObtenerValoracionesHoteles()
+      await this.ObtenerValoracionesRentas()
+      await this.ObtenerValoracionesCambistas()
+      await this.ObtenerValoracionesGuias()
+    },
+
+    async ObtenerValoracionesRestaurantes(){
+
+      for (const negocio of this.negocios.listado.restaurantes) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesHoteles(){
+
+      for (const negocio of this.negocios.listado.hoteles) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesRentas(){
+
+      for (const negocio of this.negocios.listado.rentas) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesCambistas(){
+
+      for (const negocio of this.negocios.listado.cambistas) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesGuias(){
+
+      for (const negocio of this.negocios.listado.sitios) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesBusquedaRestaurantes(){
+
+      for (const negocio of this.tags.buscadas.negocios.restaurantes) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesBusquedaHoteles(){
+
+      for (const negocio of this.tags.buscadas.negocios.hoteles) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesBusquedaGuias(){
+
+      for (const negocio of this.tags.buscadas.negocios.destinosTuristicos) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesBusquedaAlquiler(){
+
+      for (const negocio of this.tags.buscadas.negocios.alquilerAutos) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
+    },
+
+    async ObtenerValoracionesBusquedaCambistas(){
+
+      for (const negocio of this.tags.buscadas.negocios.cambistas) {
+
+        let params = {
+          negocioId: negocio.id
+        }
+
+        negocio.totalValoraciones = 0
+        negocio.puntuacionAvg = 0
+
+        await this.$api.post("/valoraciones", params).then(data => {
+
+          let valoracionesAvg = 0
+
+          data.forEach(valoracion => {
+
+            valoracionesAvg += valoracion.puntuacion;
+
+          })
+
+          negocio.totalValoraciones = data.length
+
+          negocio.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+          this.$forceUpdate()
+
+        })
+
+      }
+
     },
 
     geolocate() {
@@ -1583,8 +1961,14 @@ export default {
       if (index >= 0) this.tags.seleccionadas.splice(index, 1)
     },
 
-    IrRegistro(){
-      this.$router.push({ path: '/negocios/registro' })
+    IrRegistro(tipo){
+
+      if(tipo === 'N')
+        this.$router.push({ path: '/negocios/registro' })
+      else if(tipo === 'G')
+        this.$router.push({ path: '/negocios/registro_guia' })
+      else
+        this.$router.push({ path: '/negocios/registro_cambista' })
     },
 
     IrInformacionNegocio(categoria, id){

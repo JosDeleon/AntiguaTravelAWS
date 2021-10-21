@@ -224,24 +224,21 @@
               <v-card-text>
                 <v-row
                   align="center"
-                  class="mx-0"
+                  class="mx-0 mb-2"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="restaurante.puntuacionAvg"
                     color="secondary"
                     dense
                     half-increments
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ restaurante.puntuacionAvg.toFixed(1) }} ({{ restaurante.totalValoraciones }}
+                    {{ restaurante.totalValoraciones > 1 ||  restaurante.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
-
-                <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(restaurante.tags)}}
-                </div>
 
                 <div>{{ restaurante.descripcion ? restaurante.descripcion :
                   "Este restaurante no cuenta con una descripción" }}</div>
@@ -474,7 +471,32 @@ export default {
 
         this.restaurantes.listado = data
         let cont = 0
-        this.restaurantes.listado.forEach( restaurante => {
+        this.restaurantes.listado.forEach( async restaurante => {
+
+          let params = {
+            negocioId: restaurante.id
+          }
+
+          restaurante.totalValoraciones = 0
+          restaurante.puntuacionAvg = 0
+
+          await this.$api.post("/valoraciones", params).then(data => {
+
+            let valoracionesAvg = 0
+
+            data.forEach(valoracion => {
+
+              valoracionesAvg += valoracion.puntuacion;
+
+            })
+
+            restaurante.totalValoraciones = data.length
+
+            restaurante.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+            this.$forceUpdate()
+
+          })
 
           restaurante.showCardTags = false
           restaurante.tags = ["Comida rápida"]

@@ -223,27 +223,24 @@
               <v-card-text>
                 <v-row
                   align="center"
-                  class="mx-0"
+                  class="mx-0 mb-2"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
                     half-increments
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ cambista.puntuacionAvg.toFixed(1) }} ({{ cambista.totalValoraciones }}
+                    {{ cambista.totalValoraciones > 1 ||  cambista.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
 
-                <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(cambista.tags)}}
-                </div>
-
                 <div>{{ cambista.descripcion ? cambista.descripcion :
-                  "Este cambista turístico no cuenta con una descripción" }}</div>
+                  "Este cambista no cuenta con una descripción" }}</div>
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -548,10 +545,35 @@
 
           this.cambistas.listado = data
           let cont = 0
-          this.cambistas.listado.forEach( destino => {
+          this.cambistas.listado.forEach( async cambista => {
 
-            destino.showCardTags = false
-            destino.tags = ["Al aire libre"]
+            let params = {
+              negocioId: cambista.id
+            }
+
+            cambista.totalValoraciones = 0
+            cambista.puntuacionAvg = 0
+
+            await this.$api.post("/valoraciones", params).then(data => {
+
+              let valoracionesAvg = 0
+
+              data.forEach(valoracion => {
+
+                valoracionesAvg += valoracion.puntuacion;
+
+              })
+
+              cambista.totalValoraciones = data.length
+
+              cambista.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+              this.$forceUpdate()
+
+            })
+
+            cambista.showCardTags = false
+            cambista.tags = ["Al aire libre"]
             cont++
 
           } )

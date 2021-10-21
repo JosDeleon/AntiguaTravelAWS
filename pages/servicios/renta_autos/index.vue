@@ -224,24 +224,21 @@
               <v-card-text>
                 <v-row
                   align="center"
-                  class="mx-0"
+                  class="mx-0 mb-2"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="renta.puntuacionAvg"
                     color="secondary"
                     dense
                     half-increments
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ renta.puntuacionAvg.toFixed(1) }} ({{ renta.totalValoraciones }}
+                    {{ renta.totalValoraciones > 1 ||  renta.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
-
-                <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(renta.tags)}}
-                </div>
 
                 <div>{{ renta.descripcion }}</div>
               </v-card-text>
@@ -548,7 +545,32 @@ export default {
 
         this.rentas.listado = data
         let cont = 0
-        this.rentas.listado.forEach( renta => {
+        this.rentas.listado.forEach( async renta => {
+
+          let params = {
+            negocioId: renta.id
+          }
+
+          renta.totalValoraciones = 0
+          renta.puntuacionAvg = 0
+
+          await this.$api.post("/valoraciones", params).then(data => {
+
+            let valoracionesAvg = 0
+
+            data.forEach(valoracion => {
+
+              valoracionesAvg += valoracion.puntuacion;
+
+            })
+
+            renta.totalValoraciones = data.length
+
+            renta.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+            this.$forceUpdate()
+
+          })
 
           renta.showCardTags = false
           renta.tags = ["Al aire libre"]

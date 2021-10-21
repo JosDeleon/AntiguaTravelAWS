@@ -224,24 +224,21 @@
               <v-card-text>
                 <v-row
                   align="center"
-                  class="mx-0"
+                  class="mx-0 mb-2"
                 >
                   <v-rating
-                    :value="4.5"
+                    :value="hotel.puntuacionAvg"
                     color="secondary"
                     dense
                     half-increments
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
-                    4.5 (413 valoraciones)
+                    {{ hotel.puntuacionAvg.toFixed(1) }} ({{ hotel.totalValoraciones }}
+                    {{ hotel.totalValoraciones > 1 ||  hotel.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
-
-                <div class="my-4">
-                  <v-icon class="mr-1"> fa fa-tags </v-icon>{{StringTags(hotel.tags)}}
-                </div>
 
                 <div>{{ hotel.descripcion ? hotel.descripcion :
                   "Este hotel no cuenta con una descripción" }}</div>
@@ -549,7 +546,32 @@ export default {
 
         this.hoteles.listado = data
         let cont = 0
-        this.hoteles.listado.forEach( hotel => {
+        this.hoteles.listado.forEach(async hotel => {
+
+          let params = {
+            negocioId: hotel.id
+          }
+
+          hotel.totalValoraciones = 0
+          hotel.puntuacionAvg = 0
+
+          await this.$api.post("/valoraciones", params).then(data => {
+
+            let valoracionesAvg = 0
+
+            data.forEach(valoracion => {
+
+              valoracionesAvg += valoracion.puntuacion;
+
+            })
+
+            hotel.totalValoraciones = data.length
+
+            hotel.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+            this.$forceUpdate()
+
+          })
 
           hotel.showCardTags = false
           hotel.tags = ["Eco-hotel"]
