@@ -148,8 +148,7 @@
                   :value="sitio.puntuacionAvg"
                   color="secondary"
                   dense
-
-                  hover
+                  readonly
                 />
 
                 <div class="grey--text ms-4">
@@ -269,8 +268,7 @@
                     :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -464,8 +462,7 @@
                   :value="hotel.puntuacionAvg"
                   color="secondary"
                   dense
-
-                  hover
+                  readonly
                 />
 
                 <div class="grey--text ms-4">
@@ -586,8 +583,7 @@
                     :value="restaurante.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -722,8 +718,7 @@
                     :value="renta.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -866,8 +861,7 @@
                     :value="sitio.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -979,8 +973,7 @@
                     :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -1092,8 +1085,7 @@
                     :value="hotel.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">
@@ -1216,8 +1208,7 @@
                       :value="restaurante.puntuacionAvg"
                       color="secondary"
                       dense
-
-                      hover
+                      readonly
                     />
 
                     <div class="grey--text ms-4">
@@ -1343,8 +1334,7 @@
                     :value="alquiler.puntuacionAvg"
                     color="secondary"
                     dense
-
-                    hover
+                    readonly
                   />
 
                   <div class="grey--text ms-4">

@@ -564,6 +564,8 @@
         </v-card>
       </v-dialog>
 
+      <AyudaNegocios v-model="dialogos.ayuda_negocios" />
+
       <Nuxt />
 
     </v-main>
@@ -638,7 +640,8 @@ export default {
       usuario: {  },
       dialogos: {
         registro: false,
-        login: false
+        login: false,
+        ayuda_negocios: false
       },
       must_login: false,
       menu: false,
@@ -822,6 +825,11 @@ export default {
       if (tipo === 'A') {
 
         this.$router.push({ path: '/negocios/login' })
+
+      }
+      else {
+
+        this.dialogos.ayuda_negocios = true
 
       }
     },
