@@ -81,6 +81,7 @@
                   :value="guia.puntuacionAvg"
                   color="secondary"
                   dense
+                  half-increments
                   readonly
                 />
 
@@ -233,6 +234,7 @@
                 :value="guia.puntuacionAvg"
                 color="secondary"
                 dense
+                half-increments
                 readonly
               />
 
@@ -319,7 +321,9 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Rango de precios</v-list-item-title>
-                    <v-list-item-subtitle class="mt-2">GTQ 23 - GTQ 77</v-list-item-subtitle>
+                    <v-list-item-subtitle class="mt-2">
+                      GTQ {{ productos.listado[0].valor }} - GTQ {{ productos.listado[productos.listado.length - 1].valor }}
+                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
@@ -924,6 +928,10 @@ export default {
       }
 
       this.productos.listado = await this.$api.post("/productos", params)
+
+      this.productos.listado.sort(function (a, b) {
+        return a.valor - b.valor
+      })
 
     },
 

@@ -88,7 +88,7 @@
                     {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
                     'Aún no hay mensajes en esta conversación' }}
                   </div>
-                  <div>
+                  <div v-else>
                     Te enviaron un link de reservación
                   </div>
                 </div>
@@ -214,7 +214,9 @@
                 <v-list-item-title v-text="ObtenerNombreChat(mensaje.enviadoPor)" />
                 <v-list-item-subtitle class="text-wrap">
 
-                  <v-card :to="'/negocios/reservaciones'" color="grey lighten-4" elevation="0"
+                  <v-card :to="'/negocios/reservaciones?id=' +
+                          negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].negocioId"
+                          color="grey lighten-4" elevation="0"
                           outlined style="border-radius:15px;" class="mt-2"
                   >
 

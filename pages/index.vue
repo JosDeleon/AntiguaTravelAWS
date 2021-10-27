@@ -583,6 +583,7 @@
                     :value="restaurante.puntuacionAvg"
                     color="secondary"
                     dense
+                    half-increments
                     readonly
                   />
 
@@ -861,6 +862,7 @@
                     :value="sitio.puntuacionAvg"
                     color="secondary"
                     dense
+                    half-increments
                     readonly
                   />
 
@@ -973,6 +975,7 @@
                     :value="cambista.puntuacionAvg"
                     color="secondary"
                     dense
+                    half-increments
                     readonly
                   />
 
@@ -1085,6 +1088,7 @@
                     :value="hotel.puntuacionAvg"
                     color="secondary"
                     dense
+                    half-increments
                     readonly
                   />
 
@@ -1208,6 +1212,7 @@
                       :value="restaurante.puntuacionAvg"
                       color="secondary"
                       dense
+                      half-increments
                       readonly
                     />
 
@@ -1334,6 +1339,7 @@
                     :value="alquiler.puntuacionAvg"
                     color="secondary"
                     dense
+                    half-increments
                     readonly
                   />
 

@@ -63,7 +63,7 @@
                                                                 ></v-text-field>
                                                             </v-col>
                                                             <v-col>
-                                                                <v-date-picker 
+                                                                <v-date-picker
                                                                     v-model="fecha"
                                                                     range
                                                                     color="secondary"
@@ -92,7 +92,7 @@
                                             </v-card-text>
                                         </v-window-item>
                                     </v-window>
-                                </v-card-text>  
+                                </v-card-text>
 
                                 <v-divider/>
 
@@ -124,6 +124,8 @@ export default {
         //this.geolocate()
     },
 
+    middleware: 'VerificarUsuarioAuth',
+
     head(){
         return{
             titleTemplate: "Reservaciones | Antigua Travel"
@@ -147,7 +149,7 @@ export default {
                     hora : this.reservacion.hora,
                     fecha : this.fecha,
                     usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
-                    negocioId : this.$route.query.in 
+                    negocioId : this.$route.query.id
                 }
 
                 await this.$api.post("/solicitar", params).then( data => {

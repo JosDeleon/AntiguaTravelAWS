@@ -81,6 +81,7 @@
                   :value="restaurante.puntuacionAvg"
                   color="secondary"
                   dense
+                  half-increments
                   readonly
                 />
 
@@ -107,7 +108,7 @@
                   <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon> {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
                   {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
                                                                                     'red--text' : 'green--text'">
-                    {{ VerificarHora() === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                    {{ VerificarHora() }}
                   </span>)
 
                 </div>
@@ -232,6 +233,7 @@
                 :value="restaurante.puntuacionAvg"
                 color="secondary"
                 dense
+                half-increments
                 readonly
               />
 
@@ -318,7 +320,7 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Rango de precios</v-list-item-title>
-                    <v-list-item-subtitle class="mt-2">GTQ 23 - GTQ 77</v-list-item-subtitle>
+                    <v-list-item-subtitle class="mt-2">GTQ {{ productos.listado[0].valor }} - GTQ {{ productos.listado[productos.listado.length - 1].valor }} </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
@@ -923,6 +925,10 @@ export default {
 
       this.productos.listado = await this.$api.post("/productos", params)
 
+      this.productos.listado.sort(function (a, b) {
+        return a.valor - b.valor
+      })
+
     },
 
     async ObtenerRestaurante(){
@@ -999,6 +1005,10 @@ export default {
       this.restaurante.totalValoraciones = this.valoraciones.length
       this.restaurante.puntuacionAvg = (this.valoraciones.length > 0) ? valoracionesAvg / this.valoraciones.length : 0
       this.$forceUpdate()
+
+    },
+
+    ObtenerRangosPrecios(){
 
     },
 

@@ -20,6 +20,21 @@
       <v-list>
 
         <v-list-item>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="secondary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+              >
+                <v-icon color="secondary"> fa fa-arrow-left </v-icon>
+              </v-btn>
+            </template>
+            <span>Regresar</span>
+          </v-tooltip>
           <v-list-item-content>
             <v-autocomplete
               outlined
@@ -90,7 +105,7 @@
                     {{ chat.ultimoMensaje !== '' ? chat.ultimoMensaje :
                     'Aún no hay mensajes en esta conversación' }}
                   </div>
-                  <div>
+                  <div v-else>
                     <v-icon small>fa fa-check</v-icon>
                     Enviaste un link de reservación
                   </div>
@@ -117,21 +132,7 @@
       outlined
     >
       <v-app-bar-nav-icon color="secondary" @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0" />
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            color="secondary"
-            dark
-            v-bind="attrs"
-            v-on="on"
-            icon
-            @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
-          >
-            <v-icon color="secondary"> fa fa-arrow-left </v-icon>
-          </v-btn>
-        </template>
-        <span>Regresar</span>
-      </v-tooltip>
+
       <v-avatar size="45" v-if="chat_pool && chat_pool.length > 0">
         <v-img :src="negocios && chat_pool[seleccionado] &&
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
@@ -239,7 +240,7 @@
                 <v-list-item-title v-text="ObtenerNombreChat(mensaje.enviadoPor)" />
                 <v-list-item-subtitle class="text-wrap">
 
-                  <v-card :to="'/negocios/reservaciones'" color="grey lighten-4" elevation="0"
+                  <v-card color="grey lighten-4" elevation="0"
                           outlined style="border-radius:15px;" class="mt-2"
                   >
 
