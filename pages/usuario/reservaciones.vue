@@ -242,7 +242,6 @@
 
 </script>
 
-
 <style scoped>
   .my-event {
     overflow: hidden;

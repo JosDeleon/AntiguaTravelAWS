@@ -199,7 +199,7 @@ export default {
           no: 5,
           icon: 'fa fa-calendar-week',
           title: 'Reservaciones',
-          to: '/negocios/reservaciones'
+          to: '/negocios/listado_reservaciones'
         },
       ],
       miniVariant: false,
