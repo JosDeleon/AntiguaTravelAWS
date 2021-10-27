@@ -14,6 +14,7 @@ var bodyParser = require('body-parser')
 var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 const db = require('./models')
 
+
 // declare a new express app
 var app = express()
 app.use(bodyParser.json())
@@ -25,6 +26,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "*")
   next()
 });
+
 
 //Instancia de Sequelize
 //Sincronizacion Forzada con eliminacion de datos
@@ -42,10 +44,8 @@ require('./routes/usuario.routes')(app);
 require('./routes/valoracion.routes')(app);
 require('./routes/caracteristica.routes')(app);
 
-app.get('/api', function(req, res) {
-
-  const items = ['Hello', 'World'];
-  res.json({success: 'get call succeed!', items});
+app.get('/api', function(req, res) { 
+  res.json({success: 'Funcion Ejecutada'});
 });
 
 app.listen(3000, function() {

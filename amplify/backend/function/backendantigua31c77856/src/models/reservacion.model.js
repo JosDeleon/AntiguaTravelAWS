@@ -11,11 +11,17 @@ module.exports = (sequelize, Sequelize) => {
         hora : {
             type : Sequelize.TIME
         },
+        fechaSolicitud : {
+            type : Sequelize.DATE
+        },
         fechaInicio : {
             type : Sequelize.DATE
         },
         fechaFinal : {
             type : Sequelize.DATE
+        },
+        estado : {
+            type : Sequelize.STRING
         },
         valor : {
             type : Sequelize.DECIMAL(10, 2)

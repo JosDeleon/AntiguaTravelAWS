@@ -17,6 +17,9 @@ module.exports = (sequelize, Sequelize) => {
         img : {
             type : Sequelize.STRING
         },
+        vistas : {
+            type : Sequelize.INTEGER
+        },
     },{
         freezeTableName : true
     });

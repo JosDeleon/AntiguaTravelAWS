@@ -9,7 +9,7 @@ exports.get = (req, res) => {
     Usuario.findAll()   
     .then(async (usuarios) => {
         if(!usuarios){
-            return res.status(404).send({ message : 'Usuarios no econtrados.'});
+            return res.status(400).send({ message : 'Usuarios no econtrados.'});
         }
         res.status(200).send(usuarios);
     })
@@ -69,7 +69,7 @@ exports.password = async (req, res) => {
     })
     .then( usuario => {
         if(!usuario){
-            return res.status(404).send({ message : "Usuario no Encontrado"});
+            return res.status(400).send({ message : "Usuario no Encontrado"});
         }
 
         if(req.body.password == usuario.password){
@@ -145,7 +145,7 @@ exports.getUser = (req, res) => {
     })
     .then(async (usuario) => {
         if(!usuario){
-            return res.status(404).send({ message : 'Usuario no econtrados.'});
+            return res.status(400).send({ message : 'Usuario no econtrados.'});
         }
         res.status(200).send(usuario);
     })
@@ -160,11 +160,11 @@ exports.signin = (req, res) => {
     })
     .then( async (usuario) => {
         if(!usuario){
-            return res.status(404).send({ message : "Error en Usuario o Contraseña!"});
+            return res.status(400).send({ message : "Error en Usuario o Contraseña!"});
         }
 
         if(req.body.password != usuario.password){
-            return res.status(404).send({ message : "Error en Usuario o Contraseña!!"});
+            return res.status(400).send({ message : "Error en Usuario o Contraseña!!"});
         }
         
         const token = jwt.sign({ id: usuario.id }, config.secret, {

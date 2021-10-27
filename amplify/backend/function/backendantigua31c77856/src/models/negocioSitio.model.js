@@ -38,6 +38,15 @@ module.exports = (sequelize, Sequelize) => {
         lng : {
             type : Sequelize.DECIMAL(10,8)
         },
+        vistas : {
+            type : Sequelize.INTEGER
+        },
+        dep : {
+            type : Sequelize.INTEGER
+        },
+        mun : {
+            type : Sequelize.INTEGER
+        },
     },{
         freezeTableName : true
     });

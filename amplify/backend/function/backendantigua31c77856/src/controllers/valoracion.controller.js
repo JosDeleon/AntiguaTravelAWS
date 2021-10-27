@@ -3,8 +3,10 @@ const Valoracion = db.valoracion;
 
 exports.insert = (req, res) => {
     Valoracion.create({
+        titulo : req.body.titulo,
         puntuacion : req.body.puntuacion,
         comentario : req.body.comentario,
+        fecha : req.body.fecha,
         usuarioId : req.body.usuarioId,
         negocioId : req.body.negocioId
     }).then(() => {

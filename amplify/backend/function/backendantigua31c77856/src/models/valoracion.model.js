@@ -5,12 +5,18 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement : true,
             primaryKey : true
         },
+        titulo : {
+            type : Sequelize.STRING
+        },
         puntuacion : {
             type : Sequelize.INTEGER
         },
         comentario : {
             type : Sequelize.TEXT
         },
+        fecha : {
+            type : Sequelize.DATE
+        }
     },{
         freezeTableName : true
     });

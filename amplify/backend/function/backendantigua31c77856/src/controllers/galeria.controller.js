@@ -31,8 +31,8 @@ exports.getGalery = (req, res) => {
     });
 };
 
-exports.insert = (req, res) => {
-    Galeria.create({
+exports.insert = async (req, res) => {
+    await Galeria.create({
         img : req.body.img,
         negocioId : req.body.negocioId
     }).then(() => {
