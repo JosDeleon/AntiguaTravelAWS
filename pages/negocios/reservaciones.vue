@@ -149,10 +149,13 @@ export default {
                     hora : this.reservacion.hora,
                     fecha : this.fecha,
                     usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
-                    negocioId : this.$route.query.id
+                    negocioId : parseInt(this.$route.query.in) 
                 }
-
+                
+                console.log(params);
+                
                 await this.$api.post("/solicitar", params).then( data => {
+                    console.log(data);
                     //Agregar alert de solicitud enviada
                     //this.$alert.registro_exitoso()
                     this.$router.push({ path: '/' })

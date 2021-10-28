@@ -25,7 +25,7 @@ exports.insert = (req, res) => {
 
 exports.getReserva = (req, res) => {
     Reserva.findOne({
-        where : { id : req.body.id}
+        where : { negocioId : req.body.negocioId }
     })
     .then(async (reserva) => {
         if(!reserva){
@@ -38,20 +38,36 @@ exports.getReserva = (req, res) => {
     });
 }
 
-exports.getReservas = (req, res) => {
+exports.getReservasNegocios = (req, res) => {
     Reserva.findAll({
-        where : { negocioId : req.body.negocioId}
+        where : { negocioId : req.body.negocioId }
     })
-    .then(async (productos) => {
-        if(!productos){
-            return res.status(404).send({ message : 'Productos no econtrados.'});
+    .then(async (reservas) => {
+        if(!reservas){
+            return res.status(404).send({ message : 'Reservas no econtrados.'});
         }
-        res.status(200).send(productos);
+        res.status(200).send(reservas);
     })
     .catch(err => {
         res.status(500).send({ message : err.message});
     });
 }
+
+exports.getReservasUsuarios = (req, res) => {
+    Reserva.findAll({
+        where : { usuarioId : req.body.usuarioId }
+    })
+    .then(async (reservas) => {
+        if(!reservas){
+            return res.status(404).send({ message : 'Reservas no econtrados.'});
+        }
+        res.status(200).send(reservas);
+    })
+    .catch(err => {
+        res.status(500).send({ message : err.message});
+    });
+}
+
 
 exports.delete = (req, res) => {
     Reserva.destroy({
@@ -117,11 +133,25 @@ exports.solicitar = async (req, res) => {
 
                 try {
                     SES.sendEmail(params).promise();
-                    return res.status(200).send({ message : 'Solicitud Enviada'});
-                } catch (error) {
-                    return res.status(400).send({ message : error});
-                }
 
+                    const fecha = new Date();
+
+                    Reserva.create({
+                        cantidad : req.body.cantidad,
+                        hora : req.body.hora,
+                        fechaInicio : req.body.fecha,
+                        usuarioId : req.body.usuarioId,
+                        negocioId : req.body.negocioId,
+                        estado : 'p',
+                        fechaSolicitud : fecha.getDate()
+                    }).then( (reserva) => {
+                        return res.status(200).send({ message : 'ok'});
+                    }).catch( err => {
+                        res.status(500).send({ message : err.message })
+                    })
+                } catch (error) {
+                    return res.status(400).send({ message : error.message });
+                }
             }).catch( err => {
                 res.status(500).send({ message : err.message })
             })

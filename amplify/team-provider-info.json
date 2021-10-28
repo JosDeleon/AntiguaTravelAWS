@@ -15,7 +15,7 @@
       "function": {
         "backendantigua31c77856": {
           "deploymentBucketName": "amplify-backendantigua-dev-84449-deployment",
-          "s3Key": "amplify-builds/backendantigua31c77856-586e6874353852436271-build.zip"
+          "s3Key": "amplify-builds/backendantigua31c77856-70344670315656682b4b-build.zip"
         },
         "emailAntigua": {
           "deploymentBucketName": "amplify-backendantigua-dev-84449-deployment",

@@ -1,7 +1,9 @@
 const controller = require('../controllers/reservacion.controller')
 
 module.exports = function (app){
-    //app.get('/api/reservacion', controller.getReservas) 
+    app.post('/api/reservacion/usuario', controller.getReservasUsuarios)
+
+    app.post('/api/reservacion/negocio', controller.getReservasNegocios) 
 
     app.post('/api/reservacion', controller.insert)
 
