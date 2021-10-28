@@ -108,6 +108,7 @@
       flat
       color="primary"
       outlined
+      height="80"
     >
       <v-app-bar-nav-icon color="secondary"
                           @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0"

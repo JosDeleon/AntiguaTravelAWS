@@ -6,9 +6,11 @@
       <v-col>
 
         <v-sheet height="64">
+
           <v-toolbar
             flat
           >
+
             <v-btn
               outlined
               class="mr-4"
@@ -18,6 +20,7 @@
               <v-icon left>fa fa-calendar-day</v-icon>
               Hoy
             </v-btn>
+
             <v-btn
               fab
               text
@@ -29,6 +32,7 @@
                 fa fa-chevron-left
               </v-icon>
             </v-btn>
+
             <v-btn
               fab
               text
@@ -40,10 +44,13 @@
                 fa fa-chevron-right
               </v-icon>
             </v-btn>
+
             <v-toolbar-title v-if="$refs.calendar">
               {{ $refs.calendar.title.charAt(0).toUpperCase() + $refs.calendar.title.substring(1) }}
             </v-toolbar-title>
+
             <v-spacer />
+
             <v-menu
               bottom
               right
@@ -78,10 +85,13 @@
                 </v-list-item>
               </v-list>
             </v-menu>
+
           </v-toolbar>
+
         </v-sheet>
 
         <v-sheet>
+
           <v-calendar
             v-model="focus"
             ref="calendar"
@@ -93,8 +103,11 @@
             color="secondary"
             event-color="secondary"
           />
+
         </v-sheet>
+
       </v-col>
+
     </v-row>
 
   </v-container>
@@ -108,6 +121,7 @@ export default {
   mounted() {
     this.$refs.calendar.scrollToTime('08:00')
     this.$store.commit('setRutaActual', 'Historial de Reservaciones')
+    this.ObtenerNegocios()
   },
 
   layout: 'admin_negocio',
@@ -153,9 +167,50 @@ export default {
         end: '2021-10-15 08:30',
       },
     ],
+
+    reservaciones: [],
+
+    negocios: []
+
   }),
 
   methods: {
+
+    async ObtenerNegocios(){
+
+      let params = {
+        usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+      }
+
+      await this.$api.post("/negocios/usuario", params).then(data => {
+
+        this.negocios = data
+        this.ObtenerReservaciones()
+
+      })
+
+    },
+
+    ObtenerReservaciones(){
+
+      this.negocios.forEach(async negocio => {
+
+        let params = {
+
+          negocioId: negocio.id
+
+        }
+
+        await this.$api.post("/reservacion/negocio", params).then( data => {
+
+          this.reservaciones = [...this.reservaciones, ...data]
+
+        })
+
+      })
+
+
+    },
 
     hoy () {
       this.focus = ''

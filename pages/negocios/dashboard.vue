@@ -151,7 +151,7 @@ export default {
             icono: 'fa fa-calendar-week',
             titulo: 'Reservaciones',
             descripcion: 'Página para adminstrar las reservaciones y de igual forma agendar reservaciones',
-            to: '/negocios/reservaciones'
+            to: '/negocios/listado_reservaciones'
           },
         ]
       }

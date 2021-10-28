@@ -54,7 +54,7 @@
                             type="number"
                             prefix="(+502)"
                             v-model="negocio.telefono"
-                            :rules="[ v => !!v || 'El teléfono es obligatorio' ]"
+                            :rules="[rules.numeroRequerido, rules.numeroValido]"
                             prepend-icon="fa fa-phone"
                           />
 
@@ -398,6 +398,10 @@ export default {
         nonce: 1,
         mapSearch: null,
         busqueda: null,
+      },
+      rules: {
+        numeroRequerido: value => !!value || 'El número de teléfono es obligatorio',
+        numeroValido: value => value >= 9999999 && value <= 99999999 || 'Debe de contener exactamente 8 diigitos',
       },
       markers: [],
       places: [],

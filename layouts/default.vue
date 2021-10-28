@@ -298,10 +298,11 @@
                     label="Correo Electrónico"
                     color="black"
                     autocomplete="new-password"
+                    hint="ejemplo@ejemplo.com"
                     outlined
                     dense
                     v-model="form.email"
-                    :rules="[ v => v && v.length > 0 || 'El correo electrónico es obligatorio' ]"
+                    :rules="[rules.emailRequerido, rules.emailValido]"
                     prepend-icon="fa fa-envelope"
                   />
 
@@ -312,7 +313,7 @@
                     outlined
                     dense
                     v-model="form.username"
-                    :rules="[ v => v && v.length > 0 || 'El nombre de usuario es obligatorio' ]"
+                    :rules="[rules.usernameRequerido]"
                     prepend-icon="fa fa-user"
                   />
 
@@ -325,7 +326,7 @@
                     type="number"
                     prefix="(+502)"
                     v-model="form.telefono"
-                    :rules="[ v => !!v || 'El teléfono es obligatorio' ]"
+                    :rules="[rules.numeroRequerido, rules.numeroValido]"
                     prepend-icon="fa fa-phone"
                   />
 
@@ -656,7 +657,12 @@ export default {
         required: value => !!value || 'La contraseña es obligatoria',
         requiredVerify: value => !!value || 'Es obligatorio confirmar la contraseña',
         min: value => value.length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
-        verificarPassword: value => value === this.form.password || 'Las contraseñas no son iguales'
+        verificarPassword: value => value === this.form.password || 'Las contraseñas no son iguales',
+        emailRequerido: value => !!value || 'El correo electrónico es obligatorio',
+        usernameRequerido: value => !!value || 'El nombre de usuario es obligatorio',
+        numeroRequerido: value => !!value || 'El número de teléfono es obligatorio',
+        numeroValido: value => value >= 9999999 && value <= 99999999 || 'Debe de contener exactamente 8 diigitos',
+        emailValido:  v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || 'Por favor escriba un correo electrónico válido'
       },
       form: { password: '' },
       clipped: false,

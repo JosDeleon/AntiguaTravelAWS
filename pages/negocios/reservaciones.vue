@@ -1,5 +1,7 @@
 <template>
+
     <v-row justify="center" align="center">
+
         <v-col cols="12" sm="10" md="10" lg="9" class="hidden-sm-and-down">
             <v-card style="border-radius:10px;">
                 <v-img
@@ -114,7 +116,9 @@
                 </v-img>
             </v-card>
         </v-col>
+
     </v-row>
+
 </template>
 
 <script>
@@ -149,11 +153,11 @@ export default {
                     hora : this.reservacion.hora,
                     fecha : this.fecha,
                     usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
-                    negocioId : parseInt(this.$route.query.in) 
+                    negocioId : parseInt(this.$route.query.id)
                 }
-                
+
                 console.log(params);
-                
+
                 await this.$api.post("/solicitar", params).then( data => {
                     console.log(data);
                     //Agregar alert de solicitud enviada

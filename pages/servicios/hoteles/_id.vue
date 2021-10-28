@@ -320,7 +320,7 @@
                   <v-list-item-content>
                     <v-list-item-title>Rango de precios</v-list-item-title>
                     <v-list-item-subtitle class="mt-2">
-                      GTQ {{ productos.listado[0].valor }} - GTQ {{ productos.listado[productos.listado.length - 1].valor }}
+                      {{ CalcularRangoPrecios() }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -1036,6 +1036,22 @@ export default {
       this.hotel.totalValoraciones = this.valoraciones.length
       this.hotel.puntuacionAvg = (this.valoraciones.length > 0) ? valoracionesAvg / this.valoraciones.length : 0
       this.$forceUpdate()
+
+    },
+
+    CalcularRangoPrecios(){
+
+      if(this.productos.listado && this.productos.listado.length > 0){
+
+        return "GTQ " + this.productos.listado[0].valor + " - GTQ " + this.productos.listado[this.productos.listado.length - 1].valor
+
+      }
+
+      else {
+
+        return "-"
+
+      }
 
     },
 
