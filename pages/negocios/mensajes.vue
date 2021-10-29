@@ -20,44 +20,16 @@
       <v-list>
 
         <v-list-item>
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                color="secondary"
-                dark
-                v-bind="attrs"
-                v-on="on"
-                icon
-                @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
-              >
-                <v-icon color="secondary"> fa fa-arrow-left </v-icon>
-              </v-btn>
-            </template>
-            <span>Regresar</span>
-          </v-tooltip>
-          <v-list-item-content>
-            <v-autocomplete
-              outlined
-              rounded
-              dense
-              hide-details
-              placeholder="Busqueda"
-              label="Busqueda"
-              prepend-inner-icon="mdi-magnify"
-              color="black"
-              :items="[]"
-              item-value="tag"
-              item-text="tag"
-              clearable
-              clear-icon="fa fa-times-circle"
-              background-color="white"
-              item-color="black"
-              chips
-              small-chips
-              multiple
-              no-data-text="No hay nadie con el nombre especificado"
-            />
-          </v-list-item-content>
+          <v-btn
+            color="tertiary"
+            dark
+            @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+          >
+            <v-icon left>
+              fa fa-arrow-left
+            </v-icon>
+            Regresar
+          </v-btn>
         </v-list-item>
 
         <v-divider />
@@ -355,6 +327,7 @@ export default {
       clipped: false,
       drawer: false,
       fixed: false,
+      busqueda: null,
       chat_pool: [],
       chats: {},
       seleccionado: 0,

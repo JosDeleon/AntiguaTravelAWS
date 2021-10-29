@@ -3,112 +3,146 @@
   <v-container fluid>
 
     <v-row>
+
       <v-col>
 
-        <v-sheet height="64">
+        <v-date-picker
+          v-model="fecha_seleccionada"
+          ref="fecha_evento"
+          :min="new Date().getFullYear().toString()"
+          locale="Es"
+          :events="reservaciones"
+          color="tertiary"
+          event-color="primary darken-2"
+          full-width
+          class="mt-4"
+        />
 
-          <v-toolbar
-            flat
-          >
-
-            <v-btn
-              outlined
-              class="mr-4"
-              color="grey darken-2"
-              @click="hoy"
-            >
-              <v-icon left>fa fa-calendar-day</v-icon>
-              Hoy
-            </v-btn>
-
-            <v-btn
-              fab
-              text
-              small
-              color="grey darken-2"
-              @click="previo"
-            >
-              <v-icon small>
-                fa fa-chevron-left
-              </v-icon>
-            </v-btn>
-
-            <v-btn
-              fab
-              text
-              small
-              color="grey darken-2"
-              @click="siguiente"
-            >
-              <v-icon small>
-                fa fa-chevron-right
-              </v-icon>
-            </v-btn>
-
-            <v-toolbar-title v-if="$refs.calendar">
-              {{ $refs.calendar.title.charAt(0).toUpperCase() + $refs.calendar.title.substring(1) }}
-            </v-toolbar-title>
-
-            <v-spacer />
-
-            <v-menu
-              bottom
-              right
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  outlined
-                  color="grey darken-2"
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon left>
-                    {{ tipos.iconos[tipos.seleccionado] }}
-                  </v-icon>
-                  <span>{{ tipos.listado[tipos.seleccionado] }}</span>
-                  <v-icon right>
-                    mdi-menu-down
-                  </v-icon>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item @click="tipos.seleccionado = 'day'">
-                  <v-list-item-content>
-                    <v-list-item-title>Día</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="tipos.seleccionado = 'week'">
-                  <v-list-item-title>Semana</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="tipos.seleccionado = 'month'">
-                  <v-list-item-title>Mes</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-
-          </v-toolbar>
-
-        </v-sheet>
-
-        <v-sheet>
-
-          <v-calendar
-            v-model="focus"
-            ref="calendar"
-            :type="tipos.seleccionado"
-            :now="today"
-            :events="events"
-            @click:more="viewDay"
-            @click:date="viewDay"
-            color="secondary"
-            event-color="secondary"
-          />
-
-        </v-sheet>
 
       </v-col>
 
     </v-row>
+
+    <v-row class="my-6" justify="center">
+
+      <v-col cols="12" xl="8" lg="8">
+
+        <v-list
+          subheader
+          two-line
+          style="border-radius:15px;"
+        >
+
+          <v-subheader inset class="black--text">
+            <h3 class="hidden-sm-and-down"> Historial de Reservaciones </h3>
+            <h4 class="hidden-md-and-up"> Historial de Reservaciones </h4>
+          </v-subheader>
+
+          <div v-for="(reserva, i) in reservas"
+               :key="i"
+          >
+
+            <v-divider />
+
+            <v-list-item>
+              <v-list-item-avatar>
+                <v-icon
+                  class="secondary"
+                  dark
+                >
+                  fas fa-calendar-day
+                </v-icon>
+              </v-list-item-avatar>
+
+              <v-list-item-content>
+                <v-list-item-title class="text-wrap black--text" v-text="'Reserva de ' + reserva.usuario"/>
+                <v-list-item-subtitle class="text-wrap" v-text="'Solicitó una reservación en ' + reserva.negocio" />
+                <v-list-item-subtitle class="text-wrap" v-if="reserva.fechaInicio !== null && reserva.fechaFinal !== null">
+                  Del {{ $moment.utc((reserva.fechaInicio).split("T")[0],"YYYY-MM-DD").format("L") }} al
+                  {{ $moment.utc((reserva.fechaFinal).split("T")[0],"YYYY-MM-DD").format("L") }}
+                </v-list-item-subtitle>
+                <v-list-item-subtitle class="text-wrap" v-if="reserva.fechaInicio !== null && reserva.fechaFinal === null">
+                  Fecha: {{ (reserva.fechaInicio).split("T")[0] }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                      color="blue-grey"
+                      @click="MostrarNotasReserva(reserva)">
+                      <v-icon>fa fa-edit</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Notas de la Reserva</span>
+                </v-tooltip>
+              </v-list-item-action>
+
+              <v-list-item-action class="mx-0" v-if="reserva.estado === 'p'">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                      color="green"
+                      @click="ConfirmarReserva(reserva)">
+                      <v-icon>fa fa-check-circle</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Confirmar Reserva</span>
+                </v-tooltip>
+              </v-list-item-action>
+
+              <v-list-item-action class="mx-0" v-if="reserva.estado === 'p'">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                      color="red"
+                      @click="RechazarReserva(reserva)">
+                      <v-icon>fa fa-times-circle</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Rechazar Reserva</span>
+                </v-tooltip>
+              </v-list-item-action>
+
+            </v-list-item>
+
+          </div>
+
+          <v-divider />
+
+          <v-list-item v-if="reservas && reservas.length === 0">
+
+            <v-list-item-content>
+
+              <v-alert
+                type="info"
+                prominent
+                color="complementario"
+              >
+                Aún no se han solicitado reservaciones en la fecha seleccionada
+              </v-alert>
+
+            </v-list-item-content>
+
+          </v-list-item>
+
+        </v-list>
+
+      </v-col>
+
+    </v-row>
+
+    <NotasReserva v-model="dialogos.notas" :reserva.sync="reserva_seleccionada" />
 
   </v-container>
 
@@ -119,62 +153,78 @@
 export default {
 
   mounted() {
-    this.$refs.calendar.scrollToTime('08:00')
-    this.$store.commit('setRutaActual', 'Historial de Reservaciones')
-    this.ObtenerNegocios()
+    this.$store.commit('setRutaActual', 'Reservaciones Pendientes')
+    this.ObtenerAuth()
   },
 
   layout: 'admin_negocio',
 
   computed: {
 
-    today() { this.$moment() }
+    today() { this.$moment() },
+
+    reservas(){
+
+      let reservations = []
+
+      if(this.listado_reservaciones && this.listado_reservaciones.length > 0) {
+
+        this.listado_reservaciones.forEach(reservacion => {
+
+          let start = reservacion.fechaInicio ? (reservacion.fechaInicio).split("T")[0] : ""
+          let end = reservacion.fechaFinal ? (reservacion.fechaFinal).split("T")[0] : ""
+
+          if (start === this.fecha_seleccionada || end === this.fecha_seleccionada) {
+
+            reservations.push(reservacion)
+
+          }
+
+        })
+
+      }
+
+      return reservations
+
+    }
 
   },
 
   data: () => ({
-    focus: '',
 
-    tipos: {
-      seleccionado: 'month',
-      listado: {
-        month: 'Mes',
-        week: 'Semana',
-        day: 'Día'
-      },
-      iconos: {
-        month: 'fa fa-calendar',
-        week: 'fa fa-calendar-week',
-        day: 'fa fa-calendar-day'
-      },
+    dialogos: {
+
+      notas: false
+
     },
 
-    names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
+    fecha_seleccionada: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
 
-    events: [
-      {
-        name: 'Reserva en suite, Solei',
-        start: '2021-10-07 07:30',
-        end: '2021-10-08',
-      },
-      {
-        name: `Reserva en taco bell`,
-        start: '2021-10-10',
-      },
-      {
-        name: 'Reserva en suite, Hotel Santo Domingo',
-        start: '2021-10-14 07:30',
-        end: '2021-10-15 08:30',
-      },
-    ],
+    reserva_seleccionada: {},
 
     reservaciones: [],
 
-    negocios: []
+    listado_reservaciones: [],
+
+    negocios: [],
+
+    auth: {}
 
   }),
 
   methods: {
+
+    async ObtenerAuth(){
+
+      await this.$api.post("/usuario/info",
+        { id: JSON.parse(sessionStorage.getItem('usuario')).id }).then(data => {
+
+        this.auth = data
+        this.ObtenerNegocios()
+
+      })
+
+    },
 
     async ObtenerNegocios(){
 
@@ -203,7 +253,21 @@ export default {
 
         await this.$api.post("/reservacion/negocio", params).then( data => {
 
-          this.reservaciones = [...this.reservaciones, ...data]
+          data.forEach(reserva => {
+
+            reserva.negocio = negocio.nombre
+            reserva.usuario = this.auth.nombre
+
+            let start = reserva.fechaInicio ? (reserva.fechaInicio).split("T")[0] : "2021-10-14"
+            let end = reserva.fechaFinal ? (reserva.fechaFinal).split("T")[0] : "2021-10-15"
+
+            this.reservaciones.push(start)
+            this.reservaciones.push(end)
+            this.$forceUpdate()
+
+          })
+
+          this.listado_reservaciones = [...this.listado_reservaciones, ...data]
 
         })
 
@@ -212,78 +276,25 @@ export default {
 
     },
 
-    hoy () {
-      this.focus = ''
-    },
+    ConfirmarReserva(reserva){
 
-    previo () {
-      this.$refs.calendar.prev()
-    },
-
-    siguiente () {
-      this.$refs.calendar.next()
-    },
-
-    viewDay ({ date }) {
-
-      this.focus = date
-
-      this.tipos.seleccionado = 'day'
 
     },
 
-    updateRange ({ start, end }) {
-      const events = []
-      const min = new Date(`${start.date}T00:00:00`)
-      const max = new Date(`${end.date}T23:59:59`)
-      const days = (max.getTime() - min.getTime()) / 86400000
-      const eventCount = this.rnd(days, days + 20)
-      for (let i = 0; i < eventCount; i++) {
-        const allDay = this.rnd(0, 3) === 0
-        const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-        const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-        const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-        const second = new Date(first.getTime() + secondTimestamp)
-        events.push({
-          name: this.names[this.rnd(0, this.names.length - 1)],
-          start: first,
-          end: second
-        })
-      }
-      this.events = events
+    RechazarReserva(reserva){
+
+
     },
 
-    rnd (a, b) {
-      return Math.floor((b - a + 1) * Math.random()) + a
-    },
+    MostrarNotasReserva(reserva){
+
+      this.reserva_seleccionada = Object.assign({}, reserva)
+      this.dialogos.notas = true
+
+    }
 
   }
 
 }
 
 </script>
-
-<style scoped>
-.my-event {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  border-radius: 2px;
-  background-color: #1867c0;
-  color: #ffffff;
-  border: 1px solid #1867c0;
-  font-size: 12px;
-  padding: 3px;
-  cursor: pointer;
-  margin-bottom: 1px;
-  left: 4px;
-  margin-right: 8px;
-  position: relative;
-}
-
-.my-event.with-time {
-  position: absolute;
-  right: 4px;
-  margin-right: 0px;
-}
-</style>

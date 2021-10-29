@@ -108,6 +108,7 @@
                                   v-model="negocio.cierra"
                                   landscape
                                   color="secondary"
+                                  :disabled="negocio.abre === null || negocio.abre === undefined"
                                 />
                               </v-col>
                             </v-row>

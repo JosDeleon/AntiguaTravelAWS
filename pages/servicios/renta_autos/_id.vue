@@ -47,6 +47,23 @@
                   <span>Contactar</span>
                 </v-tooltip>
 
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      :to="'/negocios/reservaciones?id=' + $route.params.id"
+                    >
+                      <v-icon color="black">
+                        fa fa-calendar-week
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Reservar</span>
+                </v-tooltip>
               </h1>
               <h3 class="black--text hidden-md-and-up" style="font-size: 20px;">
                 {{ renta.nombre }}

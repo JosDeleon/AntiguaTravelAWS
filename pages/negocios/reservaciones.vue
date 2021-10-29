@@ -124,8 +124,9 @@
 <script>
 
 export default {
+
     mounted() {
-        //this.geolocate()
+
     },
 
     middleware: 'VerificarUsuarioAuth',
@@ -159,10 +160,11 @@ export default {
                 console.log(params);
 
                 await this.$api.post("/solicitar", params).then( data => {
-                    console.log(data);
-                    //Agregar alert de solicitud enviada
-                    //this.$alert.registro_exitoso()
+
+                    this.$alert.reserva_exitosa()
+
                     this.$router.push({ path: '/' })
+
                 }).catch( data => {
                     console.error(data)
                     this.$alert.error('Ocurrió un error en la solicitud, vuelve a intentarlo', 'Error Interno')

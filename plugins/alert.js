@@ -89,6 +89,18 @@ export default ({ app }, inject) => {
         })
       })
     },
+    reserva_exitosa(){
+      return new Promise((resolve) => {
+        Swal.fire({
+          title: '¡Tu solicitud de reserva se ha enviado!',
+          text: 'Pronto se te estará avisando en caso de que se te agende ese día u otro día.',
+          imageUrl: '/logo-no-texto.png',
+          imageHeight: 128,
+          imageAlt: 'Successful Registration',
+          confirmButtonColor: "#29307F"
+        })
+      })
+    },
   }
 
   inject('alert',alert)
