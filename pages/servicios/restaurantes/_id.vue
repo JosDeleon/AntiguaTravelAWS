@@ -104,7 +104,11 @@
 
                 <div class="grey--text mt-1 ml-1">
                   {{ restaurante.totalValoraciones }} valoraciones |
-                  <v-icon class="mx-1" small color="black"> fa fa-tags </v-icon>{{tags}}
+                  <v-icon class="mx-1" small color="black"> fa fa-tags </v-icon>{{tags}} |
+                  <v-icon color="black" class="mr-1">fa fa-map-pin</v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(restaurante.lng, restaurante.lat) }} km
+                      </span> de ti
                 </div>
 
               </v-row>
@@ -292,7 +296,7 @@
                         {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
                         {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
                                                                                     'red--text' : 'green--text'">
-                          {{ VerificarHora() === 'Cerrado' ? 'No disponible' : 'Disponible' }}</span>)
+                          {{ VerificarHora() }}</span>)
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -736,8 +740,8 @@
                   </v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title>{{ caracteristica.nombre }} </v-list-item-title>
-                  <v-list-item-subtitle>{{ caracteristica.valor }} </v-list-item-subtitle>
+                  <v-list-item-title class="text-wrap">{{ caracteristica.nombre }} </v-list-item-title>
+                  <v-list-item-subtitle class="text-wrap">{{ caracteristica.valor }} </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -777,7 +781,7 @@ export default {
     this.ObtenerRestaurante()
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
-    this.$refs.slideGroup.setWidths()
+    this.geolocate()
   },
 
   components: { VueGallerySlideshow, Valoracion },
@@ -792,6 +796,8 @@ export default {
         valoracion: false
 
       },
+
+      coords: { lat: 0, lng: 0 },
 
       valoracion: { puntuacion: 0 },
 
@@ -838,6 +844,36 @@ export default {
   },
 
   methods: {
+
+    geolocate() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.coords.lat = position.coords.latitude
+        this.coords.lng = position.coords.longitude
+      });
+    },
+
+    CalcularDistancia(lng, lat){
+
+      lng = parseFloat(lng)
+      lat = parseFloat(lat)
+
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+      var dLon = this.deg2rad(lng-this.coords.lng);
+      var a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      // Distance in km
+      return (R * c).toFixed(0);
+
+    },
+
+    deg2rad(deg) {
+      return deg * (Math.PI/180)
+    },
 
     async ObtenerGaleria(){
 
@@ -1167,7 +1203,7 @@ export default {
 
     Regresar(){
 
-      this.$router.push({ path: '/servicios/restaurantes' })
+      this.$router.push({ path: (this.$nuxt.context.from.path) ? this.$nuxt.context.from.path : '/servicios/restaurantes' })
 
     }
 

@@ -31,27 +31,15 @@
                   md="8"
                 >
 
-                  <v-chip-group multiple>
+                  <v-chip-group v-model="tags_seleccionadas" multiple @change="RefrescarNegocios">
                     <v-chip
                       filter
                       outlined
+                      v-for="(tag, t) in tag_pool"
+                      :key="t"
                     >
                       <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Rápida
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Italiana
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Vegetariana
+                      {{ tag }}
                     </v-chip>
                   </v-chip-group>
 
@@ -68,48 +56,15 @@
                 Busqueda por Tags
               </h3>
 
-              <v-chip-group multiple column color="secondary">
+              <v-chip-group v-model="tags_seleccionadas" multiple column color="secondary" @change="RefrescarNegocios">
                 <v-chip
                   filter
                   outlined
+                  v-for="(tag, t) in tag_pool"
+                  :key="t"
                 >
                   <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Rápida
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Italiana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Vegetariana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Pollo Frito
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Mariscos
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Crepas
+                  {{ tag }}
                 </v-chip>
               </v-chip-group>
 
@@ -221,6 +176,7 @@
               </v-card-title>
 
               <v-card-text>
+
                 <v-row
                   align="center"
                   class="mx-0 mb-2"
@@ -239,8 +195,18 @@
                   </div>
                 </v-row>
 
+                <div class="my-2">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(cambista.lng, cambista.lat) }} km
+                  </span> de ti
+                </div>
+
                 <div>{{ cambista.descripcion ? cambista.descripcion :
                   "Este cambista no cuenta con una descripción" }}</div>
+
               </v-card-text>
 
               <v-divider class="my-4"/>
@@ -429,36 +395,56 @@
     mounted() {
       this.ObtenerCambistas()
       this.ObtenerAuth()
+      this.initGeolocate()
     },
 
     data(){
       return{
+
         dialogos: {
           mapa: false
         },
+
+        coords: { lat: 0, lng: 0 },
+
         helpers: {
           nonce: 1,
           mapSearch: null,
           busqueda: null
         },
+
         cambistas: {
           listado: []
         },
+
         filtros: [
           { texto: 'Hora Planeada', icono: 'fa fa-clock' },
           { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
           { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
         ],
+
         range: [1,1000],
+
         markers: [],
+
         places: [],
+
         currentPlace: null,
+
         marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
+
         center: { lat: 14.55706946331603, lng: -90.73366553217345 },
+
         mapOptions: {
           disableDefaultUI: true,
         },
-        auth: {}
+
+        auth: {},
+
+        tag_pool: [],
+
+        tags_seleccionadas: []
+
       }
     },
 
@@ -580,6 +566,122 @@
 
         } )
 
+      },
+
+      async ObtenerTagPool(){
+
+        await this.$api.get('/negocios', {}).then(data => {
+
+          data.cambistas.forEach(async negocio => {
+
+            await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+
+              data.forEach(tag => {
+
+                this.tag_pool.push(tag.tag)
+
+              })
+
+            })
+
+          })
+
+        })
+
+      },
+
+      async RefrescarNegocios(){
+
+        if(this.tags_seleccionadas && this.tags_seleccionadas.length > 0){
+
+          let seleccionadas = []
+
+          this.tags_seleccionadas.forEach(tag => {
+
+            seleccionadas.push(this.tag_pool[tag])
+
+          })
+
+          let params = {
+            tags: seleccionadas
+          }
+
+          await this.$api.post("/tags", params).then(data => {
+
+            this.cambistas.listado = data
+
+            this.cambistas.listado.forEach( async cambista => {
+
+              let params = {
+                negocioId: cambista.id
+              }
+
+              cambista.totalValoraciones = 0
+              cambista.puntuacionAvg = 0
+
+              await this.$api.post("/valoraciones", params).then(data => {
+
+                let valoracionesAvg = 0
+
+                data.forEach(valoracion => {
+
+                  valoracionesAvg += valoracion.puntuacion;
+
+                })
+
+                cambista.totalValoraciones = data.length
+
+                cambista.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+                this.$forceUpdate()
+
+              })
+
+            } )
+
+          }).catch(({ data }) => {
+            console.error(data)
+            this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+          })
+
+        }
+
+        else{
+
+          await this.ObtenerCambistas()
+
+        }
+
+      },
+
+      initGeolocate() {
+        navigator.geolocation.getCurrentPosition((position) => {
+          this.coords.lat = position.coords.latitude
+          this.coords.lng = position.coords.longitude
+        });
+      },
+
+      CalcularDistancia(lng, lat){
+
+        lng = parseFloat(lng)
+        lat = parseFloat(lat)
+
+        var R = 6371; // Radius of the earth in km
+        var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+        var dLon = this.deg2rad(lng-this.coords.lng);
+        var a =
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+          Math.sin(dLon/2) * Math.sin(dLon/2)
+        ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        // Distance in km
+        return (R * c).toFixed(0);
+
+      },
+
+      deg2rad(deg) {
+        return deg * (Math.PI/180)
       },
 
       InformacionProducto(cambista){

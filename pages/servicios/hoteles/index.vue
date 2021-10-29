@@ -31,27 +31,15 @@
                   md="8"
                 >
 
-                  <v-chip-group multiple>
+                  <v-chip-group v-model="tags_seleccionadas" multiple @change="RefrescarNegocios">
                     <v-chip
                       filter
                       outlined
+                      v-for="(tag, t) in tag_pool"
+                      :key="t"
                     >
                       <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Rápida
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Italiana
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Vegetariana
+                      {{ tag }}
                     </v-chip>
                   </v-chip-group>
 
@@ -68,48 +56,15 @@
                 Busqueda por Tags
               </h3>
 
-              <v-chip-group multiple column color="secondary">
+              <v-chip-group v-model="tags_seleccionadas" multiple column color="secondary" @change="RefrescarNegocios">
                 <v-chip
                   filter
                   outlined
+                  v-for="(tag, t) in tag_pool"
+                  :key="t"
                 >
                   <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Rápida
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Italiana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Vegetariana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Pollo Frito
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Mariscos
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Crepas
+                  {{ tag }}
                 </v-chip>
               </v-chip-group>
 
@@ -176,7 +131,7 @@
           </v-col>
 
           <v-col cols="12"
-                 lg="4"
+                 lg="6"
                  md="6"
                  sm="6"
                  v-for="(hotel, i) in hoteles.listado"
@@ -222,6 +177,7 @@
               </v-card-title>
 
               <v-card-text>
+
                 <v-row
                   align="center"
                   class="mx-0 mb-2"
@@ -239,6 +195,15 @@
                     {{ hotel.totalValoraciones > 1 ||  hotel.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
+
+                <div class="my-2">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                    Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(hotel.lng, hotel.lat) }} km
+                  </span> de ti
+                </div>
 
                 <div>{{ hotel.descripcion ? hotel.descripcion :
                   "Este hotel no cuenta con una descripción" }}</div>
@@ -430,36 +395,57 @@ export default {
   mounted() {
     this.ObtenerHoteles()
     this.ObtenerAuth()
+    this.initGeolocate()
+    this.ObtenerTagPool()
   },
 
   data(){
     return{
+
       dialogos: {
         mapa: false
       },
+
+      coords: { lat: 0, lng: 0 },
+
       helpers: {
         nonce: 1,
         mapSearch: null,
         busqueda: null
       },
+
       hoteles: {
         listado: []
       },
+
       filtros: [
         { texto: 'Hora Planeada', icono: 'fa fa-clock' },
         { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
         { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
       ],
+
       range: [1,1000],
+
       markers: [],
+
       places: [],
+
       currentPlace: null,
+
       marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
+
       center: { lat: 14.55706946331603, lng: -90.73366553217345 },
+
       mapOptions: {
         disableDefaultUI: true,
       },
-      auth: {}
+
+      auth: {},
+
+      tag_pool: [],
+
+      tags_seleccionadas: []
+
     }
   },
 
@@ -581,6 +567,122 @@ export default {
 
       } )
 
+    },
+
+    async ObtenerTagPool(){
+
+      await this.$api.get('/negocios', {}).then(data => {
+
+        data.hoteles.forEach(async negocio => {
+
+          await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+
+            data.forEach(tag => {
+
+              this.tag_pool.push(tag.tag)
+
+            })
+
+          })
+
+        })
+
+      })
+
+    },
+
+    async RefrescarNegocios(){
+
+      if(this.tags_seleccionadas && this.tags_seleccionadas.length > 0){
+
+        let seleccionadas = []
+
+        this.tags_seleccionadas.forEach(tag => {
+
+          seleccionadas.push(this.tag_pool[tag])
+
+        })
+
+        let params = {
+          tags: seleccionadas
+        }
+
+        await this.$api.post("/tags", params).then(data => {
+
+          this.hoteles.listado = data
+
+          this.hoteles.listado.forEach( async hotel => {
+
+            let params = {
+              negocioId: hotel.id
+            }
+
+            hotel.totalValoraciones = 0
+            hotel.puntuacionAvg = 0
+
+            await this.$api.post("/valoraciones", params).then(data => {
+
+              let valoracionesAvg = 0
+
+              data.forEach(valoracion => {
+
+                valoracionesAvg += valoracion.puntuacion;
+
+              })
+
+              hotel.totalValoraciones = data.length
+
+              hotel.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+              this.$forceUpdate()
+
+            })
+
+          } )
+
+        }).catch(({ data }) => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+        })
+
+      }
+
+      else{
+
+        await this.ObtenerHoteles()
+
+      }
+
+    },
+
+    initGeolocate() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.coords.lat = position.coords.latitude
+        this.coords.lng = position.coords.longitude
+      });
+    },
+
+    CalcularDistancia(lng, lat){
+
+      lng = parseFloat(lng)
+      lat = parseFloat(lat)
+
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+      var dLon = this.deg2rad(lng-this.coords.lng);
+      var a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      // Distance in km
+      return (R * c).toFixed(0);
+
+    },
+
+    deg2rad(deg) {
+      return deg * (Math.PI/180)
     },
 
     InformacionProducto(hotel){

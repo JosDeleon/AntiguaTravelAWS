@@ -31,27 +31,15 @@
                   md="8"
                 >
 
-                  <v-chip-group multiple>
+                  <v-chip-group v-model="tags_seleccionadas" multiple @change="RefrescarNegocios">
                     <v-chip
                       filter
                       outlined
+                      v-for="(tag, t) in tag_pool"
+                      :key="t"
                     >
                       <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Rápida
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Italiana
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Vegetariana
+                      {{ tag }}
                     </v-chip>
                   </v-chip-group>
 
@@ -68,48 +56,15 @@
                 Busqueda por Tags
               </h3>
 
-              <v-chip-group multiple column color="secondary">
+              <v-chip-group v-model="tags_seleccionadas" multiple column color="secondary" @change="RefrescarNegocios">
                 <v-chip
                   filter
                   outlined
+                  v-for="(tag, t) in tag_pool"
+                  :key="t"
                 >
                   <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Rápida
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Italiana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Vegetariana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Pollo Frito
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Mariscos
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Crepas
+                  {{ tag }}
                 </v-chip>
               </v-chip-group>
 
@@ -121,11 +76,14 @@
               <h3 class="mb-2 black--text">Filtros</h3>
               <v-list-item-group
                 color="secondary"
+                v-model="helpers.filtro_seleccionado"
+                @change="CambioFiltro"
               >
                 <v-list-item
                   v-for="(filtro, i) in filtros"
                   :key="i"
                   class="my-auto"
+                  inactive
                 >
                   <v-list-item-icon>
                     <v-icon v-text="filtro.icono"></v-icon>
@@ -222,6 +180,7 @@
               </v-card-title>
 
               <v-card-text>
+
                 <v-row
                   align="center"
                   class="mx-0 mb-2"
@@ -239,6 +198,15 @@
                     {{ restaurante.totalValoraciones > 1 ||  restaurante.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
+
+                <div class="my-2">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(restaurante.lng, restaurante.lat) }} km
+                  </span> de ti
+                </div>
 
                 <div>{{ restaurante.descripcion ? restaurante.descripcion :
                   "Este restaurante no cuenta con una descripción" }}</div>
@@ -417,6 +385,67 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <v-dialog
+      ref="fecha_planeada"
+      v-model="dialogos.filtro_fecha"
+      :return-value.sync="helpers.fecha_planeada"
+      persistent
+      transition="fab-transition"
+      width="300"
+    >
+      <v-date-picker
+        v-model="helpers.fecha_planeada"
+        scrollable
+      >
+        <v-spacer></v-spacer>
+        <v-btn
+          text
+          color="primary"
+          @click="dialogos.filtro_fecha = false"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          text
+          color="primary"
+          @click="FiltrarFecha"
+        >
+          Aceptar
+        </v-btn>
+      </v-date-picker>
+    </v-dialog>
+
+    <v-dialog
+      ref="hora_planeada"
+      v-model="dialogos.filtro_hora"
+      :return-value.sync="helpers.hora_planeada"
+      persistent
+      transition="fab-transition"
+      width="300"
+    >
+      <v-time-picker
+        v-model="helpers.hora_planeada"
+        scrollable
+        color="primary darken-2"
+      >
+        <v-spacer></v-spacer>
+        <v-btn
+          text
+          color="primary darken-2"
+          @click="dialogos.filtro_hora = false"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          text
+          color="primary darken-2"
+          @click="FiltrarHora"
+        >
+          Aceptar
+        </v-btn>
+      </v-time-picker>
+    </v-dialog>
+
   </v-container>
 
 </template>
@@ -430,36 +459,64 @@ export default {
   mounted() {
     this.ObtenerRestaurantes()
     this.ObtenerAuth()
+    this.initGeolocate()
+    this.ObtenerTagPool()
   },
 
   data(){
     return{
+
       dialogos: {
-        mapa: false
+        mapa: false,
+        filtro_fecha: false,
+        filtro_hora: false
       },
+
+      coords: { lat: 0, lng: 0 },
+
       helpers: {
         nonce: 1,
         mapSearch: null,
-        busqueda: null
+        busqueda: null,
+        filtro_fecha: false,
+        filtro_hora: false,
+        fecha_planeada: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+        hora_planeada: null,
+        filtro_seleccionado: null
       },
+
       restaurantes: {
         listado: []
       },
+
       filtros: [
-        { texto: 'Hora Planeada', icono: 'fa fa-clock' },
-        { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
-        { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
+        { texto: 'Hora Planeada', icono: 'fa fa-clock', valor: 'H' },
+        { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day', valor: 'F' },
+        { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave', valor: 'R' },
       ],
+
       auth: {},
+
       range: [1,1000],
+
       markers: [],
+
       places: [],
+
       currentPlace: null,
+
       marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
+
       center: { lat: 14.55706946331603, lng: -90.73366553217345 },
+
       mapOptions: {
         disableDefaultUI: true,
-      }
+      },
+
+      tag_pool: [],
+
+      tags_seleccionadas: []
+
     }
   },
 
@@ -470,7 +527,6 @@ export default {
       await this.$api.post("/negocios/categoria", { categoria: "R" }).then( data => {
 
         this.restaurantes.listado = data
-        let cont = 0
         this.restaurantes.listado.forEach( async restaurante => {
 
           let params = {
@@ -498,13 +554,31 @@ export default {
 
           })
 
-          restaurante.showCardTags = false
-          restaurante.tags = ["Comida rápida"]
-          cont++
-
         } )
 
       } )
+
+    },
+
+    async ObtenerTagPool(){
+
+      await this.$api.get('/negocios', {}).then(data => {
+
+        data.restaurantes.forEach(async negocio => {
+
+          await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+
+            data.forEach(tag => {
+
+              this.tag_pool.push(tag.tag)
+
+            })
+
+          })
+
+        })
+
+      })
 
     },
 
@@ -591,6 +665,36 @@ export default {
 
     },
 
+    initGeolocate() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.coords.lat = position.coords.latitude
+        this.coords.lng = position.coords.longitude
+      });
+    },
+
+    CalcularDistancia(lng, lat){
+
+      lng = parseFloat(lng)
+      lat = parseFloat(lat)
+
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+      var dLon = this.deg2rad(lng-this.coords.lng);
+      var a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      // Distance in km
+      return (R * c).toFixed(0);
+
+    },
+
+    deg2rad(deg) {
+      return deg * (Math.PI/180)
+    },
+
     InformacionProducto(restaurante){
 
       this.$router.push({ path: '/servicios/restaurantes/'+restaurante.id })
@@ -612,6 +716,138 @@ export default {
         return "Cerrado"
 
       }
+
+    },
+
+    async RefrescarNegocios(){
+
+      if(this.tags_seleccionadas && this.tags_seleccionadas.length > 0){
+
+        let seleccionadas = []
+
+        this.tags_seleccionadas.forEach(tag => {
+
+          seleccionadas.push(this.tag_pool[tag])
+
+        })
+
+        let params = {
+          tags: seleccionadas
+        }
+
+        await this.$api.post("/tags", params).then(data => {
+
+          this.restaurantes.listado = data
+
+          this.restaurantes.listado.forEach( async restaurante => {
+
+            let params = {
+              negocioId: restaurante.id
+            }
+
+            restaurante.totalValoraciones = 0
+            restaurante.puntuacionAvg = 0
+
+            await this.$api.post("/valoraciones", params).then(data => {
+
+              let valoracionesAvg = 0
+
+              data.forEach(valoracion => {
+
+                valoracionesAvg += valoracion.puntuacion;
+
+              })
+
+              restaurante.totalValoraciones = data.length
+
+              restaurante.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+              this.$forceUpdate()
+
+            })
+
+          } )
+
+        }).catch(({ data }) => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+        })
+
+      }
+
+      else{
+
+        await this.ObtenerRestaurantes()
+
+      }
+
+    },
+
+    CambioFiltro(){
+
+      if(this.helpers.filtro_seleccionado !== null && this.helpers.filtro_seleccionado !== undefined){
+
+        this.FiltrarNegocio(this.filtros[this.helpers.filtro_seleccionado])
+
+      }
+
+      else {
+
+        this.helpers.fecha_planeada = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)
+        this.helpers.hora_planeada = null
+        this.helpers.filtro_fecha = false
+        this.helpers.filtro_hora = false
+        this.ObtenerRestaurantes()
+
+      }
+
+    },
+
+    FiltrarNegocio(filtro){
+
+      if(filtro.valor === 'F'){
+
+        this.helpers.filtro_fecha = true
+        this.dialogos.filtro_fecha = true
+
+      }
+      else if(filtro.valor === 'H'){
+
+        this.helpers.filtro_hora = true
+        this.dialogos.filtro_hora = true
+
+      }
+
+    },
+
+    FiltrarFecha(){
+
+      this.$refs.fecha_planeada.save(this.helpers.fecha_planeada)
+
+    },
+
+    FiltrarHora(){
+
+      this.$refs.hora_planeada.save(this.helpers.hora_planeada)
+
+      const hora = this.$moment(this.helpers.hora_planeada, 'hh:mm:ss')
+
+      let negociosFiltrados = []
+
+      this.restaurantes.listado.forEach(restaurante => {
+
+        var beforeTime = this.$moment(restaurante.abre, 'hh:mm:ss'),
+            afterTime = this.$moment(restaurante.cierra, 'hh:mm:ss')
+
+        if (hora.isBetween(beforeTime, afterTime)) {
+
+          negociosFiltrados.push(restaurante)
+
+        }
+
+      })
+
+      this.restaurantes
 
     },
 

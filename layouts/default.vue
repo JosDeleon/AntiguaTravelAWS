@@ -128,7 +128,6 @@
         <v-menu
           rounded="lg"
           nudge-bottom="60"
-          nudge-left="70"
           :close-on-click="true"
           v-if="usuario.id < 1"
         >
@@ -151,8 +150,8 @@
                 v-for="opcion in opciones_usuario"
                 :key="opcion.value"
               >
-                <v-btn text max-width="140" @click="MostrarDialogoSignInSignUp(opcion.value)">
-                  <v-list-item-title style="font-size: 14px;">
+                <v-btn text max-width="400" @click="MostrarDialogoSignInSignUp(opcion.value)">
+                  <v-list-item-title style="font-size: 14px;" class="pa-1">
                     <v-icon left>
                       {{ opcion.icono }}
                     </v-icon>
@@ -290,7 +289,7 @@
                     outlined
                     dense
                     v-model="form.nombre"
-                    :rules="[ v => v && v.length > 0 || 'El nombre es obligatorio' ]"
+                    :rules="[rules.nombreRequerido]"
                     prepend-icon="fa fa-id-card"
                   />
 
@@ -313,7 +312,7 @@
                     outlined
                     dense
                     v-model="form.username"
-                    :rules="[rules.usernameRequerido]"
+                    :rules="[rules.usernameRequerido, rules.usernameValido]"
                     prepend-icon="fa fa-user"
                   />
 
@@ -537,35 +536,37 @@
                 color="black"
               />
 
+              <div class="mb-6 mt-n2 ml-n4">
+
+                <ForgotPassword />
+
+              </div>
+
+              <v-layout justify-center>
+
+                <v-btn
+                  color="primary"
+                  depressed
+                  :loading="helpers.loading"
+                  type="submit"
+                >
+                  <div style="color: rgba(0,0,0,0.8);">
+                    Iniciar Sesión
+                  </div>
+                </v-btn>
+
+              </v-layout>
+
             </v-form>
 
-            <div class="mb-6 mt-n2 ml-n4">
-
-              <ForgotPassword />
-
-            </div>
-
           </v-card-text>
-
-          <v-layout justify-center>
-            <v-card-actions>
-              <v-btn
-                color="primary"
-                depressed
-                @click="Login"
-                :loading="helpers.loading"
-              >
-                <div style="color: rgba(0,0,0,0.8);">
-                  Iniciar Sesión
-                </div>
-              </v-btn>
-            </v-card-actions>
-          </v-layout>
 
         </v-card>
       </v-dialog>
 
       <AyudaNegocios v-model="dialogos.ayuda_negocios" />
+
+      <AyudaUsuarios v-model="dialogos.ayuda_usuarios" />
 
       <Nuxt />
 
@@ -642,8 +643,10 @@ export default {
       dialogos: {
         registro: false,
         login: false,
-        ayuda_negocios: false
+        ayuda_negocios: false,
+        ayuda_usuarios: false
       },
+      scrolledToBottom: false,
       must_login: false,
       menu: false,
       helpers: {
@@ -658,11 +661,13 @@ export default {
         requiredVerify: value => !!value || 'Es obligatorio confirmar la contraseña',
         min: value => value.length >= 8 || 'La contraseña debe tener al menos 8 caracteres',
         verificarPassword: value => value === this.form.password || 'Las contraseñas no son iguales',
+        nombreRequerido: value => !!value || 'El nombre es obligatorio',
         emailRequerido: value => !!value || 'El correo electrónico es obligatorio',
         usernameRequerido: value => !!value || 'El nombre de usuario es obligatorio',
         numeroRequerido: value => !!value || 'El número de teléfono es obligatorio',
         numeroValido: value => value >= 9999999 && value <= 99999999 || 'Debe de contener exactamente 8 diigitos',
-        emailValido:  v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || 'Por favor escriba un correo electrónico válido'
+        emailValido:  v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) || 'Por favor escriba un correo electrónico válido',
+        usernameValido: v => /^([a-z0-9]|[-._](?![-._])){8,20}$/.test(v) || 'Por favor escriba en nombre de usuario valido'
       },
       form: { password: '' },
       clipped: false,
@@ -681,6 +686,7 @@ export default {
       opciones_usuario: [
         { titulo: 'Iniciar sesión', value: 'I', icono: 'fa fa-sign-in-alt' },
         { titulo: 'Registrarse', value: 'R', icono: 'fa fa-id-badge' },
+        { titulo: 'Ayuda', value: 'A', icono: 'fa fa-question-circle' }
       ],
       opciones_usuario_auth1: [
         { titulo: 'Mensajes', value: 'M', icono: 'fa fa-inbox' },
@@ -872,6 +878,12 @@ export default {
 
       }
 
+      else{
+
+        this.dialogos.ayuda_usuarios = true
+
+      }
+
     },
 
     MostrarDialogoSignInSignUp(tipo){
@@ -883,6 +895,11 @@ export default {
         this.$refs.formaDatos?.resetValidation()
         this.$refs.formaDatosPasswords?.resetValidation()
         this.dialogos.registro = true;
+
+      }
+      else if(tipo === 'A'){
+
+        this.dialogos.ayuda_usuarios = true;
 
       }
       else{

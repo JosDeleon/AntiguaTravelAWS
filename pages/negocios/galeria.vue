@@ -109,7 +109,7 @@
               </v-list-item-content>
 
               <v-list-item-action>
-                <v-btn icon @click="imagen_seleccionada = imagen">
+                <v-btn icon @click="SeleccionarImagen(imagen)">
                   <v-icon color="complementario">fa fa-eye</v-icon>
                 </v-btn>
               </v-list-item-action>
@@ -221,7 +221,7 @@
 
                 <v-list-item-content>
                   <v-list-item-title> {{ formatImageName(imagen_seleccionada) }} </v-list-item-title>
-                  <v-list-item-subtitle> 420KB &mdash; Tipo de imagen png </v-list-item-subtitle>
+                  <v-list-item-subtitle> {{ imagen_seleccionada.size }} MB &mdash; Tipo de imagen {{ imagen_seleccionada.tipo }} </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -352,7 +352,7 @@ export default {
 
         folder_seleccionado: {},
 
-        imagen_seleccionada: {},
+        imagen_seleccionada: { tipo: '' },
 
         negocios: {
 
@@ -480,6 +480,25 @@ export default {
 
       },
 
+      SeleccionarImagen(imagen){
+
+        imagen.tipo = ''
+        this.imagen_seleccionada = Object.assign({}, imagen)
+
+        const ref = this.$fire.storage.refFromURL(imagen.img);
+
+        ref.getMetadata().then( (metadata) => {
+          if(this.imagen_seleccionada){
+            this.imagen_seleccionada.tipo = metadata.contentType
+            this.imagen_seleccionada.size = ( metadata.size / 1000000 ).toFixed(2)
+            this.$forceUpdate()
+          }
+        }).catch(function(error) {
+          console.error(error)
+        });
+
+      },
+
       CerrarDialogoAgregarGaleria(){
 
         this.dialogos.agregar_galeria = false
@@ -512,6 +531,7 @@ export default {
       LimpiarBusqueda(){
 
         this.folder_seleccionado = {}
+        this.imagen_seleccionada = {}
         this.ObtenerNegociosAuth()
 
       }
