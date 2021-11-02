@@ -55,14 +55,30 @@
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title class="text-wrap black--text" v-text="'Reserva de ' + reserva.usuario"/>
-                <v-list-item-subtitle class="text-wrap" v-text="'Solicitó una reservación en ' + reserva.negocio" />
+                <v-list-item-title class="text-wrap black--text">
+                  Reserva de {{ reserva.usuario }}
+                  <v-tooltip bottom v-if="reserva.estado !== 'p'">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        icon
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon :color="reserva.estado === 'a' ? 'green' : 'error'" small>
+                          {{ reserva.estado === 'a' ? 'fa fa-check-circle' : 'fa fa-times-circle' }}
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ reserva.estado === 'a' ? 'Confirmada' : 'Rechazada' }}</span>
+                  </v-tooltip>
+                </v-list-item-title>
+                <v-list-item-subtitle class="text-wrap mt-n2" v-text="'Solicitó una reservación en ' + reserva.negocio" />
                 <v-list-item-subtitle class="text-wrap" v-if="reserva.fechaInicio !== null && reserva.fechaFinal !== null">
                   Del {{ $moment.utc((reserva.fechaInicio).split("T")[0],"YYYY-MM-DD").format("L") }} al
-                  {{ $moment.utc((reserva.fechaFinal).split("T")[0],"YYYY-MM-DD").format("L") }}
+                  {{ $moment.utc((reserva.fechaFinal).split("T")[0],"YYYY-MM-DD").format("L") }} — {{ $moment(reserva.hora, "HH:mm:ss").format('h:mm a') }}
                 </v-list-item-subtitle>
                 <v-list-item-subtitle class="text-wrap" v-if="reserva.fechaInicio !== null && reserva.fechaFinal === null">
-                  Fecha: {{ (reserva.fechaInicio).split("T")[0] }}
+                  Fecha: {{ (reserva.fechaInicio).split("T")[0] }} — {{ $moment(reserva.hora, "HH:mm:ss").format('h:mm a') }}
                 </v-list-item-subtitle>
               </v-list-item-content>
 
@@ -243,6 +259,8 @@ export default {
 
     ObtenerReservaciones(){
 
+      this.listado_reservaciones = []
+
       this.negocios.forEach(async negocio => {
 
         let params = {
@@ -278,11 +296,47 @@ export default {
 
     ConfirmarReserva(reserva){
 
+      this.$alert.confirm('¿Estás seguro que deseas aceptar confirmar esta reserva?',
+        'Confirmar Reserva').then(async () => {
+
+          let params = {
+
+            id: reserva.id,
+            estado: "a"
+
+          }
+
+          this.$api.put("/reservacion", params).then(data => {
+
+            this.$alert.exito("La reserva fue confirmada exitosamente", "Reserva Confirmada")
+            this.ObtenerReservaciones()
+
+          })
+
+      });
 
     },
 
     RechazarReserva(reserva){
 
+      this.$alert.confirm('¿Estás seguro que deseas aceptar rechazar esta reserva?',
+        'Rechazar Reserva').then(async () => {
+
+        let params = {
+
+          id: reserva.id,
+          estado: "r"
+
+        }
+
+        this.$api.put("/reservacion", params).then(data => {
+
+          this.$alert.exito("La reserva fue rechazada exitosamente", "Reserva Rechazada")
+          this.ObtenerReservaciones()
+
+        })
+
+      });
 
     },
 

@@ -53,7 +53,7 @@
                       v-bind="attrs"
                       v-on="on"
                       icon
-                      :to="'/negocios/reservaciones?id=' + $route.params.id"
+                      :to="'/negocios/reservaciones?id=' + hotel.id"
                     >
                       <v-icon color="black">
                         fa fa-calendar-week
@@ -81,6 +81,23 @@
                     </v-btn>
                   </template>
                   <span>Contactar</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      :to="'/negocios/reservaciones?id=' + hotel.id"
+                    >
+                      <v-icon color="black">
+                        fa fa-calendar-week
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Reservar</span>
                 </v-tooltip>
               </h3>
 
@@ -480,7 +497,7 @@
               elevation="2"
               v-if="productos.listado && productos.listado.length === 0"
             >
-              Lo sentimos, este guía turístico aún no cuenta con productos o servicios
+              Lo sentimos, este hotel aún no cuenta con productos o servicios
             </v-alert>
 
             <v-row>
@@ -619,7 +636,7 @@
               elevation="2"
               v-if="valoraciones && valoraciones.length === 0"
             >
-              Lo sentimos, este guía turístico aún no cuenta con reseñas
+              Lo sentimos, este hotel aún no cuenta con reseñas
             </v-alert>
 
             <v-list>
@@ -838,7 +855,7 @@ export default {
         busqueda: null
       },
 
-      range: [1,1000],
+      range: [1.00,1000.00],
 
       markers: [],
 

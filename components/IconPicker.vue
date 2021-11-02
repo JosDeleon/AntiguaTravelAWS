@@ -2,6 +2,7 @@
 
   <v-dialog max-width="700" v-model="dialogo"
             transition="fab-transition" persistent
+            :retain-focus="false"
   >
 
     <v-card style="border-radius:15px;" elevation="0" outlined class="pa-6">

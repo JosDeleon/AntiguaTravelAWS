@@ -568,6 +568,24 @@
 
       <AyudaUsuarios v-model="dialogos.ayuda_usuarios" />
 
+      <v-snackbar
+        v-model="showServiceOut"
+        vertical
+      >
+        El servicio no está disponible en este momento, vuelve a intentarlo o regresa más tarde
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="indigo"
+            text
+            v-bind="attrs"
+            @click="showServiceOut = false"
+          >
+            Cerrar
+          </v-btn>
+        </template>
+      </v-snackbar>
+
       <Nuxt />
 
     </v-main>
@@ -619,6 +637,13 @@ import ForgotPassword from "@/components/ForgotPassword";
 export default {
 
   mounted() {
+
+    this.$bus.$on('serviceOut',() =>{
+      console.log('entre')
+      this.showServiceOut = true
+      this.$forceUpdate()
+    })
+
     this.usuario = JSON.parse(sessionStorage.getItem('usuario')) ?? { id: -1 }
     if(this.usuario.id > 0){
       this.$fire.storage.ref(
@@ -639,6 +664,7 @@ export default {
 
   data () {
     return {
+      showServiceOut: false,
       usuario: {  },
       dialogos: {
         registro: false,
@@ -943,7 +969,7 @@ export default {
 
     },
 
-    Login(firebaseReg = false){
+    Login(){
       let params = {
         username: this.form.username,
         password: md5(this.form.password) + ''
@@ -962,7 +988,7 @@ export default {
             this.$forceUpdate()
           })
 
-          this.ObtenerNegociosAuth()
+          await this.ObtenerNegociosAuth()
 
           await this.$api.post("/usuario/info", { id: this.usuario.id } )
             .then(async data => {
@@ -995,8 +1021,10 @@ export default {
           this.helpers.loading = false
         }
       }).catch(err => {
-        this.$alert.error(err.response.data.message, 'Inicio de Sesión Fallido')
-        this.helpers.loading = false
+        if(err.response){
+          this.$alert.error(err.response.data.message, 'Inicio de Sesión Fallido')
+          this.helpers.loading = false
+        }
       })
     }
 

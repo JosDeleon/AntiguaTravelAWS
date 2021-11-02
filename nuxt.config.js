@@ -38,6 +38,7 @@ export default {
   plugins: [
     { src: '~/plugins/api', mode: "client" },
     { src: '~/plugins/alert.js', mode: 'client' },
+    { src: '~/plugins/bus.js', mode: 'client' },
     { src: '~/plugins/SearchMaps.js', mode: 'client' },
     { src: '~/plugins/maps.js', mode: 'client' },
     { src: '~/plugins/moment.js', mode: 'client' },
