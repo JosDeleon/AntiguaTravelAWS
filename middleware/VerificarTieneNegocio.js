@@ -1,7 +1,7 @@
 export default function({ app, redirect, $alert, $api  }) {
-  if(JSON.parse(sessionStorage.getItem('usuario'))) {
+  if(JSON.parse(localStorage.getItem('usuario'))) {
     $api.post('/negocios/usuario',
-      { usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id })
+      { usuarioId: JSON.parse(localStorage.getItem('usuario')).id })
       .then( data => {
         if(data.length <= 0){
           $alert.warning("Para tener acceso a esta página primero debes tener a cargo un negocio",

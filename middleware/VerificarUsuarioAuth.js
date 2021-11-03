@@ -1,5 +1,5 @@
 export default function({ app, redirect, $alert  }) {
-  if(!JSON.parse(sessionStorage.getItem('usuario'))){
+  if(!JSON.parse(localStorage.getItem('usuario'))){
 
     $alert.warning("Para tener acceso a esta página primero debes iniciar sesión",
       "Sesión Incorrecta")

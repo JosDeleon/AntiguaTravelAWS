@@ -43,7 +43,8 @@
     "vue2-google-maps": "^0.10.7",
     "vuetify": "^2.5.5",
     "vuetify-google-autocomplete": "^2.0.4",
-    "vuetify-image-input": "^19.2.2"
+    "vuetify-image-input": "^19.2.2",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
     "@nuxt/types": "^2.15.8",

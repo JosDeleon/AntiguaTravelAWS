@@ -49,7 +49,7 @@ export default ({ app, store, $axios }, inject) => {
         if (files){
           config.headers = { 'content-type': 'multipart/form-data' }
         }
-        /*const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        /*const usuario = JSON.parse(localStorage.getItem('usuario'));
         if(usuario.accessToken){
           config.headers['x-access-token'] = usuario.accessToken ?? ''
         }*/

@@ -364,6 +364,7 @@
               :position="mk.position"
               :clickable="true"
               @click="toggleInfo(mk, index)"
+              :icon="icon_marker"
             />
 
             <gmap-info-window
@@ -561,6 +562,12 @@ export default {
         template: ''
       },
 
+      icon_marker: {
+        url: "https://static.thenounproject.com/png/1661307-200.png",
+        scaledSize: {width: 40, height: 40},
+        labelOrigin: {x: 16, y: -10}
+      },
+
       coords: { lat: 0, lng: 0 },
 
       helpers: {
@@ -624,8 +631,6 @@ export default {
         this.restaurantes.listado = data
         this.restaurantes.listado.forEach( async restaurante => {
 
-          this.markers.push({ position: { lat: +restaurante.lat, lng: +restaurante.lng }, negocio: restaurante })
-
           let params = {
             negocioId: restaurante.id
           }
@@ -675,37 +680,32 @@ export default {
 
     async ObtenerTagPool(){
 
-      await this.$api.get('/negocios', {}).then(data => {
+      await this.$api.post("/tags/find", { categoria: 'R' }).then( data => {
 
-        data.restaurantes.forEach(async negocio => {
+        data.forEach(negocio => {
 
-          await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+          negocio.tags.forEach( tag => {
 
-            data.forEach(tag => {
-
-              this.tag_pool.push(tag.tag)
-
-            })
+            this.tag_pool.push(tag.tag)
 
           })
 
         })
-
       })
 
     },
 
     async ObtenerAuth(){
-      if(JSON.parse(sessionStorage.getItem('usuario')))
+      if(JSON.parse(localStorage.getItem('usuario')))
         this.auth = await this.$api.post("/usuario/info",
-          { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+          { id: JSON.parse(localStorage.getItem('usuario')).id })
     },
 
     async EnviarMensaje(restaurante){
 
       let login = true
 
-      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+      if(!JSON.parse(localStorage.getItem('usuario'))){
         this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
           "Contacto Fallido")
         login = false
@@ -851,8 +851,8 @@ export default {
 
     InformacionProducto(restaurante){
 
-      if(JSON.parse(sessionStorage.getItem('usuario'))){
-        if(JSON.parse(sessionStorage.getItem('usuario')).id !== this.restaurante.usuarioId){
+      if(JSON.parse(localStorage.getItem('usuario'))){
+        if(JSON.parse(localStorage.getItem('usuario')).id !== restaurante.usuarioId){
           this.ClickNegocio(restaurante)
         }
       }
@@ -1057,7 +1057,13 @@ export default {
           lat: this.currentPlace.geometry.location.lat(),
           lng: this.currentPlace.geometry.location.lng()
         };
-        this.markers.push({ position: marker });
+
+        let mk = this.markers.find(m => m.position.lat === marker.lat && m.position.lng === marker.lng)
+
+        if(mk){
+          this.toggleInfo(mk, 0)
+        }
+
         this.places.push(this.currentPlace);
         this.marker.position = marker;
         this.currentPlace = null;
@@ -1089,7 +1095,7 @@ export default {
     panToMarker() {
       this.$refs.mapRef.panTo(this.marker.position);
       try {
-        this.$refs.mapRef.setZoom(18);
+        this.$refs.mapRef.setZoom(20);
       }
       catch (e) {
 

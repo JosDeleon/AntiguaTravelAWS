@@ -377,12 +377,12 @@ export default {
 
       async ObtenerNegociosAuth(){
 
-        if(JSON.parse(sessionStorage.getItem('usuario'))){
+        if(JSON.parse(localStorage.getItem('usuario'))){
 
           this.folders = []
 
          this.negocios.listado = await this.$api.post('/negocios/usuario',
-            { usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id })
+            { usuarioId: JSON.parse(localStorage.getItem('usuario')).id })
 
           for (const negocio of this.negocios.listado) {
 

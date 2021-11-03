@@ -448,7 +448,7 @@ export default {
           latitud: this.marker.position.lat,
           longitud: this.marker.position.lng
         },
-        usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+        usuarioId: JSON.parse(localStorage.getItem('usuario')).id
       }
 
       await this.$api.post("/negocio", params).then( data => {

@@ -134,7 +134,7 @@
 
         let login = true
 
-        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        if(!JSON.parse(localStorage.getItem('usuario'))){
           this.$alert.warning("No puedes enviar opiniones hasta que inicies sesión",
             "Valoración Fallida")
           login = false
@@ -162,7 +162,7 @@
                 puntuacion: this.rating,
                 titulo : this.valoracion.titulo,
                 comentario : this.valoracion.comentario,
-                usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
+                usuarioId : JSON.parse(localStorage.getItem('usuario')).id,
                 negocioId : this.negocioId
               }
 

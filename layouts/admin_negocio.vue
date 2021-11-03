@@ -212,7 +212,7 @@ export default {
     async ObtenerAuth(){
 
       this.usuario_autenticado = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+        { id: JSON.parse(localStorage.getItem('usuario')).id })
 
       if(this.usuario_autenticado.id > 0){
         this.$fire.storage.ref(
@@ -230,7 +230,7 @@ export default {
         this.$alert.confirm('¿Está seguro que desea cerrar sesión?',
           'Cerrar Sesión').then(() => {
 
-          sessionStorage.removeItem('usuario')
+          localStorage.removeItem('usuario')
           this.$router.push({path: '/negocios/login'})
 
         });

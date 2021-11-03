@@ -43,6 +43,7 @@ export default {
     { src: '~/plugins/maps.js', mode: 'client' },
     { src: '~/plugins/moment.js', mode: 'client' },
     { src: '~/plugins/VViewer.js', mode: 'client' },
+    { src: '~/plugins/persistedState.client.js' }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

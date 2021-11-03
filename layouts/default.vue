@@ -644,10 +644,10 @@ export default {
       this.$forceUpdate()
     })
 
-    this.usuario = JSON.parse(sessionStorage.getItem('usuario')) ?? { id: -1 }
+    this.usuario = JSON.parse(localStorage.getItem('usuario')) ?? { id: -1 }
     if(this.usuario.id > 0){
       this.$fire.storage.ref(
-        'usuarios/'+JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
+        'usuarios/'+JSON.parse(localStorage.getItem('usuario')).id + "/foto-perfil"
       ).getDownloadURL().then((url) => {
         this.usuario.img = url
         this.$forceUpdate()
@@ -775,10 +775,10 @@ export default {
 
     async ObtenerNegociosAuth(){
 
-      if(JSON.parse(sessionStorage.getItem('usuario'))){
+      if(JSON.parse(localStorage.getItem('usuario'))){
 
         await this.$api.post('/negocios/usuario',
-          { usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id })
+          { usuarioId: JSON.parse(localStorage.getItem('usuario')).id })
           .then( async data => {
 
             this.$store.commit('setNegocios', data)
@@ -786,11 +786,11 @@ export default {
             for (const negocio of data) {
 
               const negocioRef = this.$fire.database.ref('Negocios').child("id" +
-                JSON.parse(sessionStorage.getItem('usuario')).id+"/idNegocio"+negocio.id)
+                JSON.parse(localStorage.getItem('usuario')).id+"/idNegocio"+negocio.id)
 
               let neg = {
                 negocioId: negocio.id,
-                adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                adminId: JSON.parse(localStorage.getItem('usuario')).id,
                 image: negocio.img ?? '',
                 nombreNegocio: negocio.nombre
               }
@@ -822,7 +822,7 @@ export default {
 
       if (tipo === 'N') {
 
-        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        if(!JSON.parse(localStorage.getItem('usuario'))){
           this.must_login = true
           this.MostrarDialogoSignInSignUp('L')
         }
@@ -834,7 +834,7 @@ export default {
 
       else if (tipo === 'G') {
 
-        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        if(!JSON.parse(localStorage.getItem('usuario'))){
           this.must_login = true
           this.MostrarDialogoSignInSignUp('L')
         }
@@ -846,7 +846,7 @@ export default {
 
       else {
 
-        if(!JSON.parse(sessionStorage.getItem('usuario'))){
+        if(!JSON.parse(localStorage.getItem('usuario'))){
           this.must_login = true
           this.MostrarDialogoSignInSignUp('L')
         }
@@ -896,7 +896,7 @@ export default {
 
         this.$alert.confirm('¿Estás seguro que deseas cerrar sesión?',
           'Cerrar Sesión').then(async () => {
-          sessionStorage.removeItem('usuario')
+          localStorage.removeItem('usuario')
           this.usuario = { id: -1 }
           this.$store.commit('setNegocios', [])
         });
@@ -978,9 +978,9 @@ export default {
 
       this.$api.post('/signin', params).then( async data => {
         if (data.accessToken) {
-          sessionStorage.setItem('usuario', JSON.stringify(data));
+          localStorage.setItem('usuario', JSON.stringify(data));
 
-          this.usuario = JSON.parse(sessionStorage.getItem('usuario'))
+          this.usuario = JSON.parse(localStorage.getItem('usuario'))
 
           this.$fire.storage.ref('usuarios/'+this.usuario.id + "/foto-perfil")
             .getDownloadURL().then((url) => {

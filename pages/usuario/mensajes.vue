@@ -288,8 +288,8 @@ export default {
 
   mounted() {
 
-    this.idAuth = JSON.parse(sessionStorage.getItem('usuario')) ?
-      "id" + JSON.parse(sessionStorage.getItem('usuario')).id : ''
+    this.idAuth = JSON.parse(localStorage.getItem('usuario')) ?
+      "id" + JSON.parse(localStorage.getItem('usuario')).id : ''
     this.ObtenerChats()
     this.ObtenerNegocios()
     this.ObtenerUsuarios()

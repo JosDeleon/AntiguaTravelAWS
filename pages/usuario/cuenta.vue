@@ -637,10 +637,10 @@ export default {
     async ObtenerAuth(){
       this.cargando = true
       this.auth = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+        { id: JSON.parse(localStorage.getItem('usuario')).id })
       this.auth.nacimiento = this.$moment.utc(this.auth.nacimiento).format('YYYY-MM-D')
      this.$fire.storage.ref(
-        'usuarios/'+JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
+        'usuarios/'+JSON.parse(localStorage.getItem('usuario')).id + "/foto-perfil"
       ).getDownloadURL().then((url) => {
         this.auth.img = url
         this.$forceUpdate()
@@ -672,7 +672,7 @@ export default {
       if (this.auth.nuevaImagen) {
 
         const imagenRef = this.$fire.storage.ref(
-          'usuarios/' + JSON.parse(sessionStorage.getItem('usuario')).id + "/foto-perfil"
+          'usuarios/' + JSON.parse(localStorage.getItem('usuario')).id + "/foto-perfil"
         )
 
         imagenRef.put(this.auth.archivo).then(response => {

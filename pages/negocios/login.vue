@@ -144,9 +144,9 @@ export default {
         this.$api.post('/signin', params).then( data => {
           console.log(data);
           if(data.accessToken){
-            sessionStorage.setItem('usuario', JSON.stringify(data));
+            localStorage.setItem('usuario', JSON.stringify(data));
 
-            this.usuario = JSON.parse(sessionStorage.getItem('usuario'))
+            this.usuario = JSON.parse(localStorage.getItem('usuario'))
             this.loading = false
             this.$router.push({path: '/negocios/dashboard'})
           }

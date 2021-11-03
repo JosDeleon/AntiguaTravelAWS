@@ -173,13 +173,13 @@ export default {
     },
     methods: {
         async registrarReservacion(){
-            if(sessionStorage.getItem('usuario')){
+            if(localStorage.getItem('usuario')){
                 let params = {
                     cantidad : this.reservacion.cantidad,
                     observacion : this.reservacion.observacion,
                     hora : this.reservacion.hora,
                     fecha : this.fecha,
-                    usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
+                    usuarioId : JSON.parse(localStorage.getItem('usuario')).id,
                     negocioId : parseInt(this.$route.query.id)
                 }
 

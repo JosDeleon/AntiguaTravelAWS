@@ -1050,7 +1050,7 @@ export default {
     async ObtenerNegocios(){
 
       let params = {
-        usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+        usuarioId: JSON.parse(localStorage.getItem('usuario')).id
       }
 
       await this.$api.post("/negocios/usuario", params).then(data => {

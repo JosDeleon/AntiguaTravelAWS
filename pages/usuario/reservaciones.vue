@@ -185,7 +185,7 @@
 
         let params = {
 
-          usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+          usuarioId: JSON.parse(localStorage.getItem('usuario')).id
 
         }
 

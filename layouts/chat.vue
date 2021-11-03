@@ -69,7 +69,7 @@ export default {
 
     VerificarUsuarioAuth(){
 
-      return 'id'+JSON.parse(sessionStorage.getItem('usuario')).id === this.$store.state.usuarioChatActual.negocio
+      return 'id'+JSON.parse(localStorage.getItem('usuario')).id === this.$store.state.usuarioChatActual.negocio
 
     },
 
@@ -90,14 +90,14 @@ export default {
         mensaje: "formReservacion",
         fecha: this.$moment().format('L').toString(),
         hora: this.$moment().format('h:mm:ss a').toString(),
-        enviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id
+        enviadoPor: "id"+JSON.parse(localStorage.getItem('usuario')).id
       }
 
       let chat = {
         key_negocio: this.$store.state.usuarioChatActual.key_negocio,
         negocio: this.$store.state.usuarioChatActual.negocio,
         ultimoMensaje: "formReservacion",
-        ultimoEnviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id,
+        ultimoEnviadoPor: "id"+JSON.parse(localStorage.getItem('usuario')).id,
         usuario: this.$store.state.usuarioChatActual.usuario,
         fechaHora: this.$moment().format('L h:mm:ss a').toString()
       }
@@ -130,14 +130,14 @@ export default {
           mensaje: this.mensaje,
           fecha: this.$moment().format('L').toString(),
           hora: this.$moment().format('h:mm:ss a').toString(),
-          enviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id
+          enviadoPor: "id"+JSON.parse(localStorage.getItem('usuario')).id
         }
 
         let chat = {
           key_negocio: this.$store.state.usuarioChatActual.key_negocio,
           negocio: this.$store.state.usuarioChatActual.negocio,
           ultimoMensaje: this.mensaje,
-          ultimoEnviadoPor: "id"+JSON.parse(sessionStorage.getItem('usuario')).id,
+          ultimoEnviadoPor: "id"+JSON.parse(localStorage.getItem('usuario')).id,
           usuario: this.$store.state.usuarioChatActual.usuario,
           fechaHora: this.$moment().format('L h:mm:ss a').toString()
         }

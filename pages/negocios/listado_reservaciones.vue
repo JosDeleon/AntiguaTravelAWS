@@ -233,7 +233,7 @@ export default {
     async ObtenerAuth(){
 
       await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id }).then(data => {
+        { id: JSON.parse(localStorage.getItem('usuario')).id }).then(data => {
 
         this.auth = data
         this.ObtenerNegocios()
@@ -245,7 +245,7 @@ export default {
     async ObtenerNegocios(){
 
       let params = {
-        usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+        usuarioId: JSON.parse(localStorage.getItem('usuario')).id
       }
 
       await this.$api.post("/negocios/usuario", params).then(data => {

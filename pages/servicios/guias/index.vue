@@ -351,38 +351,36 @@
 
           <GmapMap
             :center="center"
-            :zoom="18"
+            :zoom="14"
             map-style-id="roadmap"
-            :options="mapOptions"
             class="pa-2"
-            style="max-width: 100vmin; max-height: 40vmin; min-width: 50vmin; min-height: 40vmin;"
+            style="max-width: 100vmin; max-height: 50vmin; min-width: 50vmin; min-height: 50vmin;"
             ref="mapRef"
             @click="handleMapClick"
           >
             <GmapMarker
-              :position="marker.position"
+              v-for="(mk, index) in markers"
+              :key="index"
+              :position="mk.position"
               :clickable="true"
-              :draggable="true"
-              @drag="handleMarkerDrag"
-              @click="panToMarker"
+              @click="toggleInfo(mk, index)"
+              :icon="icon_marker"
             />
+
+            <gmap-info-window
+              :options="{
+                          maxWidth: 300,
+                          pixelOffset: { width: 0, height: -35 }
+                        }"
+              :position="infoWindow.position"
+              :opened="infoWindow.open"
+              @closeclick="infoWindow.open=false">
+              <div v-html="infoWindow.template"></div>
+            </gmap-info-window>
+
           </GmapMap>
 
         </v-card-text>
-
-        <v-layout justify-center>
-          <v-card-actions>
-            <v-btn
-              color="primary"
-              depressed
-              @click=""
-            >
-              <div style="color: rgba(0,0,0,0.8);">
-                Seleccionar
-              </div>
-            </v-btn>
-          </v-card-actions>
-        </v-layout>
 
       </v-card>
     </v-dialog>
@@ -520,6 +518,14 @@ export default {
 
       }
 
+      this.markers = []
+
+      lista.forEach( async destino => {
+
+        this.markers.push({position: {lat: +destino.lat, lng: +destino.lng}, negocio: destino})
+
+      })
+
       return lista
 
     },
@@ -547,6 +553,18 @@ export default {
         mapa: false,
         filtro_fecha: false,
         filtro_hora: false
+      },
+
+      infoWindow: {
+        position: {lat: 0, lng: 0},
+        open: false,
+        template: ''
+      },
+
+      icon_marker: {
+        url: "https://cdn4.iconfinder.com/data/icons/teamwork-glyph-2/64/teamwork-56-512.png",
+        scaledSize: {width: 45, height: 45},
+        labelOrigin: {x: 16, y: -10}
       },
 
       coords: { lat: 0, lng: 0 },
@@ -609,7 +627,7 @@ export default {
 
       let login = true
 
-      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+      if(!JSON.parse(localStorage.getItem('usuario'))){
         this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
           "Contacto Fallido")
         login = false
@@ -676,9 +694,9 @@ export default {
     },
 
     async ObtenerAuth(){
-      if(JSON.parse(sessionStorage.getItem('usuario')))
+      if(JSON.parse(localStorage.getItem('usuario')))
         this.auth = await this.$api.post("/usuario/info",
-          { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+          { id: JSON.parse(localStorage.getItem('usuario')).id })
     },
 
     async ObtenerDestinos(){
@@ -686,7 +704,6 @@ export default {
       await this.$api.post("/negocios/categoria", { categoria: "D" }).then( data => {
 
         this.destinos.listado = data
-        let cont = 0
         this.destinos.listado.forEach( async destino => {
 
           let params = {
@@ -714,8 +731,21 @@ export default {
 
           })
 
-          destino.showCardTags = false
-          cont++
+          await this.$api.post("/productos", { id: destino.id }).then(data => {
+
+            data.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+            destino.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+            this.productos.listado = [...this.productos.listado, ...data]
+
+            this.productos.listado.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+          })
 
         } )
 
@@ -725,22 +755,17 @@ export default {
 
     async ObtenerTagPool(){
 
-      await this.$api.get('/negocios', {}).then(data => {
+      await this.$api.post("/tags/find", { categoria: 'D' }).then( data => {
 
-        data.sitios.forEach(async negocio => {
+        data.forEach(negocio => {
 
-          await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+          negocio.tags.forEach( tag => {
 
-            data.forEach(tag => {
-
-              this.tag_pool.push(tag.tag)
-
-            })
+            this.tag_pool.push(tag.tag)
 
           })
 
         })
-
       })
 
     },
@@ -806,6 +831,46 @@ export default {
         await this.ObtenerDestinos()
 
       }
+
+    },
+
+    toggleInfo(mk, idx){
+
+      const contenido =
+        (`<div class="card">
+          <div class="card-image">
+            <img src="${mk.negocio.img}" alt="Placeholder image"
+              style="max-width: 120px; max-height: 120px; min-width: 60px; min-height: 60px;"
+              >
+          </div>
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <h3 class="black--text">${mk.negocio.nombre}</h3>
+              </div>
+            </div>
+            <div class="content black--text mb-1">
+              ${mk.negocio.direccion}
+            </div>
+            <div class="content">
+              ${mk.negocio.descripcion}
+            </div>
+            <a href="/servicios/guias/${mk.negocio.id}" target="_blank" style="text-decoration: none;">
+            <button type="button" class=" my-2 v-btn v-btn--outlined theme--light v-size--small black--text">
+              <span class="v-btn__content">
+              <i aria-hidden="true" class="v-icon notranslate v-icon--left
+                 fa fa fa fa-compass theme--light secondary--text"></i>
+                  Explorar
+                </span>
+            </button>
+            </a>
+          </div>
+        </div>`);
+
+      this.infoWindow.position = { lat: mk.position.lat, lng: mk.position.lng }
+      this.infoWindow.title = mk.negocio.nombre
+      this.infoWindow.template = contenido
+      this.infoWindow.open = true
 
     },
 
@@ -960,7 +1025,13 @@ export default {
           lat: this.currentPlace.geometry.location.lat(),
           lng: this.currentPlace.geometry.location.lng()
         };
-        this.markers.push({ position: marker });
+
+        let mk = this.markers.find(m => m.position.lat === marker.lat && m.position.lng === marker.lng)
+
+        if(mk){
+          this.toggleInfo(mk, 0)
+        }
+
         this.places.push(this.currentPlace);
         this.marker.position = marker;
         this.currentPlace = null;

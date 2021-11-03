@@ -217,6 +217,28 @@
           </v-chip>
         </template>
 
+        <template v-slot:[`item.tags`]="{ item }">
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="amber darken-2"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="MostrarDialogoEditarTags(item)"
+              >
+                <v-icon>
+                  fa fa-tags
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Editar Tags</span>
+          </v-tooltip>
+
+        </template>
+
         <template v-slot:[`item.actions`]="{ item }">
 
           <v-tooltip bottom>
@@ -506,6 +528,10 @@
                         @refresh="ObtenerNegocios"
       />
 
+      <EditarTags v-model="dialogos.editar_tags" :negocio.sync="negocios.seleccionado"
+                  :tags.sync="negocios.tags"
+      />
+
     </v-card>
 
   </v-container>
@@ -534,6 +560,7 @@ export default {
 
       dialogos: {
         negocio: false,
+        editar_tags: false,
         cambiar_ubicacion: false,
         pickerHoraAbre: false,
         pickerHoraCierra: false,
@@ -541,6 +568,7 @@ export default {
 
       negocios: {
         listado: [],
+        tags: [],
         seleccionado: {},
         tabla: {
           headers: [
@@ -548,6 +576,7 @@ export default {
             { text: 'Tipo de Negocio', value: 'categoria', align: 'center'},
             { text: 'Horarios', value: 'horarios', align: 'center'},
             { text: 'Estado', value: 'aut', align: 'center'},
+            { text: 'Tags', value: 'tags', align: 'center'},
             { text: 'Acciones', value: 'actions', sortable: false, align: 'center'},
           ],
           busqueda: null,
@@ -568,7 +597,7 @@ export default {
     async ObtenerNegocios(){
 
       let params = {
-        usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+        usuarioId: JSON.parse(localStorage.getItem('usuario')).id
       }
 
       this.negocios.tabla.cargando = true
@@ -578,6 +607,15 @@ export default {
         this.negocios.tabla.cargando = false
         this.negocios.listado = data
 
+      })
+
+    },
+
+    async ObtenerTags(){
+
+      await this.$api.post("/tags/negocio", { negocioId: this.negocios.seleccionado.id }).then( data => {
+        this.negocios.tags = data
+        this.$forceUpdate()
       })
 
     },
@@ -635,12 +673,12 @@ export default {
               this.$api.put("/negocio", params).then(data => {
 
                 const negocioRef = this.$fire.database.ref('Negocios')
-                  .child("id"+JSON.parse(sessionStorage.getItem('usuario')).id)
+                  .child("id"+JSON.parse(localStorage.getItem('usuario')).id)
                 .child("idNegocio"+this.negocios.seleccionado.id)
 
                 let negocio = {
 
-                  adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+                  adminId: JSON.parse(localStorage.getItem('usuario')).id,
                   image: downloadURL,
                   negocioId: this.negocios.seleccionado.id,
                   nombreNegocio: this.negocios.seleccionado.nombre
@@ -671,12 +709,12 @@ export default {
           this.$api.put("/negocio", params).then(data => {
 
             const negocioRef = this.$fire.database.ref('Negocios')
-              .child("id"+JSON.parse(sessionStorage.getItem('usuario')).id)
+              .child("id"+JSON.parse(localStorage.getItem('usuario')).id)
               .child("idNegocio"+this.negocios.seleccionado.id)
 
             let negocio = {
 
-              adminId: JSON.parse(sessionStorage.getItem('usuario')).id,
+              adminId: JSON.parse(localStorage.getItem('usuario')).id,
               image: this.negocios.seleccionado.img ?? '',
               negocioId: this.negocios.seleccionado.id,
               nombreNegocio: this.negocios.seleccionado.nombre
@@ -729,6 +767,14 @@ export default {
       }
 
       this.$router.push({ path: ruta })
+
+    },
+
+    MostrarDialogoEditarTags(negocio){
+
+      this.negocios.seleccionado = Object.assign({}, negocio)
+      this.ObtenerTags()
+      this.dialogos.editar_tags = true
 
     },
 

@@ -939,14 +939,14 @@ export default {
 
     async ObtenerAuth(){
       this.auth = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+        { id: JSON.parse(localStorage.getItem('usuario')).id })
     },
 
     async EnviarMensaje(){
 
       let login = true
 
-      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+      if(!JSON.parse(localStorage.getItem('usuario'))){
         this.$alert.warning("No puedes enviar mensajes porque no has iniciado sesión",
           "Contacto Fallido")
         login = false
@@ -1129,7 +1129,7 @@ export default {
 
     VerificarValoracion(valoracion){
 
-      if(!JSON.parse(sessionStorage.getItem('usuario'))){
+      if(!JSON.parse(localStorage.getItem('usuario'))){
 
         return false
 
@@ -1137,7 +1137,7 @@ export default {
 
       else{
 
-        return JSON.parse(sessionStorage.getItem('usuario')).id === valoracion.usuarioId
+        return JSON.parse(localStorage.getItem('usuario')).id === valoracion.usuarioId
 
       }
 
@@ -1249,9 +1249,21 @@ export default {
 
     },
 
-    Regresar(){
+    Regresar(){ 
 
-      this.$router.push({ path: (this.$nuxt.context.from.path) ? this.$nuxt.context.from.path : '/servicios/cambistas' })
+      let path
+
+      if(this.$nuxt.context.from.path.includes("galeria")){
+        path = '/servicios/cambistas'
+      }
+      else if(!this.$nuxt.context.from.path.includes("galeria") && !this.$nuxt.context.from.path.includes("cambistas")){
+        path = '/'
+      }
+      else{
+        path = this.$nuxt.context.from.path
+      }
+
+      this.$router.push({ path: path })
 
     }
 
