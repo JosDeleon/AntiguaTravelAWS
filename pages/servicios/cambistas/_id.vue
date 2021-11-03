@@ -1249,7 +1249,7 @@ export default {
 
     },
 
-    Regresar(){ 
+    Regresar(){
 
       let path
 
