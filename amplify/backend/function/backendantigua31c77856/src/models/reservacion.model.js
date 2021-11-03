@@ -23,6 +23,9 @@ module.exports = (sequelize, Sequelize) => {
         estado : {
             type : Sequelize.STRING
         },
+        observacion : {
+            type : Sequelize.STRING
+        },
         valor : {
             type : Sequelize.DECIMAL(10, 2)
         },

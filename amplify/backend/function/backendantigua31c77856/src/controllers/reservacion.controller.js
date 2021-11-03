@@ -17,15 +17,34 @@ exports.insert = (req, res) => {
         negocioId : req.body.negocioId,
         productoServicioId : req.body.productoId
     }).then(() => {
-        res.send({ message : 'Usuario Registrado Correctamente!!!'});
+        res.send({ message : 'ok'});
     }).catch(err => {
         res.status(500).send({ message : err.message })
     });
 }
 
+exports.update = (req, res) => {
+    Reserva.update({
+        cantidad : req.body.cantidad,
+        hora : req.body.hora,
+        fechaInicio : req.body.fechaInicio,
+        fechaFinal : req.body.fechaFinal,
+        valor : req.body.valor,
+        productoServicioId : req.body.productoId,
+        estado : req.body.estado,
+        observacion : req.body.observacion,
+    },{
+        where : { id : req.body.id }
+    }).then( () => {
+        res.send({ message : 'ok'});
+    }).catch(err => {
+        res.status(500).send({ message : err.message })
+    })
+}
+
 exports.getReserva = (req, res) => {
     Reserva.findOne({
-        where : { negocioId : req.body.negocioId }
+        where : { id : req.body.id }
     })
     .then(async (reserva) => {
         if(!reserva){
@@ -135,11 +154,22 @@ exports.solicitar = async (req, res) => {
                     SES.sendEmail(params).promise();
 
                     const fecha = new Date();
+                    let inicio;
+                    let final;
+
+                    if(req.body.fecha.length < 2){
+                        inicio = req.body.fecha[0]
+                    }else{
+                        inicio = req.body.fecha[0]
+                        final = req.body.fecha[1]
+                    }
 
                     Reserva.create({
+                        observacion : req.body.observacion,
                         cantidad : req.body.cantidad,
                         hora : req.body.hora,
-                        fechaInicio : req.body.fecha,
+                        fechaInicio : inicio,
+                        fechaFinal : final,
                         usuarioId : req.body.usuarioId,
                         negocioId : req.body.negocioId,
                         estado : 'p',

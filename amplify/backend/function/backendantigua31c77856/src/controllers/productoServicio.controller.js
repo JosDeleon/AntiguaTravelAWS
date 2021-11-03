@@ -1,6 +1,8 @@
 const db = require('../models');
 const Producto = db.producto;
+const Negocio = db.negocio;
 const Caracteristca = db.caracteristicas;
+const { Op } = require("sequelize")
 
 exports.insert = async (req, res) => {
     const carac = req.body.carac;
@@ -117,5 +119,25 @@ exports.update = (req, res) => {
         where : {
             id : req.body.id
         }
+    }).then(() => {
+        res.status(200).send({ message : "Actualizado!"});
+    })
+    .catch( err => {
+        res.status(500).send({ message : err.message })
+    })
+}
+
+exports.range = (req, res) => {
+    Negocio.findAll({
+        where : { categoria : req.body.categoria },
+        attributes : ['id'],
+        include : [
+            { model : Producto , where : { [Op.and] : [ { valor : { [Op.gte] : req.body.inicio } } , { valor : { [Op.lte] : req.body.fin } } ] }  }
+        ]
+    })
+    .then( (resultado) => {
+        res.status(200).send(resultado);
+    }).catch(err => {
+        res.status(500).send({ message : err.message })
     })
 }

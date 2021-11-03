@@ -54,3 +54,41 @@ exports.businessesTags = async (req, res) => {
         res.status(500).send({message : err.message})       
     })
 }
+
+exports.delete =  (req, res) => {
+    Tags.destroy({
+        where : {
+            id : req.body.id
+        }
+    }).then(() => {
+        res.status(200).send({ message : "ok" })
+    }).catch(err => {
+        res.status(500).send({ message : err.message })
+    })
+}
+
+exports.insert = async (req, res) => {
+    await Tags.create({
+        tag : req.body.tag,
+        negocioId : req.body.negocioId 
+    }).then( (tag) => {
+        res.status(200).send({ message : "ok"})
+    }).catch(err => {
+        res.status(500).send({message : err.message})       
+    })
+}
+
+exports.find = (req, res) => {
+    Negocio.findAll({
+        where : { categoria : req.body.categoria },
+        attributes : ['id'],
+        include : [
+            { model : Tags , attributes:['tag']}
+        ]
+    })
+    .then( (resultado) => {
+        res.status(200).send(resultado);
+    }).catch(err => {
+        res.status(500).send({ message : err.message })
+    })
+}

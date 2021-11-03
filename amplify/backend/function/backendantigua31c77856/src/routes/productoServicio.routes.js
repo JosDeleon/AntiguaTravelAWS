@@ -12,4 +12,6 @@ module.exports = (app) =>{
     app.delete('/api/productos', controller.deleteProducts);
 
     app.put('/api/producto', controller.update)
+
+    app.post('/api/producto/rango', controller.range)
 }

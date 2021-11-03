@@ -8,4 +8,6 @@ module.exports = function (app){
     app.post('/api/reservacion', controller.insert)
 
     app.post('/api/solicitar', controller.solicitar)
+
+    app.put('/api/reservacion', controller.update)
 }
