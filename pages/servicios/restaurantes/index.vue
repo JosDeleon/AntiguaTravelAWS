@@ -31,27 +31,15 @@
                   md="8"
                 >
 
-                  <v-chip-group multiple>
+                  <v-chip-group v-model="tags_seleccionadas" multiple @change="RefrescarNegocios">
                     <v-chip
                       filter
                       outlined
+                      v-for="(tag, t) in tag_pool"
+                      :key="t"
                     >
                       <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Rápida
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Italiana
-                    </v-chip>
-                    <v-chip
-                      filter
-                      outlined
-                    >
-                      <v-icon class="mr-1">fa fa-tag</v-icon>
-                      Comida Vegetariana
+                      {{ tag }}
                     </v-chip>
                   </v-chip-group>
 
@@ -68,48 +56,15 @@
                 Busqueda por Tags
               </h3>
 
-              <v-chip-group multiple column color="secondary">
+              <v-chip-group v-model="tags_seleccionadas" multiple column color="secondary" @change="RefrescarNegocios">
                 <v-chip
                   filter
                   outlined
+                  v-for="(tag, t) in tag_pool"
+                  :key="t"
                 >
                   <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Rápida
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Italiana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Comida Vegetariana
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Pollo Frito
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Mariscos
-                </v-chip>
-                <v-chip
-                  filter
-                  outlined
-                >
-                  <v-icon class="mr-1">fa fa-tag</v-icon>
-                  Crepas
+                  {{ tag }}
                 </v-chip>
               </v-chip-group>
 
@@ -119,40 +74,52 @@
 
             <v-list rounded>
               <h3 class="mb-2 black--text">Filtros</h3>
-              <v-list-item-group
-                color="secondary"
+
+              <v-list-item
+                v-for="(filtro, i) in filtros"
+                :key="i"
+                class="my-auto"
+                @click="FiltrarNegocio(filtro)"
+                inactive
               >
-                <v-list-item
-                  v-for="(filtro, i) in filtros"
-                  :key="i"
-                  class="my-auto"
-                >
-                  <v-list-item-icon>
-                    <v-icon v-text="filtro.icono"></v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title v-text="filtro.texto"></v-list-item-title>
-                    <v-range-slider
-                      v-model="range"
-                      max="1000"
-                      min="1"
-                      track-color="black"
-                      thumb-color="black"
-                      track-fill-color="black"
-                      v-if="i === 2"
-                    />
-                    <v-layout justify-center v-if="i===2">
+                <v-list-item-icon>
+                  <v-icon v-text="filtro.icono"></v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="filtro.texto"></v-list-item-title>
+                  <v-range-slider
+                    v-model="range"
+                    :max="rango[1]"
+                    :min="rango[0]"
+                    track-color="black"
+                    thumb-color="black"
+                    track-fill-color="black"
+                    v-if="i === 2"
+                    @change="helpers.filtro_rango = true"
+                  />
+                  <v-layout justify-center v-if="i===2">
 
-                      <div class="justify-center mt-n4">
-                        {{  'Q. '+(range[0].toFixed(2)) }}-
-                        {{ 'Q. '+(range[1].toFixed(2)) }}
-                      </div>
+                    <div class="justify-center mt-n4">
+                      {{  'Q. ' + (+range[0]).toFixed(2) }} -
+                      {{ 'Q. ' + (+range[1]).toFixed(2)  }}
+                    </div>
 
-                    </v-layout>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-item-group>
+                  </v-layout>
+                </v-list-item-content>
+              </v-list-item>
             </v-list>
+
+            <v-layout justify-center>
+
+              <v-btn
+                color="secondary"
+                depressed
+                @click="LimpiarFiltros"
+              >
+                Limpiar Filtros
+              </v-btn>
+
+            </v-layout>
 
           </v-card-text>
 
@@ -164,7 +131,7 @@
 
         <v-row>
 
-          <v-col cols="6" class="mt-12" v-if="restaurantes.listado && restaurantes.listado.length === 0">
+          <v-col cols="6" class="mt-12" v-if="listado && listado.length === 0">
             <v-alert
               border="left"
               colored-border
@@ -179,7 +146,7 @@
                  lg="6"
                  md="6"
                  sm="6"
-                 v-for="(restaurante, i) in restaurantes.listado"
+                 v-for="(restaurante, i) in listado"
                  :key="i"
           >
 
@@ -222,6 +189,7 @@
               </v-card-title>
 
               <v-card-text>
+
                 <v-row
                   align="center"
                   class="mx-0 mb-2"
@@ -239,6 +207,15 @@
                     {{ restaurante.totalValoraciones > 1 ||  restaurante.totalValoraciones === 0 ?  'valoraciones' : 'valoración' }})
                   </div>
                 </v-row>
+
+                <div class="my-2">
+                  <v-icon color="black" class="mr-1">
+                    fa fa-map-marker-alt
+                  </v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(restaurante.lng, restaurante.lat) }} km
+                  </span> de ti
+                </div>
 
                 <div>{{ restaurante.descripcion ? restaurante.descripcion :
                   "Este restaurante no cuenta con una descripción" }}</div>
@@ -374,38 +351,35 @@
 
           <GmapMap
             :center="center"
-            :zoom="18"
+            :zoom="14"
             map-style-id="roadmap"
-            :options="mapOptions"
             class="pa-2"
-            style="max-width: 100vmin; max-height: 40vmin; min-width: 50vmin; min-height: 40vmin;"
+            style="max-width: 100vmin; max-height: 50vmin; min-width: 50vmin; min-height: 50vmin;"
             ref="mapRef"
             @click="handleMapClick"
           >
             <GmapMarker
-              :position="marker.position"
+              v-for="(mk, index) in markers"
+              :key="index"
+              :position="mk.position"
               :clickable="true"
-              :draggable="true"
-              @drag="handleMarkerDrag"
-              @click="panToMarker"
+              @click="toggleInfo(mk, index)"
             />
+
+            <gmap-info-window
+              :options="{
+                          maxWidth: 300,
+                          pixelOffset: { width: 0, height: -35 }
+                        }"
+              :position="infoWindow.position"
+              :opened="infoWindow.open"
+              @closeclick="infoWindow.open=false">
+              <div v-html="infoWindow.template"></div>
+            </gmap-info-window>
+
           </GmapMap>
 
         </v-card-text>
-
-        <v-layout justify-center>
-          <v-card-actions>
-            <v-btn
-              color="primary"
-              depressed
-              @click=""
-            >
-              <div style="color: rgba(0,0,0,0.8);">
-                Seleccionar
-              </div>
-            </v-btn>
-          </v-card-actions>
-        </v-layout>
 
       </v-card>
     </v-dialog>
@@ -417,6 +391,67 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <v-dialog
+      ref="fecha_planeada"
+      v-model="dialogos.filtro_fecha"
+      :return-value.sync="helpers.fecha_planeada"
+      persistent
+      transition="fab-transition"
+      width="300"
+    >
+      <v-date-picker
+        v-model="helpers.fecha_planeada"
+        scrollable
+      >
+        <v-spacer></v-spacer>
+        <v-btn
+          text
+          color="primary"
+          @click="dialogos.filtro_fecha = false"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          text
+          color="primary"
+          @click="FiltrarFecha"
+        >
+          Aceptar
+        </v-btn>
+      </v-date-picker>
+    </v-dialog>
+
+    <v-dialog
+      ref="hora_planeada"
+      v-model="dialogos.filtro_hora"
+      :return-value.sync="helpers.hora_planeada"
+      persistent
+      transition="fab-transition"
+      width="300"
+    >
+      <v-time-picker
+        v-model="helpers.hora_planeada"
+        scrollable
+        color="primary darken-2"
+      >
+        <v-spacer></v-spacer>
+        <v-btn
+          text
+          color="primary darken-2"
+          @click="dialogos.filtro_hora = false"
+        >
+          Cancelar
+        </v-btn>
+        <v-btn
+          text
+          color="primary darken-2"
+          @click="FiltrarHora"
+        >
+          Aceptar
+        </v-btn>
+      </v-time-picker>
+    </v-dialog>
+
   </v-container>
 
 </template>
@@ -424,42 +459,157 @@
 <script>
 
 import * as Axios from "axios";
+import login from "@/pages/negocios/login";
 
 export default {
 
   mounted() {
     this.ObtenerRestaurantes()
     this.ObtenerAuth()
+    this.initGeolocate()
+    this.ObtenerTagPool()
+  },
+
+  computed: {
+
+    listado() {
+
+      let lista = []
+
+      let listado_total = []
+
+      if(this.helpers.filtro_rango){
+
+        this.restaurantes.listado.forEach(restaurante => {
+
+          if(this.VerificarRangoPrecios(restaurante.rango)){
+
+            listado_total.push(restaurante)
+
+          }
+
+        })
+
+      }
+      else{
+        listado_total = [...this.restaurantes.listado]
+      }
+
+      if(this.helpers.filtro_fecha || this.helpers.filtro_hora){
+
+        listado_total.filter(restaurante => {
+
+          if(this.helpers.filtro_hora && this.helpers.hora_planeada){
+
+            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, restaurante.abre, restaurante.cierra)){
+
+              lista.push(restaurante)
+
+            }
+
+          }
+
+        })
+
+      }
+      else{
+
+        lista = listado_total
+
+      }
+
+      this.markers = []
+
+      lista.forEach( async restaurante => {
+
+        this.markers.push({position: {lat: +restaurante.lat, lng: +restaurante.lng}, negocio: restaurante})
+
+      })
+
+      return lista
+
+    },
+
+    rango(){
+
+      let rangoPrecios = [1.00, 1000.00]
+
+      if(this.productos.listado && this.productos.listado.length > 0){
+        rangoPrecios = [this.productos.listado[0].valor, this.productos.listado[this.productos.listado.length - 1].valor]
+      }
+
+      this.range = [rangoPrecios[0], rangoPrecios[1]]
+
+      return rangoPrecios
+
+    }
+
   },
 
   data(){
     return{
+
       dialogos: {
-        mapa: false
+        mapa: false,
+        filtro_fecha: false,
+        filtro_hora: false
       },
+
+      infoWindow: {
+        position: {lat: 0, lng: 0},
+        open: false,
+        template: ''
+      },
+
+      coords: { lat: 0, lng: 0 },
+
       helpers: {
         nonce: 1,
         mapSearch: null,
-        busqueda: null
+        busqueda: null,
+        filtro_fecha: false,
+        filtro_hora: false,
+        filtro_rango: false,
+        fecha_planeada: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+        hora_planeada: null
       },
+
       restaurantes: {
+
         listado: []
+
       },
+
+      productos: {
+
+        listado: []
+
+      },
+
       filtros: [
-        { texto: 'Hora Planeada', icono: 'fa fa-clock' },
-        { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day' },
-        { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave' },
+        { texto: 'Hora Planeada', icono: 'fa fa-clock', valor: 'H' },
+        { texto: 'Fecha Planeada', icono: 'fa fa-calendar-day', valor: 'F' },
+        { texto: 'Rango de Precios', icono: 'fa fa-money-bill-wave', valor: 'R' },
       ],
+
       auth: {},
+
       range: [1,1000],
+
       markers: [],
+
       places: [],
+
       currentPlace: null,
+
       marker: { position: { lat: 14.55706946331603, lng: -90.73366553217345 } },
+
       center: { lat: 14.55706946331603, lng: -90.73366553217345 },
-      mapOptions: {
-        disableDefaultUI: true,
-      }
+
+      tag_pool: [],
+
+      tags_seleccionadas: []
+
     }
   },
 
@@ -467,11 +617,14 @@ export default {
 
     async ObtenerRestaurantes(){
 
+      this.productos.listado = []
+
       await this.$api.post("/negocios/categoria", { categoria: "R" }).then( data => {
 
         this.restaurantes.listado = data
-        let cont = 0
         this.restaurantes.listado.forEach( async restaurante => {
+
+          this.markers.push({ position: { lat: +restaurante.lat, lng: +restaurante.lng }, negocio: restaurante })
 
           let params = {
             negocioId: restaurante.id
@@ -498,9 +651,21 @@ export default {
 
           })
 
-          restaurante.showCardTags = false
-          restaurante.tags = ["Comida rápida"]
-          cont++
+          await this.$api.post("/productos", { id: restaurante.id }).then(data => {
+
+            data.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+            restaurante.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+            this.productos.listado = [...this.productos.listado, ...data]
+
+            this.productos.listado.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+          })
 
         } )
 
@@ -508,9 +673,32 @@ export default {
 
     },
 
+    async ObtenerTagPool(){
+
+      await this.$api.get('/negocios', {}).then(data => {
+
+        data.restaurantes.forEach(async negocio => {
+
+          await this.$api.post("/tags/negocio", { negocioId: negocio.id }).then(data => {
+
+            data.forEach(tag => {
+
+              this.tag_pool.push(tag.tag)
+
+            })
+
+          })
+
+        })
+
+      })
+
+    },
+
     async ObtenerAuth(){
-      this.auth = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+      if(JSON.parse(sessionStorage.getItem('usuario')))
+        this.auth = await this.$api.post("/usuario/info",
+          { id: JSON.parse(sessionStorage.getItem('usuario')).id })
     },
 
     async EnviarMensaje(restaurante){
@@ -591,9 +779,119 @@ export default {
 
     },
 
+    toggleInfo(mk, idx){
+
+      const contenido =
+        (`<div class="card">
+          <div class="card-image">
+            <img src="${mk.negocio.img}" alt="Placeholder image"
+              style="max-width: 120px; max-height: 120px; min-width: 60px; min-height: 60px;"
+              >
+          </div>
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <h3 class="black--text">${mk.negocio.nombre}</h3>
+              </div>
+            </div>
+            <div class="content black--text mb-1">
+              ${mk.negocio.direccion}
+            </div>
+            <div class="content">
+              ${mk.negocio.descripcion}
+            </div>
+            <a href="/servicios/restaurantes/${mk.negocio.id}" target="_blank" style="text-decoration: none;">
+            <button type="button" class=" my-2 v-btn v-btn--outlined theme--light v-size--small black--text">
+              <span class="v-btn__content">
+              <i aria-hidden="true" class="v-icon notranslate v-icon--left
+                 fa fa fa fa-compass theme--light secondary--text"></i>
+                  Explorar
+                </span>
+            </button>
+            </a>
+          </div>
+        </div>`);
+
+      this.infoWindow.position = { lat: mk.position.lat, lng: mk.position.lng }
+      this.infoWindow.title = mk.negocio.nombre
+      this.infoWindow.template = contenido
+      this.infoWindow.open = true
+
+    },
+
+    initGeolocate() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.coords.lat = position.coords.latitude
+        this.coords.lng = position.coords.longitude
+      });
+    },
+
+    CalcularDistancia(lng, lat){
+
+      lng = parseFloat(lng)
+      lat = parseFloat(lat)
+
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+      var dLon = this.deg2rad(lng-this.coords.lng);
+      var a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      // Distance in km
+      return (R * c).toFixed(0);
+
+    },
+
+    deg2rad(deg) {
+      return deg * (Math.PI/180)
+    },
+
     InformacionProducto(restaurante){
 
+      if(JSON.parse(sessionStorage.getItem('usuario'))){
+        if(JSON.parse(sessionStorage.getItem('usuario')).id !== this.restaurante.usuarioId){
+          this.ClickNegocio(restaurante)
+        }
+      }
+      else{
+        this.ClickNegocio(restaurante)
+      }
+
       this.$router.push({ path: '/servicios/restaurantes/'+restaurante.id })
+
+    },
+
+    async ClickNegocio(restaurante){
+
+      let params = {
+
+        id: restaurante.id,
+        vistas: restaurante.vistas ? restaurante.vistas++ : 1
+
+      }
+
+      await this.$api.put("/negocio", params).then(data => {})
+
+    },
+
+    VerificarHoraFiltro(hora, abre, cierra){
+
+      var format = 'hh:mm:ss'
+      var time = this.$moment(hora, format),
+        beforeTime = this.$moment(abre, format),
+        afterTime = this.$moment(cierra, format);
+
+      return time.isBetween(beforeTime, afterTime)
+
+    },
+
+    VerificarRangoPrecios(rangoPrecios){
+
+      return (Math.floor(+rangoPrecios[0]) >= this.range[0] && Math.floor(+rangoPrecios[0]) <= this.range[1]) ||
+        (Math.floor(+rangoPrecios[1]) >= this.range[0] && Math.floor(+rangoPrecios[1]) <= this.range[1])
 
     },
 
@@ -615,12 +913,119 @@ export default {
 
     },
 
+    async RefrescarNegocios(){
+
+      if(this.tags_seleccionadas && this.tags_seleccionadas.length > 0){
+
+        let seleccionadas = []
+
+        this.tags_seleccionadas.forEach(tag => {
+
+          seleccionadas.push(this.tag_pool[tag])
+
+        })
+
+        let params = {
+          tags: seleccionadas
+        }
+
+        await this.$api.post("/tags", params).then(data => {
+
+          this.restaurantes.listado = data
+
+          this.restaurantes.listado.forEach( async restaurante => {
+
+            let params = {
+              negocioId: restaurante.id
+            }
+
+            restaurante.totalValoraciones = 0
+            restaurante.puntuacionAvg = 0
+
+            await this.$api.post("/valoraciones", params).then(data => {
+
+              let valoracionesAvg = 0
+
+              data.forEach(valoracion => {
+
+                valoracionesAvg += valoracion.puntuacion;
+
+              })
+
+              restaurante.totalValoraciones = data.length
+
+              restaurante.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
+
+              this.$forceUpdate()
+
+            })
+
+          } )
+
+        }).catch(({ data }) => {
+          console.error(data)
+          this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+        })
+
+      }
+
+      else{
+
+        await this.ObtenerRestaurantes()
+
+      }
+
+    },
+
+    FiltrarNegocio(filtro){
+
+      if(filtro.valor === 'F'){
+
+        this.dialogos.filtro_fecha = true
+
+      }
+      else if(filtro.valor === 'H'){
+
+        this.dialogos.filtro_hora = true
+
+      }
+
+    },
+
+    FiltrarFecha(){
+
+      this.$refs.fecha_planeada.save(this.helpers.fecha_planeada)
+      this.helpers.filtro_fecha = true
+
+    },
+
+    FiltrarHora(){
+
+      this.$refs.hora_planeada.save(this.helpers.hora_planeada)
+      this.helpers.filtro_hora = true
+
+    },
+
+    LimpiarFiltros(){
+
+      this.helpers.fecha_planeada = null
+      this.helpers.hora_planeada = null
+      this.helpers.filtro_fecha = false
+      this.helpers.filtro_hora = false
+      this.helpers.filtro_rango = false
+      this.range = [1,1000]
+      this.tags_seleccionadas = []
+      this.ObtenerRestaurantes()
+
+    },
+
     MostrarDialogoMapa(){
       this.dialogos.mapa = true
     },
 
     CerrarDialogoMapa(){
       this.dialogos.mapa = false
+      this.infoWindow.open = false
     },
 
     StringTags(tags){

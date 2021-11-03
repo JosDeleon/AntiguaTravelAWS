@@ -335,7 +335,7 @@
 
             <v-carousel
               cycle
-              interval="3000"
+              interval="5000"
               height="500"
               hide-delimiter-background
               show-arrows-on-hover

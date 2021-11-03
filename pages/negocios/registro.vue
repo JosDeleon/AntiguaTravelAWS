@@ -14,6 +14,32 @@
         >
 
           <v-container>
+
+            <v-row align="center" justify="start">
+
+              <v-col>
+
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="black"
+                      dark
+                      x-large
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+                    >
+                      <v-icon> fa fa-arrow-left </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Regresar</span>
+                </v-tooltip>
+
+              </v-col>
+
+            </v-row>
+
             <v-layout justify-center>
 
               <v-card min-width="400" width="600"
@@ -54,7 +80,7 @@
                             type="number"
                             prefix="(+502)"
                             v-model="negocio.telefono"
-                            :rules="[ v => !!v || 'El teléfono es obligatorio' ]"
+                            :rules="[rules.numeroRequerido, rules.numeroValido]"
                             prepend-icon="fa fa-phone"
                           />
 
@@ -108,6 +134,7 @@
                                   v-model="negocio.cierra"
                                   landscape
                                   color="secondary"
+                                  :disabled="negocio.abre === null || negocio.abre === undefined"
                                 />
                               </v-col>
                             </v-row>
@@ -398,6 +425,10 @@ export default {
         nonce: 1,
         mapSearch: null,
         busqueda: null,
+      },
+      rules: {
+        numeroRequerido: value => !!value || 'El número de teléfono es obligatorio',
+        numeroValido: value => value >= 9999999 && value <= 99999999 || 'Debe de contener exactamente 8 diigitos',
       },
       markers: [],
       places: [],

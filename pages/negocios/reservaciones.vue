@@ -1,5 +1,7 @@
 <template>
+
     <v-row justify="center" align="center">
+
         <v-col cols="12" sm="10" md="10" lg="9" class="hidden-sm-and-down">
             <v-card style="border-radius:10px;">
                 <v-img
@@ -9,6 +11,32 @@
                     style="border-radius:10px;"
                 >
                     <v-container>
+
+                      <v-row align="center" justify="start">
+
+                        <v-col>
+
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-btn
+                                color="black"
+                                dark
+                                x-large
+                                v-bind="attrs"
+                                v-on="on"
+                                icon
+                                @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+                              >
+                                <v-icon> fa fa-arrow-left </v-icon>
+                              </v-btn>
+                            </template>
+                            <span>Regresar</span>
+                          </v-tooltip>
+
+                        </v-col>
+
+                      </v-row>
+
                         <v-layout justify-center>
                             <v-card min-width="400" width="600" style="border-radius:10px;">
                                 <v-card-text class="pa-4">
@@ -114,14 +142,17 @@
                 </v-img>
             </v-card>
         </v-col>
+
     </v-row>
+
 </template>
 
 <script>
 
 export default {
+
     mounted() {
-        //this.geolocate()
+
     },
 
     middleware: 'VerificarUsuarioAuth',
@@ -149,16 +180,17 @@ export default {
                     hora : this.reservacion.hora,
                     fecha : this.fecha,
                     usuarioId : JSON.parse(sessionStorage.getItem('usuario')).id,
-                    negocioId : parseInt(this.$route.query.in) 
+                    negocioId : parseInt(this.$route.query.id)
                 }
-                
+
                 console.log(params);
-                
+
                 await this.$api.post("/solicitar", params).then( data => {
-                    console.log(data);
-                    //Agregar alert de solicitud enviada
-                    //this.$alert.registro_exitoso()
+
+                    this.$alert.reserva_exitosa()
+
                     this.$router.push({ path: '/' })
+
                 }).catch( data => {
                     console.error(data)
                     this.$alert.error('Ocurrió un error en la solicitud, vuelve a intentarlo', 'Error Interno')

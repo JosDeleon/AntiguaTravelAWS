@@ -122,11 +122,12 @@
             ref="calendar"
             :type="tipos.seleccionado"
             :now="today"
-            :events="events"
+            :events="reservaciones"
             @click:more="viewDay"
             @click:date="viewDay"
             color="secondary"
             event-color="secondary"
+            class="text-wrap"
           />
         </v-sheet>
       </v-col>
@@ -142,6 +143,7 @@
 
     mounted() {
       this.$refs.calendar.scrollToTime('08:00')
+      this.ObtenerReservaciones()
     },
 
     layout: 'empty',
@@ -171,25 +173,64 @@
 
       names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
 
-      events: [
-        {
-          name: 'Reserva en suite, Solei',
-          start: '2021-10-07 07:30',
-          end: '2021-10-08',
-        },
-        {
-          name: `Reserva en taco bell`,
-          start: '2021-10-10',
-        },
-        {
-          name: 'Reserva en suite, Hotel Santo Domingo',
-          start: '2021-10-14 07:30',
-          end: '2021-10-15 08:30',
-        },
-      ],
+      reservaciones: [],
+
+      negocios: []
+
     }),
 
     methods: {
+
+      async ObtenerReservaciones(){
+
+        let params = {
+
+          usuarioId: JSON.parse(sessionStorage.getItem('usuario')).id
+
+        }
+
+        await this.$api.post("/reservacion/usuario", params).then( data => {
+
+          data.forEach(reserva => {
+
+            reserva.start = reserva.fechaInicio ? (reserva.fechaInicio).split("T")[0] + " " + reserva.hora : "2021-10-14 07:30"
+            reserva.end = reserva.fechaFinal ? (reserva.fechaFinal).split("T")[0] + " " + reserva.hora : "2021-10-15 07:30"
+
+          })
+
+          this.reservaciones = [...this.reservaciones, ...data]
+
+          this.ObtenerNegocios()
+
+        })
+
+
+      },
+
+      async ObtenerNegocios(){
+
+        await this.$api.get('/negocios', {}).then( data => {
+
+          this.reservaciones.forEach( reserva => {
+
+            Object.keys(data).forEach(key => {
+
+              data[key].forEach(negocio => {
+
+                if(reserva.negocioId === negocio.id){
+                  reserva.name = "Reservación en " + negocio.nombre + " (" + ((reserva.estado === 'p') ? "Pendiente" : "Confirmada") + ")"
+                  this.$forceUpdate()
+                }
+
+              })
+
+            })
+
+          } )
+
+        } )
+
+      },
 
       hoy () {
         this.focus = ''
@@ -241,28 +282,3 @@
   }
 
 </script>
-
-<style scoped>
-  .my-event {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border-radius: 2px;
-    background-color: #1867c0;
-    color: #ffffff;
-    border: 1px solid #1867c0;
-    font-size: 12px;
-    padding: 3px;
-    cursor: pointer;
-    margin-bottom: 1px;
-    left: 4px;
-    margin-right: 8px;
-    position: relative;
-  }
-
-  .my-event.with-time {
-    position: absolute;
-    right: 4px;
-    margin-right: 0px;
-  }
-</style>

@@ -31,10 +31,8 @@
         prepend-inner-icon="fa fa-search"
         style="max-width: 300px"
         v-model="negocios.tabla.busqueda"
-        @keyup.enter.native="Busqueda"
         clearable
         clear-icon="fa fa-times-circle"
-        @click:clear="LimpiarBusqueda"
         color="black"
       />
     </v-card-actions>
@@ -51,6 +49,8 @@
         sort-desc
         class="elevation-1"
         style="border-radius: 10px;"
+        :search="negocios.tabla.busqueda"
+        :custom-filter="Busqueda"
         :loading="negocios.tabla.cargando"
         loading-text="Cargando... Por favor espere un momento."
         no-data-text='Aún no hay negocios para mostrar, por favor vuelva a intentarlo.'
@@ -74,6 +74,16 @@
             <div v-else>
               Aún no hay negocios para mostrar, por favor vuelva a intentarlo.
             </div>
+          </v-alert>
+        </template>
+
+        <template v-slot:no-results>
+          <v-alert
+            type="info"
+            prominent
+            color="complementario"
+          >
+            No se encontró ningún negocio en la busqueda "{{ productos.tabla.busqueda }}"
           </v-alert>
         </template>
 
@@ -155,7 +165,7 @@
               <v-icon left>
                 fa fa-briefcase
               </v-icon>
-              Destino Turístico
+              Guía de Turismo
             </div>
             <div v-else-if="item.categoria === 'RC'">
               <v-icon left>
@@ -208,6 +218,7 @@
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
+
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -227,6 +238,43 @@
             </template>
             <span>Editar</span>
           </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="blue darken-3"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="MostrarDialogoCambiarUbicacion(item)"
+              >
+                <v-icon>
+                  fa fa-map-marker-alt
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Cambiar Ubicación</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="blue-grey"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                icon
+                @click="IrPagina(item)"
+              >
+                <v-icon>
+                  fa fa-eye
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Ver Página</span>
+          </v-tooltip>
+
         </template>
 
       </v-data-table>
@@ -454,6 +502,10 @@
 
       </v-dialog>
 
+      <CambiarUbicacion v-model="dialogos.cambiar_ubicacion" :negocio.sync="negocios.seleccionado"
+                        @refresh="ObtenerNegocios"
+      />
+
     </v-card>
 
   </v-container>
@@ -482,6 +534,7 @@ export default {
 
       dialogos: {
         negocio: false,
+        cambiar_ubicacion: false,
         pickerHoraAbre: false,
         pickerHoraCierra: false,
       },
@@ -529,8 +582,8 @@ export default {
 
     },
 
-    async Busqueda(){
-
+    Busqueda (value, search, item) {
+      return RegExp(search, 'i').test(item.nombre)
     },
 
     SeleccionarImagen() {
@@ -545,7 +598,6 @@ export default {
       this.negocios.seleccionado.archivo = e.target.files[0]
       this.$forceUpdate()
     },
-
 
     async ActualizarNegocio(){
 
@@ -648,6 +700,38 @@ export default {
 
     },
 
+    IrPagina(negocio){
+
+      let ruta = '/servicios/'
+
+      switch(negocio.categoria){
+
+        case 'R' :
+          ruta += ("restaurantes/" + negocio.id)
+          break;
+
+        case 'H' :
+          ruta += ("hoteles/" + negocio.id)
+          break;
+
+        case 'D' :
+          ruta += ("guias/" + negocio.id)
+          break;
+
+        case 'C' :
+          ruta += ("cambistas/" + negocio.id)
+          break;
+
+        case 'RC' :
+          ruta += ("renta_autos/" + negocio.id)
+          break;
+
+      }
+
+      this.$router.push({ path: ruta })
+
+    },
+
     MostrarDialogoEditar(negocio){
 
       this.negocios.seleccionado = Object.assign({}, negocio)
@@ -656,14 +740,17 @@ export default {
 
     },
 
+    MostrarDialogoCambiarUbicacion(negocio){
+
+      this.negocios.seleccionado = Object.assign({}, negocio)
+      this.dialogos.cambiar_ubicacion = true
+
+    },
+
     CerrarDialogoNegocio(){
 
       this.negocios.seleccionado = {}
       this.dialogos.negocio = false
-
-    },
-
-    LimpiarBusqueda(){
 
     }
 

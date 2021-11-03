@@ -47,6 +47,23 @@
                   <span>Contactar</span>
                 </v-tooltip>
 
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      :to="'/negocios/reservaciones?id=' + $route.params.id"
+                    >
+                      <v-icon color="black">
+                        fa fa-calendar-week
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Reservar</span>
+                </v-tooltip>
               </h1>
               <h3 class="black--text hidden-md-and-up" style="font-size: 20px;">
                 {{ renta.nombre }}
@@ -67,6 +84,23 @@
                     </v-btn>
                   </template>
                   <span>Contactar</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary darken-2"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      icon
+                      :to="'/negocios/reservaciones?id=' + $route.params.id"
+                    >
+                      <v-icon color="black">
+                        fa fa-calendar-week
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Reservar</span>
                 </v-tooltip>
               </h3>
 
@@ -90,7 +124,11 @@
 
                 <div class="grey--text mt-1 ml-1">
                   {{ renta.totalValoraciones }} valoraciones |
-                  <v-icon class="mx-1" small color="black"> fa fa-tags </v-icon>{{tags}}
+                  <v-icon class="mx-1" small color="black"> fa fa-tags </v-icon>{{tags}} |
+                  <v-icon color="black" class="mr-1">fa fa-map-pin</v-icon>
+                  Se encuentra a <span class="font-weight-bold">
+                    {{ CalcularDistancia(renta.lng, renta.lat) }} km
+                      </span> de ti
                 </div>
 
               </v-row>
@@ -323,7 +361,7 @@
                   <v-list-item-content>
                     <v-list-item-title>Rango de precios</v-list-item-title>
                     <v-list-item-subtitle class="mt-2">
-                      GTQ {{ productos.listado[0].valor }} - GTQ {{ productos.listado[productos.listado.length - 1].valor }}
+                      {{ CalcularRangoPrecios() }}
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -462,7 +500,7 @@
               elevation="2"
               v-if="productos.listado && productos.listado.length === 0"
             >
-              Lo sentimos, este guía turístico aún no cuenta con productos o servicios
+              Lo sentimos, este lugar de renta de autos aún no cuenta con productos o servicios
             </v-alert>
 
             <v-row>
@@ -601,7 +639,7 @@
               elevation="2"
               v-if="valoraciones && valoraciones.length === 0"
             >
-              Lo sentimos, este guía turístico aún no cuenta con reseñas
+              Lo sentimos, este lugar de renta de autos aún no cuenta con reseñas
             </v-alert>
 
             <v-list>
@@ -721,8 +759,8 @@
                   </v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title>{{ caracteristica.nombre }} </v-list-item-title>
-                  <v-list-item-subtitle>{{ caracteristica.valor }} </v-list-item-subtitle>
+                  <v-list-item-title class="text-wrap">{{ caracteristica.nombre }} </v-list-item-title>
+                  <v-list-item-subtitle class="text-wrap">{{ caracteristica.valor }} </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -762,6 +800,7 @@ export default {
     this.ObtenerRentaAuto()
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
+    this.geolocate()
   },
 
   components: { VueGallerySlideshow, Valoracion },
@@ -776,6 +815,8 @@ export default {
         valoracion: false
 
       },
+
+      coords: { lat: 0, lng: 0 },
 
       valoracion: { puntuacion: 0 },
 
@@ -824,6 +865,36 @@ export default {
 
   methods: {
 
+    geolocate() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.coords.lat = position.coords.latitude
+        this.coords.lng = position.coords.longitude
+      });
+    },
+
+    CalcularDistancia(lng, lat){
+
+      lng = parseFloat(lng)
+      lat = parseFloat(lat)
+
+      var R = 6371; // Radius of the earth in km
+      var dLat = this.deg2rad(lat-this.coords.lat);  // deg2rad below
+      var dLon = this.deg2rad(lng-this.coords.lng);
+      var a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(this.deg2rad(this.coords.lat)) * Math.cos(this.deg2rad(lat)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      ;
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      // Distance in km
+      return (R * c).toFixed(0);
+
+    },
+
+    deg2rad(deg) {
+      return deg * (Math.PI/180)
+    },
+
     async ObtenerGaleria(){
 
       await this.$api.post("/galeria/negocio",{ negocioId:  +this.$route.params.id }).then( data => {
@@ -839,8 +910,9 @@ export default {
     },
 
     async ObtenerAuth(){
-      this.auth = await this.$api.post("/usuario/info",
-        { id: JSON.parse(sessionStorage.getItem('usuario')).id })
+      if(JSON.parse(sessionStorage.getItem('usuario')))
+        this.auth = await this.$api.post("/usuario/info",
+          { id: JSON.parse(sessionStorage.getItem('usuario')).id })
     },
 
     async EnviarMensaje(){
@@ -1012,6 +1084,22 @@ export default {
 
     },
 
+    CalcularRangoPrecios(){
+
+      if(this.productos.listado && this.productos.listado.length > 0){
+
+        return "GTQ " + this.productos.listado[0].valor + " - GTQ " + this.productos.listado[this.productos.listado.length - 1].valor
+
+      }
+
+      else {
+
+        return "-"
+
+      }
+
+    },
+
     VerificarValoracion(valoracion){
 
       if(!JSON.parse(sessionStorage.getItem('usuario'))){
@@ -1136,7 +1224,7 @@ export default {
 
     Regresar(){
 
-      this.$router.push({ path: '/servicios/renta_autos' })
+      this.$router.push({ path: (this.$nuxt.context.from.path) ? this.$nuxt.context.from.path : '/servicios/renta_autos' })
 
     }
 

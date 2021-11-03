@@ -20,44 +20,16 @@
       <v-list>
 
         <v-list-item>
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                color="secondary"
-                dark
-                v-bind="attrs"
-                v-on="on"
-                icon
-                @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
-              >
-                <v-icon color="secondary"> fa fa-arrow-left </v-icon>
-              </v-btn>
-            </template>
-            <span>Regresar</span>
-          </v-tooltip>
-          <v-list-item-content>
-            <v-autocomplete
-              outlined
-              rounded
-              dense
-              hide-details
-              placeholder="Busqueda"
-              label="Busqueda"
-              prepend-inner-icon="mdi-magnify"
-              color="black"
-              :items="[]"
-              item-value="tag"
-              item-text="tag"
-              clearable
-              clear-icon="fa fa-times-circle"
-              background-color="white"
-              item-color="black"
-              chips
-              small-chips
-              multiple
-              no-data-text="No hay nadie con el nombre especificado"
-            />
-          </v-list-item-content>
+          <v-btn
+            color="tertiary"
+            dark
+            @click="$router.push({path: ($nuxt.context.from.path) ? $nuxt.context.from.path : '/'})"
+          >
+            <v-icon left>
+              fa fa-arrow-left
+            </v-icon>
+            Regresar
+          </v-btn>
         </v-list-item>
 
         <v-divider />
@@ -130,27 +102,32 @@
       flat
       color="primary"
       outlined
+      height="80"
     >
+
       <v-app-bar-nav-icon color="secondary" @click.stop="drawer = !drawer" v-if="chat_pool && chat_pool.length > 0" />
 
       <v-avatar size="45" v-if="chat_pool && chat_pool.length > 0">
+
         <v-img :src="negocios && chat_pool[seleccionado] &&
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image !== '' ?
               negocios[chat_pool[seleccionado].negocio][chat_pool[seleccionado].key_negocio].image :
                'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'"
-               min-width="100"
-               min-height="100"
-               contain
+               max-width="45"
+               max-height="45"
         />
+
       </v-avatar>
+
       <v-avatar size="45" v-if="chat_pool && chat_pool.length > 0" class="ml-n6 mr-2">
+
         <v-img :src="usuarios && chat_pool[seleccionado] && usuarios[chat_pool[seleccionado].usuario].image !== '' ?
               usuarios[chat_pool[seleccionado].usuario].image : 'https://www.timandorra.com/wp-content/uploads/2016/11/Imagen-no-disponible-282x300.png'"
-               max-width="100"
-               max-height="100"
-               contain
+               max-width="45"
+               max-height="45"
         />
       </v-avatar>
+
       <v-avatar size="60" v-else>
         <v-img src="/logo-no-texto.png"
                width="100"
@@ -159,6 +136,7 @@
                class="mr-2"
         />
       </v-avatar>
+
       <v-toolbar-title v-if="chat_pool && chat_pool.length > 0">
         {{
           negocios && chat_pool[seleccionado] ?
@@ -169,8 +147,11 @@
           usuarios && chat_pool[seleccionado] ? usuarios[chat_pool[seleccionado].usuario].nombre : ''
         }}
       </v-toolbar-title>
+
       <v-toolbar-title v-else v-text="'No hay mensajes para mostrar'" />
+
       <v-spacer />
+
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -186,6 +167,7 @@
         </template>
         <span>Regresar al Inicio</span>
       </v-tooltip>
+
     </v-app-bar>
 
     <v-list-item-group>
@@ -345,6 +327,7 @@ export default {
       clipped: false,
       drawer: false,
       fixed: false,
+      busqueda: null,
       chat_pool: [],
       chats: {},
       seleccionado: 0,

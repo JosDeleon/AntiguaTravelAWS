@@ -2,24 +2,9 @@
   <v-container fluid>
 
     <v-card-actions>
+
       <v-spacer class="hidden-sm-and-down" />
-      <v-tooltip bottom v-if="productos.tabla.check">
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            v-bind="attrs"
-            v-on="on"
-            icon
-            color="black"
-            @click="LimpiarBusqueda"
-            class="hidden-md-and-up"
-          >
-            <v-icon color="black">
-              fa fa-arrow-left
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>Regresar</span>
-      </v-tooltip>
+
       <v-text-field
         outlined
         rounded
@@ -30,12 +15,11 @@
         prepend-inner-icon="fa fa-search"
         style="max-width: 300px"
         v-model="productos.tabla.busqueda"
-        @keyup.enter.native="Busqueda"
         clearable
         clear-icon="fa fa-times-circle"
-        @click:clear="LimpiarBusqueda"
         color="black"
       />
+
     </v-card-actions>
 
     <v-card outlined elevation="0" style="border-radius: 10px;"
@@ -53,6 +37,8 @@
         show-expand
         class="elevation-1"
         style="border-radius: 10px;"
+        :search="productos.tabla.busqueda"
+        :custom-filter="BuscarProductos"
         :loading="productos.tabla.loading"
         loading-text="Cargando... Por favor espere un momento."
         no-data-text='Aún no hay productos para mostrar, por favor vuelva a intentarlo.'
@@ -79,29 +65,23 @@
           </v-alert>
         </template>
 
+        <template v-slot:no-results>
+          <v-alert
+            type="info"
+            prominent
+            color="complementario"
+          >
+            No se encontró ningún producto en la busqueda "{{ productos.tabla.busqueda }}"
+          </v-alert>
+        </template>
+
         <template v-slot:top>
 
           <v-toolbar
             flat
             style="border-radius: 10px;"
           >
-            <v-tooltip bottom v-if="productos.tabla.check">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  v-bind="attrs"
-                  v-on="on"
-                  icon
-                  color="black"
-                  @click="LimpiarBusqueda"
-                  class="hidden-sm-and-down"
-                >
-                  <v-icon color="black">
-                    fa fa-arrow-left
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>Regresar</span>
-            </v-tooltip>
+
             <v-toolbar-title class="font-weight-bold text-wrap">
               <h4 style="font-family: Poppins, sans-serif;" class="hidden-sm-and-down">
                 Administrar de Produtos y Servicios
@@ -1226,7 +1206,9 @@ export default {
 
     },
 
-    async Busqueda(){
+    BuscarProductos (value, search, item) {
+
+      return RegExp(search, 'i').test(item.nombre)
 
     },
 
