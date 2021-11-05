@@ -16,4 +16,6 @@ module.exports = function(app){
     app.put('/api/negocio', controller.update);
 
     app.delete('/api/negocio', controller.delete);
+
+    app.post('/api/negocio/vistment', controller.incremetVist)
 }

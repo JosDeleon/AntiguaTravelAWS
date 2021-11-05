@@ -108,7 +108,8 @@ exports.insert = async (req, res) => {
         aut : 'v',
         lat : req.body.coordenadas.latitud,
         lng : req.body.coordenadas.longitud,
-        usuarioId : req.body.usuarioId
+        usuarioId : req.body.usuarioId,
+        vistas : 0
     }).then( async (negocio) => {
         let insertTags = [];
         tags.forEach( tagArray => {
@@ -214,5 +215,26 @@ exports.update = (req, res) => {
     })
     .catch( err => {
         res.status(500).send({ message : err.message })
+    })
+}
+
+exports.incremetVist = (req, res) => {
+    Negocio.findOne({
+        where : {
+            id : req.body.id
+        }
+    }).then( (negocio) => {
+        const actual = (negocio.vistas + 1); 
+        Negocio.update({
+            vistas : actual
+        },{
+            where : { id : negocio.id }
+        }).then( () => {
+            res.status(200).send({ vistas : actual})
+        }).catch( err => {
+            res.status(500).send({ message : err })
+        })
+    }).catch( err => {
+        res.status(500).send({ message : err })
     })
 }
