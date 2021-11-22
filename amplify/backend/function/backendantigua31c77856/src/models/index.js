@@ -31,6 +31,10 @@ db.reservacion = require('../models/reservacion.model')(sequelize, Sequelize);
 db.valoracion = require('../models/valoracion.model')(sequelize, Sequelize);
 db.refreshToken = require('../models/refreshToken.model')(sequelize, Sequelize);
 db.tags = require('../models/tags.model')(sequelize, Sequelize);
+db.horario = require('../models/horario.model')(sequelize, Sequelize);
+
+db.negocio.hasMany(db.horario);
+db.horario.belongsTo(db.negocio);
 
 db.producto.hasMany(db.caracteristicas);
 db.caracteristicas.belongsTo(db.producto);

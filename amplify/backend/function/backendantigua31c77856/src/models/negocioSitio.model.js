@@ -14,12 +14,6 @@ module.exports = (sequelize, Sequelize) => {
         direccion : {
             type : Sequelize.STRING
         },
-        abre : {
-            type : Sequelize.TIME
-        },
-        cierra : {
-            type : Sequelize.TIME
-        },
         telefono : {
             type : Sequelize.STRING
         },
@@ -41,10 +35,7 @@ module.exports = (sequelize, Sequelize) => {
         vistas : {
             type : Sequelize.INTEGER
         },
-        dep : {
-            type : Sequelize.INTEGER
-        },
-        mun : {
+        destino : {
             type : Sequelize.INTEGER
         },
     },{

@@ -100,15 +100,15 @@ exports.insert = async (req, res) => {
         nombre : req.body.nombre,
         categoria : req.body.categoria,
         direccion : req.body.direccion,
-        abre : req.body.abre,
-        cierra : req.body.cierra,
         telefono : req.body.telefono,
         descripcion : req.body.descripcion,
         img : req.body.img,
+        //cambiar el aut
         aut : 'v',
         lat : req.body.coordenadas.latitud,
         lng : req.body.coordenadas.longitud,
         usuarioId : req.body.usuarioId,
+        destino: req.body.destino,
         vistas : 0
     }).then( async (negocio) => {
         let insertTags = [];

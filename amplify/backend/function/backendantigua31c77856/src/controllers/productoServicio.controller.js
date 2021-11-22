@@ -141,3 +141,24 @@ exports.range = (req, res) => {
         res.status(500).send({ message : err.message })
     })
 }
+
+exports.incremetVist = (req, res) => {
+    producto.findOne({
+        where : {
+            id : req.body.id
+        }
+    }).then( (producto) => {
+        const actual = (producto.vistas + 1); 
+        Producto.update({
+            vistas : actual
+        },{
+            where : { id : producto.id }
+        }).then( () => {
+            res.status(200).send({ vistas : actual})
+        }).catch( err => {
+            res.status(500).send({ message : err })
+        })
+    }).catch( err => {
+        res.status(500).send({ message : err })
+    })
+}

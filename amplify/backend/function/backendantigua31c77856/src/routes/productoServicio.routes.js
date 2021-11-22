@@ -14,4 +14,6 @@ module.exports = (app) =>{
     app.put('/api/producto', controller.update)
 
     app.post('/api/producto/rango', controller.range)
+
+    app.post('/api/producto/vistment', controller.incremetVist)
 }
