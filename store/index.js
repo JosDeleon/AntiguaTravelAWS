@@ -4,7 +4,10 @@ export const state = () => ({
   negocios: [],
   hideMessageField: false,
   rutaActual: '',
-  galeriaAdminNegocios: []
+  galeriaAdminNegocios: [],
+  destinos: [
+    { antigua: 1 }
+  ]
 })
 
 export const mutations = {

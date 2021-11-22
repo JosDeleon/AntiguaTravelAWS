@@ -2,7 +2,7 @@
 
   <v-row justify="center" align="center">
 
-    <v-col cols="12" sm="10" md="10" lg="9" class="hidden-sm-and-down">
+    <v-col cols="12" sm="10" md="10" lg="9">
 
       <v-card style="border-radius:10px;">
 
@@ -111,34 +111,6 @@
                             prepend-icon="fa fa-edit"
                             color="black"
                           />
-
-                          <v-divider class="mb-4"/>
-
-                          <div>
-                            <h3 class="black--text mb-4">Selecciona el horario en el que operas</h3>
-                            <v-row
-                              justify="space-around"
-                              align="center"
-                            >
-                              <v-col>
-                                <h3 class="black--text mb-2">Hora que abres</h3>
-                                <v-time-picker
-                                  v-model="negocio.abre"
-                                  landscape
-                                  color="secondary"
-                                />
-                              </v-col>
-                              <v-col>
-                                <h3 class="black--text mb-2">Hora que cierras</h3>
-                                <v-time-picker
-                                  v-model="negocio.cierra"
-                                  landscape
-                                  color="secondary"
-                                  :disabled="negocio.abre === null || negocio.abre === undefined"
-                                />
-                              </v-col>
-                            </v-row>
-                          </div>
 
                         </v-form>
 
@@ -368,33 +340,6 @@
 
     </v-col>
 
-    <v-col cols="12" class="hidden-md-and-up">
-
-      <div class="pa-4">
-
-        <h2 class="black--text font-weight-bold">
-          Atrevete a ser parte de algo grande
-        </h2>
-        <h5>
-          Dale la oportunidad a tu negocio de despegar de la mejor manera
-        </h5>
-
-      </div>
-
-      <v-card >
-
-        <v-card-text class="pa-4">
-
-          <h2 class="mb-5 black--text">
-            Registro de tu negocio
-          </h2>
-
-
-        </v-card-text>
-
-      </v-card>
-    </v-col>
-
   </v-row>
 
 </template>
@@ -546,8 +491,7 @@ export default {
           descripcion: this.negocio.descripcion,
           categoria: this.categorias[this.negocio.categoria].valor,
           tags: tags_negocio,
-          abre: this.negocio.abre,
-          cierra: this.negocio.cierra,
+          destino: this.$store.state.destinos["antigua"],
           coordenadas: {
             latitud: this.marker.position.lat,
             longitud: this.marker.position.lng

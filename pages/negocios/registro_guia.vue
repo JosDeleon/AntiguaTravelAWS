@@ -188,39 +188,6 @@
 
                       <v-card-text class="pa-4">
 
-                        <div>
-                          <h3 class="black--text mb-4">Selecciona el horario en el que operas</h3>
-                          <v-row
-                            justify="space-around"
-                            align="center"
-                          >
-                            <v-col>
-                              <h3 class="black--text mb-2">Hora que inicias</h3>
-                              <v-time-picker
-                                v-model="negocio.abre"
-                                landscape
-                                color="secondary"
-                              />
-                            </v-col>
-                            <v-col>
-                              <h3 class="black--text mb-2">Hora que terminas</h3>
-                              <v-time-picker
-                                v-model="negocio.cierra"
-                                landscape
-                                color="secondary"
-                              />
-                            </v-col>
-                          </v-row>
-                        </div>
-
-                      </v-card-text>
-
-                    </v-window-item>
-
-                    <v-window-item :value="3">
-
-                      <v-card-text class="pa-4">
-
                         <h3 class="black--text my-4">Ubicación para que las personas te encuentren mejor</h3>
                         <v-row class="mt-4">
                           <v-col cols="1">
@@ -294,7 +261,7 @@
                     color="primary"
                     depressed
                     @click="VerificarForma"
-                    v-if="helpers.step < 3"
+                    v-if="helpers.step < 2"
                   >
                     <div style="color: rgba(0,0,0,0.8);">
                       Siguiente
@@ -444,9 +411,6 @@
         if(this.helpers.step === 1 && this.$refs.formDatosNegocio.validate()){
           this.helpers.step++
         }
-        else{
-          this.helpers.step++
-        }
       },
 
       async RegistrarNegocio(){
@@ -464,8 +428,7 @@
           descripcion: this.negocio.descripcion,
           categoria: 'D',
           tags: tags_negocio,
-          abre: this.negocio.abre,
-          cierra: this.negocio.cierra,
+          destino: this.$store.state.destinos["antigua"],
           coordenadas: {
             latitud: this.marker.position.lat,
             longitud: this.marker.position.lng

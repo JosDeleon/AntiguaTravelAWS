@@ -15,59 +15,85 @@
           >
 
             <v-container fill-height>
-              <v-layout justify-center align-center>
 
-                <v-autocomplete
-                  outlined
-                  rounded
-                  dense
-                  hide-details
-                  placeholder="¿Qué deseas saber?"
-                  prepend-inner-icon="fa fa-search"
-                  style="max-width: 700px"
-                  color="black"
-                  class="elevation-5"
-                  v-model="tags.seleccionadas"
-                  :items="tags.lista"
-                  item-value="tag"
-                  item-text="tag"
-                  clearable
-                  clear-icon="fa fa-times-circle"
-                  background-color="white"
-                  item-color="black"
-                  chips
-                  small-chips
-                  multiple
-                  no-data-text="No hay datos relacionados a la busqueda o negocios registrados"
-                  @keyup.enter.native="BusquedaxTag"
-                  @click:clear="LimpiarBusqueda"
-                >
+              <v-row justify="center" align="center">
 
-                  <template v-slot:selection="data">
-                    <v-chip
-                      v-bind="data.attrs"
-                      :input-value="data.selected"
-                      close
-                      small
-                      @click="data.select"
-                      @click:close="RemoverTag(data.item.tag)"
+                <v-col cols="12" xl="6" md="6" lg="6">
+
+                  <v-autocomplete
+                    outlined
+                    rounded
+                    dense
+                    hide-details
+                    placeholder="¿Qué deseas saber?"
+                    prepend-inner-icon="fa fa-search"
+                    style="max-width: 700px"
+                    color="black"
+                    class="elevation-5"
+                    v-model="tags.seleccionadas"
+                    :items="tags.lista"
+                    item-value="tag"
+                    item-text="tag"
+                    clearable
+                    clear-icon="fa fa-times-circle"
+                    background-color="white"
+                    item-color="black"
+                    chips
+                    small-chips
+                    multiple
+                    no-data-text="No hay datos relacionados a la busqueda o negocios registrados"
+                    @keyup.enter.native="BusquedaxTag"
+                    @click:clear="LimpiarBusqueda"
+                  >
+
+                    <template v-slot:selection="data">
+                      <v-chip
+                        v-bind="data.attrs"
+                        :input-value="data.selected"
+                        close
+                        small
+                        @click="data.select"
+                        @click:close="RemoverTag(data.item.tag)"
+                      >
+                        {{ data.item.tag }}
+                      </v-chip>
+                    </template>
+
+                  </v-autocomplete>
+
+                </v-col>
+
+                <v-col cols="12" xl="3" md="3" lg="3">
+
+                  <v-btn
+                    color="secondary"
+                    class="ml-1 hidden-sm-and-down"
+                    dark
+                    depressed
+                    rounded
+                    @click="BusquedaxTag"
+                  >
+                    Buscar
+                  </v-btn>
+
+                  <v-layout class="hidden-md-and-up" justify-center>
+
+                    <v-btn
+                      color="secondary"
+                      dark
+                      depressed
+                      rounded
+                      @click="BusquedaxTag"
                     >
-                      {{ data.item.tag }}
-                    </v-chip>
-                  </template>
+                      Buscar
+                    </v-btn>
 
-                </v-autocomplete>
-                <v-btn
-                  color="secondary"
-                  class="ml-1"
-                  dark
-                  depressed
-                  rounded
-                  @click="BusquedaxTag"
-                >
-                  Buscar
-                </v-btn>
-              </v-layout>
+                  </v-layout>
+
+                </v-col>
+
+              </v-row>
+
             </v-container>
 
           </v-img>
@@ -106,7 +132,7 @@
             style="border-radius:10px;"
             class="mx-auto my-4"
             max-width="400"
-            min-width="400"
+
             elevation="0"
             outlined
           >
@@ -121,20 +147,14 @@
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(sitio) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                {{ VerificarHora(sitio) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
               </span> -
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                      Horarios
-                    </v-chip>
-                  </template>
-                  <span> Todos los días de {{ $moment(sitio.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(sitio.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                </v-tooltip>
+                <v-chip outlined color="black" small @click="MostrarDialogoHorarios(sitio)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
               </h6>
             </v-card-title>
@@ -215,7 +235,7 @@
             style="border-radius:10px;"
             class="mx-auto my-4"
             max-width="400"
-            min-width="400"
+
             elevation="0"
             outlined
           >
@@ -238,20 +258,14 @@
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(cambista) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(cambista.abre, cambista.cierra) }}
+                {{ VerificarHora(cambista) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
               </span> -
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                      Horarios
-                    </v-chip>
-                  </template>
-                  <span> Todos los días de {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                </v-tooltip>
+                <v-chip outlined color="black" small @click="MostrarDialogoHorarios(cambista)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
               </h6>
             </v-card-title>
@@ -419,7 +433,7 @@
             style="border-radius:10px;"
             class="mx-auto my-4"
             max-width="400"
-            min-width="400"
+
             elevation="0"
             outlined
           >
@@ -435,20 +449,14 @@
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(hotel.abre, hotel.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(hotel) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(hotel.abre, hotel.cierra) }}
+                {{ VerificarHora(hotel) }}
               </span> -
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                      Horarios
-                    </v-chip>
-                  </template>
-                  <span> Todos los días de {{ $moment(hotel.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(hotel.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                </v-tooltip>
+                <v-chip outlined color="black" small @click="MostrarDialogoHorarios(hotel)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
               </h6>
             </v-card-title>
@@ -529,7 +537,6 @@
             style="border-radius:10px;"
             class="mx-auto my-4"
             max-width="400"
-            min-width="400"
             elevation="0"
             outlined
           >
@@ -553,20 +560,14 @@
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(restaurante) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
+                {{ VerificarHora(restaurante) }}
               </span> -
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                      Horarios
-                    </v-chip>
-                  </template>
-                  <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                </v-tooltip>
+                <v-chip outlined color="black" small @click="MostrarDialogoHorarios(restaurante)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
               </h6>
             </v-card-title>
@@ -665,7 +666,7 @@
             style="border-radius:10px;"
             class="mx-auto my-4"
             max-width="400"
-            min-width="400"
+
             elevation="0"
             outlined
           >
@@ -689,20 +690,14 @@
               </h4>
               <v-spacer/>
               <h6>
-              <span :class="VerificarHora(renta.abre, renta.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(renta) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(renta.abre, renta.cierra) }}
+                {{ VerificarHora(renta) }}
               </span> -
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                      <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                      Horarios
-                    </v-chip>
-                  </template>
-                  <span> Todos los días de {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                </v-tooltip>
+                <v-chip outlined color="black" small @click="MostrarDialogoHorarios(renta)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
               </h6>
             </v-card-title>
@@ -819,7 +814,7 @@
               style="border-radius:10px;"
               class="mx-auto my-4"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -835,20 +830,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(sitio) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(sitio.abre, sitio.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                    {{ VerificarHora(sitio) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(sitio.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(sitio.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(sitio)">
+                  <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                  Horarios
+                </v-chip>
 
                 </h6>
               </v-card-title>
@@ -932,7 +921,7 @@
               style="border-radius:10px;"
               class="mx-auto my-4"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -948,20 +937,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(cambista) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(cambista.abre, cambista.cierra) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
+                    {{ VerificarHora(cambista) === 'Cerrado' ? 'No disponible' : 'Disponible' }}
                   </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(cambista.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(cambista.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(cambista)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
 
                 </h6>
               </v-card-title>
@@ -1045,7 +1028,7 @@
               style="border-radius:10px;"
               class="mx-auto my-4"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -1061,20 +1044,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-              <span :class="VerificarHora(hotel.abre, hotel.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(hotel) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(hotel.abre, hotel.cierra) }}
+                {{ VerificarHora(hotel) }}
               </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(hotel.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(hotel.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(hotel)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
 
                 </h6>
               </v-card-title>
@@ -1158,7 +1135,7 @@
               style="border-radius:10px;"
               class="mx-auto my-4"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -1182,20 +1159,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-              <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(restaurante) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
+                {{ VerificarHora(restaurante) }}
               </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(restaurante)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
 
                 </h6>
               </v-card-title>
@@ -1296,7 +1267,7 @@
               style="border-radius:10px;"
               class="mx-auto my-4"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -1312,20 +1283,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-              <span :class="VerificarHora(alquiler.abre, alquiler.cierra) === 'Cerrado' ?
+              <span :class="VerificarHora(alquiler) === 'Cerrado' ?
               'red--text' : 'green--text'">
-                {{ VerificarHora(alquiler.abre, alquiler.cierra) }}
+                {{ VerificarHora(alquiler) }}
               </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(alquiler.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(alquiler.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(alquiler)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
 
                 </h6>
               </v-card-title>
@@ -1410,6 +1375,8 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <DesplegarHorarios v-model="dialogos.horarios" :negocio.sync="negocios.seleccionado" />
+
   </v-container>
 
 </template>
@@ -1456,7 +1423,8 @@ export default {
       },
 
       negocios: {
-        listado: []
+        listado: [],
+        seleccionado: {}
       },
 
       busqueda: null,
@@ -1481,7 +1449,22 @@ export default {
           subtitulo: "Gana reputación como cambista y crece con nosotros",
           tipo: 'C'
         },
-      ]
+      ],
+
+      dialogos: {
+        horarios: false
+      },
+
+      dias: {
+        lunes: 1,
+        martes: 2,
+        miercoles: 3,
+        jueves: 4,
+        viernes: 5,
+        sabado: 6,
+        domingo: 7
+      }
+
     }
   },
 
@@ -1499,12 +1482,22 @@ export default {
           tags: this.tags.seleccionadas
         }
 
-        await this.$api.post("/tags", params).then(data => {
+        await this.$api.post("/tags", params).then(async data => {
 
           this.tags.buscadas.resultados = []
           this.tags.buscadas.resultados = data
 
-          try{
+          for (const negocio of this.tags.buscadas.resultados) {
+
+            negocio.horarios = await this.$api.post("/horario/negocio", {negocioId: negocio.id})
+
+            negocio.horarios.sort(function (a, b) {
+              return a.dia - b.dia
+            })
+
+          }
+
+          try {
 
             this.tags.buscadas.negocios.restaurantes = []
             this.tags.buscadas.negocios.hoteles = []
@@ -1512,27 +1505,27 @@ export default {
             this.tags.buscadas.negocios.destinosTuristicos = []
             this.tags.buscadas.negocios.cambistas = []
 
-            data.forEach(item=>{
+            data.forEach(item => {
 
-              switch(item.categoria) {
+              switch (item.categoria) {
                 case 'R' :
-                  if(this.tags.buscadas.negocios.restaurantes.indexOf(item) < 0)
+                  if (this.tags.buscadas.negocios.restaurantes.indexOf(item) < 0)
                     this.tags.buscadas.negocios.restaurantes.push(item);
                   break;
                 case 'H' :
-                  if(this.tags.buscadas.negocios.hoteles.indexOf(item) < 0)
+                  if (this.tags.buscadas.negocios.hoteles.indexOf(item) < 0)
                     this.tags.buscadas.negocios.hoteles.push(item);
                   break;
                 case 'D' :
-                  if(this.tags.buscadas.negocios.destinosTuristicos.indexOf(item) < 0)
+                  if (this.tags.buscadas.negocios.destinosTuristicos.indexOf(item) < 0)
                     this.tags.buscadas.negocios.destinosTuristicos.push(item);
                   break;
                 case 'C' :
-                  if(this.tags.buscadas.negocios.cambistas.indexOf(item) < 0)
+                  if (this.tags.buscadas.negocios.cambistas.indexOf(item) < 0)
                     this.tags.buscadas.negocios.cambistas.push(item);
                   break;
                 case 'RC' :
-                  if(this.tags.buscadas.negocios.alquilerAutos.indexOf(item) < 0)
+                  if (this.tags.buscadas.negocios.alquilerAutos.indexOf(item) < 0)
                     this.tags.buscadas.negocios.alquilerAutos.push(item);
                   break;
               }
@@ -1545,8 +1538,7 @@ export default {
             this.ObtenerValoracionesBusquedaAlquiler()
             this.ObtenerValoracionesBusquedaCambistas()
 
-          }
-          catch (e) {
+          } catch (e) {
 
             console.error(e)
 
@@ -1565,7 +1557,25 @@ export default {
 
     async ObtenerNegocios(){
       this.loading.negocios = true
-      this.negocios.listado =  await this.$api.get('/negocios', {})
+      await this.$api.get('/negocios', {}).then(async data => {
+
+        this.negocios.listado = data
+
+        for (const key of Object.keys(this.negocios.listado)) {
+
+          for (const negocio of this.negocios.listado[key]) {
+
+            negocio.horarios = await this.$api.post("/horario/negocio", {negocioId: negocio.id})
+
+            negocio.horarios.sort(function (a, b) {
+              return a.dia - b.dia
+            })
+
+          }
+
+        }
+
+      })
       await this.ObtenerValoracionesRestaurantes()
       await this.ObtenerValoracionesHoteles()
       await this.ObtenerValoracionesRentas()
@@ -1903,6 +1913,13 @@ export default {
 
     },
 
+    MostrarDialogoHorarios(negocio){
+
+      this.negocios.seleccionado = Object.assign({}, negocio)
+      this.dialogos.horarios = true
+
+    },
+
     geolocate() {
       navigator.geolocation.getCurrentPosition((position) => {
         this.coords.lat = position.coords.latitude
@@ -1933,18 +1950,35 @@ export default {
       return deg * (Math.PI/180)
     },
 
-    VerificarHora(abre, cierra){
+    VerificarHora(negocio){
 
-      var format = 'hh:mm:ss'
-      var time = this.$moment(this.$moment(),format),
-        beforeTime = this.$moment(abre, format),
-        afterTime = this.$moment(cierra, format);
+      if (negocio.horarios) {
 
-      if (time.isBetween(beforeTime, afterTime)) {
+        const diaActual = this.$moment().format('dddd')
+        const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+        const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
 
-        return "Abierto"
 
-      } else {
+        var format = 'hh:mm:ss'
+        var time = this.$moment(this.$moment(), format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
+
+        if (time.isBetween(beforeTime, afterTime)) {
+
+          return "Abierto"
+
+        } else {
+
+          return "Cerrado"
+
+        }
+
+      }
+
+      else{
 
         return "Cerrado"
 

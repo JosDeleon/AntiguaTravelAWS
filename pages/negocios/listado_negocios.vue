@@ -187,12 +187,12 @@
             class="ma-2"
             color="complementario"
             outlined
+            @click="MostrarDialogoHorarios(item)"
           >
             <v-icon left>
               fa fa-business-time
             </v-icon>
-            {{ $moment(item.abre, "HH:mm:ss").format('h:mm a') }} -
-            {{ $moment(item.cierra, "HH:mm:ss").format('h:mm a')  }}
+            Ver horarios
           </v-chip>
         </template>
 
@@ -390,92 +390,6 @@
                 prepend-icon="fa fa-heading"
               />
 
-              <v-dialog
-                ref="dialogoHoraAbre"
-                v-model="dialogos.pickerHoraAbre"
-                :return-value.sync="negocios.seleccionado.abre"
-                persistent
-                width="300px"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="negocios.seleccionado.abre"
-                    label="Hora de Abrir"
-                    prepend-icon="fa fa-lock-open"
-                    readonly
-                    outlined
-                    dense
-                    v-bind="attrs"
-                    v-on="on"
-                    color="black"
-                  />
-                </template>
-                <v-time-picker
-                  format="ampm"
-                  v-model="negocios.seleccionado.abre"
-                  color="secondary"
-                >
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="dialogos.pickerHoraAbre = false"
-                  >
-                    Cancelar
-                  </v-btn>
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="$refs.dialogoHoraAbre.save(negocios.seleccionado.abre)"
-                  >
-                    Aceptar
-                  </v-btn>
-                </v-time-picker>
-              </v-dialog>
-
-              <v-dialog
-                ref="dialogoHoraCierra"
-                v-model="dialogos.pickerHoraCierra"
-                :return-value.sync="negocios.seleccionado.cierra"
-                persistent
-                width="300px"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="negocios.seleccionado.cierra"
-                    label="Hora de Cerrar"
-                    prepend-icon="fa fa-lock"
-                    readonly
-                    outlined
-                    dense
-                    v-bind="attrs"
-                    v-on="on"
-                    color="black"
-                  />
-                </template>
-                <v-time-picker
-                  format="ampm"
-                  v-model="negocios.seleccionado.cierra"
-                  color="secondary"
-                >
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="dialogos.pickerHoraCierra = false"
-                  >
-                    Cancelar
-                  </v-btn>
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="$refs.dialogoHoraCierra.save(negocios.seleccionado.cierra)"
-                  >
-                    Aceptar
-                  </v-btn>
-                </v-time-picker>
-              </v-dialog>
-
               <v-textarea
                 outlined
                 dense
@@ -532,6 +446,10 @@
                   :tags.sync="negocios.tags"
       />
 
+      <VerHorarios v-model="dialogos.horarios" :negocio.sync="negocios.seleccionado"
+                   :horarios.sync="negocios.horarios"
+      />
+
     </v-card>
 
   </v-container>
@@ -561,6 +479,7 @@ export default {
       dialogos: {
         negocio: false,
         editar_tags: false,
+        horarios: false,
         cambiar_ubicacion: false,
         pickerHoraAbre: false,
         pickerHoraCierra: false,
@@ -569,6 +488,7 @@ export default {
       negocios: {
         listado: [],
         tags: [],
+        horarios: [],
         seleccionado: {},
         tabla: {
           headers: [
@@ -587,7 +507,7 @@ export default {
           conteoPaginas: 0,
           negociosPorPagina: 10
         },
-      }
+      },
 
     }
   },
@@ -608,6 +528,22 @@ export default {
         this.negocios.listado = data
 
       })
+
+    },
+
+    async ObtenerHorarios(){
+
+      let params = {
+        negocioId: this.negocios.seleccionado.id
+      }
+
+      await this.$api.post("/horario/negocio", params).then(data => {
+
+        this.negocios.horarios = data
+        this.$forceUpdate()
+
+      })
+
 
     },
 
@@ -647,8 +583,6 @@ export default {
           nombre: this.negocios.seleccionado.nombre,
           categoria: this.negocios.seleccionado.categoria,
           direccion: this.negocios.seleccionado.direccion,
-          abre: this.negocios.seleccionado.abre,
-          cierra: this.negocios.seleccionado.cierra,
           telefono: this.negocios.seleccionado.telefono,
           descripcion: this.negocios.seleccionado.descripcion,
           coordenadas: {
@@ -775,6 +709,14 @@ export default {
       this.negocios.seleccionado = Object.assign({}, negocio)
       this.ObtenerTags()
       this.dialogos.editar_tags = true
+
+    },
+
+    MostrarDialogoHorarios(negocio){
+
+      this.negocios.seleccionado = Object.assign({}, negocio)
+      this.ObtenerHorarios()
+      this.dialogos.horarios = true
 
     },
 
