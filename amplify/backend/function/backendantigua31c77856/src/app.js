@@ -30,10 +30,10 @@ app.use(function(req, res, next) {
 
 //Instancia de Sequelize
 //Sincronizacion Forzada con eliminacion de datos
-db.sequelize.sync({ force : true, logging : console.log});
+//db.sequelize.sync({ force : true, logging : console.log});
 
 //Sincronizacion simple con persistencia de datos
-//db.sequelize.sync({logging : console.log})
+db.sequelize.sync({logging : console.log})
 
 require('./routes/galeria.routes')(app);
 require('./routes/negocioSitio.routes')(app);
