@@ -2,6 +2,176 @@
 
   <v-container fluid>
 
+    <v-row justify="center" align="center" class="my-3">
+
+      <v-col cols="12" xl="5" lg="5" md="6">
+
+        <v-card style="border-radius:15px;" outlined
+                class="pa-6 animate__animated animate__jackInTheBox"
+        >
+
+          <v-toolbar
+            flat
+            style="border-radius: 10px;"
+          >
+
+            <v-sheet
+              outlined
+              elevation="1"
+              height="90"
+              width="90"
+              class="mr-3 mb-12"
+              :rounded="'xl'"
+              color="grey lighten-2"
+            >
+
+              <v-img :src="negocios.seleccionado.img" height="90" width="90"
+                     style="border-radius: 15px;"
+              />
+
+            </v-sheet>
+
+            <v-spacer />
+
+            <v-toolbar-title>
+
+              <h4 class="text-wrap">
+                <span class="hidden-sm-and-down">Visitas por negocio</span>
+                <v-menu
+                  rounded="lg"
+                  nudge-bottom="60"
+                  :close-on-click="true"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+
+                      <v-icon small>
+                        fa fa-chevron-down
+                      </v-icon>
+
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item
+                      v-for="negocio in negocios.listado"
+                      :key="negocio.id"
+                      v-if="negocio.id !== negocios.seleccionado.id"
+                    >
+                      <v-btn text max-width="400" @click="RefrescarListado(negocio)">
+                        <v-list-item-title style="font-size: 14px;" class="pa-1">
+                          {{ negocio.nombre }}
+                        </v-list-item-title>
+                      </v-btn>
+                    </v-list-item>
+                  </v-list>
+
+                </v-menu>
+              </h4>
+              <div class="subheading">
+                <h6 class="mt-1 text-wrap">
+                  {{ negocios.seleccionado.nombre }} ha tenido {{ negocios.seleccionado.vistas }} visitas
+                </h6>
+              </div>
+
+            </v-toolbar-title>
+
+          </v-toolbar>
+
+        </v-card>
+
+      </v-col>
+
+      <v-col cols="12" xl="5" lg="5" md="6">
+
+        <v-card style="border-radius:15px;" outlined
+                class="pa-6 animate__animated animate__jackInTheBox"
+                v-if="productos.listado && productos.listado.length > 0"
+        >
+
+          <v-toolbar
+            flat
+            style="border-radius: 10px;"
+          >
+
+            <v-sheet
+              outlined
+              elevation="1"
+              height="90"
+              width="90"
+              class="mr-3 mb-12"
+              :rounded="'xl'"
+              color="grey lighten-2"
+            >
+
+              <v-img :src="productos.seleccionado.img" height="90" width="90"
+                     style="border-radius: 15px;"
+              />
+
+            </v-sheet>
+
+            <v-spacer />
+
+            <v-toolbar-title>
+
+              <h4 class="text-wrap">
+                <span class="hidden-sm-and-down">Visitas por producto</span>
+                <v-menu
+                  rounded="lg"
+                  nudge-bottom="60"
+                  :close-on-click="true"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+
+                      <v-icon small>
+                        fa fa-chevron-down
+                      </v-icon>
+
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item
+                      v-for="producto in productos.listado"
+                      :key="producto.id"
+                      v-if="producto.id !== productos.seleccionado.id"
+                    >
+                      <v-btn text max-width="400" @click="productos.seleccionado = producto">
+                        <v-list-item-title style="font-size: 14px;" class="pa-1">
+                          {{ producto.nombre }}
+                        </v-list-item-title>
+                      </v-btn>
+                    </v-list-item>
+                  </v-list>
+
+                </v-menu>
+              </h4>
+              <div class="subheading">
+                <h6 class="mt-1 text-wrap">
+                  {{ productos.seleccionado.nombre }} ha tenido {{ productos.seleccionado.vistas }} visitas
+                </h6>
+              </div>
+
+            </v-toolbar-title>
+
+          </v-toolbar>
+
+        </v-card>
+
+      </v-col>
+
+
+    </v-row>
+
     <v-row class="my-6">
 
       <v-col cols="12" xl="4" lg="6" md="6" sm="6"
@@ -93,6 +263,7 @@ export default {
 
   mounted() {
     this.$store.commit('setRutaActual', 'Inicio')
+    this.ObtenerNegocios()
   },
 
   layout: 'admin_negocio',
@@ -154,12 +325,65 @@ export default {
             to: '/negocios/listado_reservaciones'
           },
         ]
+      },
+
+      negocios: {
+
+        listado: [],
+        seleccionado: {}
+
+      },
+
+      productos: {
+
+        listado: [],
+        seleccionado: {}
+
       }
 
     }
   },
 
   methods: {
+
+    async ObtenerNegocios(){
+
+      let params = {
+        usuarioId: JSON.parse(localStorage.getItem('usuario')).id
+      }
+
+      await this.$api.post("/negocios/usuario", params).then(data => {
+
+        this.negocios.listado = data
+        this.negocios.seleccionado = data[0]
+        this.ObtenerProductos()
+
+      })
+
+    },
+
+    async ObtenerProductos(){
+
+      let params = {
+        id: this.negocios.seleccionado.id
+      }
+
+      await this.$api.post("/productos", params).then(data => {
+
+        this.productos.listado = data
+        this.productos.seleccionado = data[0]
+
+      })
+
+    },
+
+    RefrescarListado(negocio){
+
+      this.negocios.seleccionado = Object.assign({}, negocio)
+      this.ObtenerProductos()
+
+    }
+
   }
 
 }

@@ -838,6 +838,7 @@ export default {
     this.VisitaNegocio()
     this.ObtenerCambista()
     this.ObtenerHorarios()
+    this.ObtenerGaleria()
     this.ObtenerValoraciones()
     this.geolocate()
   },

@@ -8,7 +8,7 @@
 
         <v-card style="border-radius:10px;"
                 max-width="400"
-                min-width="400"
+
                 class="mx-auto"
                 elevation="0"
                 outlined
@@ -154,7 +154,7 @@
               style="border-radius:10px;"
               class="mx-auto my-12"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
