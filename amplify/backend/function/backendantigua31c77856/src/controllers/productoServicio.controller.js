@@ -85,7 +85,7 @@ exports.getProductos = async (req, res) => {
 }
 
 exports.delete = (req, res) => {
-    Galeria.destroy({
+    Producto.destroy({
         where : {
             id : req.body.id
         }
@@ -97,7 +97,7 @@ exports.delete = (req, res) => {
 };
 
 exports.deleteProducts = (req, res) => {
-    Galeria.destroy({
+    Producto.destroy({
         where : {
             negocioId : req.body.negocioId
         }
@@ -143,7 +143,7 @@ exports.range = (req, res) => {
 }
 
 exports.incremetVist = (req, res) => {
-    producto.findOne({
+    Producto.findOne({
         where : {
             id : req.body.id
         }
