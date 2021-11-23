@@ -146,11 +146,10 @@
 
                   <v-icon class="mx-1" small color="black"> fa fa-map-marker-alt </v-icon>{{ renta.direccion }} |
                   <v-icon class="mx-1" small color="black"> fa fa-phone </v-icon> (+502) {{ FormatTelefono() }} |
-                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon> {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
-                                                                                    'red--text' : 'green--text'">
-                    {{ VerificarHora() === 'Cerrado' }}
-                  </span>)
+                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon>
+                  <span :class="VerificarHora() === 'Cerrado' ? 'red--text' : 'green--text'">
+                    {{ VerificarHora() }}
+                  </span>
 
                 </div>
 
@@ -297,7 +296,7 @@
             <v-row class="pt-n6 mt-4">
 
               <h3 class="ml-3 black--text">
-                Horario
+                Horarios
               </h3>
 
               <v-col cols="12">
@@ -312,10 +311,9 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                        {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
-                                                                                    'red--text' : 'green--text'">
-                          {{ VerificarHora() === 'Cerrado' ? 'No disponible' : 'Disponible' }}</span>)
+                        <a class="black--text font-weight-regular" @click="dialogos.horarios = true">
+                          Ver todos los horarios
+                        </a>
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -784,9 +782,21 @@
                 :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
     />
 
+    <ListadoHorarios v-model="dialogos.horarios" :negocio.sync="renta" />
+
   </v-container>
 
 </template>
+
+<style scoped>
+
+a:Hover {
+
+  text-decoration: underline;
+
+}
+
+</style>
 
 <script>
 
@@ -797,7 +807,9 @@ import * as Axios from "axios";
 export default {
 
   mounted() {
+    this.VisitaNegocio()
     this.ObtenerRentaAuto()
+    this.ObtenerHorarios()
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
     this.geolocate()
@@ -812,7 +824,8 @@ export default {
       dialogos: {
 
         caracteristicas: false,
-        valoracion: false
+        valoracion: false,
+        horarios: false
 
       },
 
@@ -857,13 +870,37 @@ export default {
         disableDefaultUI: true,
       },
 
-      auth: {}
+      auth: {},
+
+      horarios: [],
+
+      dias: {
+        lunes: 1,
+        martes: 2,
+        miercoles: 3,
+        jueves: 4,
+        viernes: 5,
+        sabado: 6,
+        domingo: 7
+      }
 
     }
 
   },
 
   methods: {
+
+    async VisitaNegocio(){
+
+      await this.$api.post("/negocio/vistment", { id: this.$route.params.id })
+
+    },
+
+    async VisitaProducto(id){
+
+      await this.$api.post("/producto/vistment", { id: id })
+
+    },
 
     geolocate() {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -906,6 +943,18 @@ export default {
         })
 
       })
+
+    },
+
+    async ObtenerHorarios(){
+
+      this.renta.horarios = await this.$api.post("/horario/negocio", { negocioId: +this.$route.params.id })
+
+      this.renta.horarios.sort(function (a, b) {
+        return a.dia - b.dia
+      })
+
+      this.VerificarHora()
 
     },
 
@@ -1159,6 +1208,7 @@ export default {
 
       this.productos.seleccionado = Object.assign({}, producto)
       this.dialogos.caracteristicas = true
+      this.VisitaProducto(producto.id)
       this.ObtenerCaracteristicas()
 
     },
@@ -1192,14 +1242,24 @@ export default {
 
     VerificarHora(){
 
-      if(this.renta && this.renta.abre && this.renta.cierra){
+      let negocio = this.renta
+
+      if (negocio.horarios) {
+
+        const diaActual = this.$moment().format('dddd')
+        const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+        const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
+
 
         var format = 'hh:mm:ss'
-        var time = this.$moment(this.$moment(),format),
-          beforeTime = this.$moment(this.renta.abre, format),
-          afterTime = this.$moment(this.renta.cierra, format);
+        var time = this.$moment(this.$moment(), format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
 
         if (time.isBetween(beforeTime, afterTime)) {
+
           return "Abierto"
 
         } else {
@@ -1207,6 +1267,12 @@ export default {
           return "Cerrado"
 
         }
+
+      }
+
+      else{
+
+        return "Cerrado"
 
       }
 

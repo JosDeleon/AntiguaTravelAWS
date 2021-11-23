@@ -143,11 +143,10 @@
 
                   <v-icon class="mx-1" small color="black"> fa fa-map-marker-alt </v-icon>{{ restaurante.direccion }} |
                   <v-icon class="mx-1" small color="black"> fa fa-phone </v-icon> (+502) {{ FormatTelefono() }} |
-                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon> {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
-                                                                                    'red--text' : 'green--text'">
-                    {{ VerificarHora() }}
-                  </span>)
+                  <v-icon class="mx-1" small color="black"> fa fa-clock </v-icon>
+                  <span :class="VerificarHora() === 'Cerrado' ?'red--text' : 'green--text'">
+                    {{ VerificarHora() === 'Cerrado' ? 'Actualmente cerrado' : 'Abierto' }}
+                  </span>
 
                 </div>
 
@@ -236,7 +235,6 @@
 
     <vue-gallery-slideshow :images="galeria" :index="index" @close="index = null" />
 
-
     <v-row :class="($vuetify.breakpoint.name === 'sm' ||
                     $vuetify.breakpoint.name === 'xs') ? 'my-5' : 'px-16 my-5'">
 
@@ -295,7 +293,7 @@
             <v-row class="pt-n6 mt-4">
 
               <h3 class="ml-3 black--text">
-                Horario
+                Horarios
               </h3>
 
               <v-col cols="12">
@@ -310,10 +308,9 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                        {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }} (<span :class="VerificarHora() === 'Cerrado' ?
-                                                                                    'red--text' : 'green--text'">
-                          {{ VerificarHora() }}</span>)
+                        <a class="black--text font-weight-regular" @click="MostrarDialogoHorarios">
+                          Ver todos los horarios
+                        </a>
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -782,9 +779,21 @@
                 :negocioId="+$route.params.id" @refresh="ObtenerValoraciones"
     />
 
+    <ListadoHorarios v-model="dialogos.horarios" :negocio.sync="restaurante" />
+
   </v-container>
 
 </template>
+
+<style scoped>
+
+  a:Hover {
+
+    text-decoration: underline;
+
+  }
+
+</style>
 
 <script>
 
@@ -795,6 +804,8 @@ import * as Axios from "axios";
 export default {
 
   mounted() {
+    this.VisitaNegocio()
+    this.ObtenerHorarios()
     this.ObtenerRestaurante()
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
@@ -811,7 +822,8 @@ export default {
       dialogos: {
 
         caracteristicas: false,
-        valoracion: false
+        valoracion: false,
+        horarios: false
 
       },
 
@@ -856,12 +868,37 @@ export default {
 
       galeria: [],
 
-      auth: {}
+      auth: {},
+
+      horarios: [],
+
+      dias: {
+        lunes: 1,
+        martes: 2,
+        miercoles: 3,
+        jueves: 4,
+        viernes: 5,
+        sabado: 6,
+        domingo: 7
+      }
 
     }
   },
 
   methods: {
+
+    async VisitaNegocio(){
+
+      await this.$api.post("/negocio/vistment", { id: this.$route.params.id })
+
+    },
+
+    async VisitaProducto(id){
+
+      await this.$api.post("/producto/vistment", { id: id })
+
+    },
+
 
     geolocate() {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -904,6 +941,24 @@ export default {
         })
 
       })
+
+    },
+
+    async ObtenerHorarios(){
+
+      this.restaurante.horarios = await this.$api.post("/horario/negocio", { negocioId: +this.$route.params.id })
+
+      this.restaurante.horarios.sort(function (a, b) {
+        return a.dia - b.dia
+      })
+
+      this.VerificarHora()
+
+    },
+
+    MostrarDialogoHorarios(){
+
+      this.dialogos.horarios = true
 
     },
 
@@ -1157,6 +1212,7 @@ export default {
 
       this.productos.seleccionado = Object.assign({}, producto)
       this.dialogos.caracteristicas = true
+      this.VisitaProducto(producto.id)
       this.ObtenerCaracteristicas()
 
     },
@@ -1190,14 +1246,24 @@ export default {
 
     VerificarHora(){
 
-      if(this.restaurante && this.restaurante.abre && this.restaurante.cierra){
+      let negocio = this.restaurante
+
+      if (negocio.horarios) {
+
+        const diaActual = this.$moment().format('dddd')
+        const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+        const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
+
 
         var format = 'hh:mm:ss'
-        var time = this.$moment(this.$moment(),format),
-          beforeTime = this.$moment(this.restaurante.abre, format),
-          afterTime = this.$moment(this.restaurante.cierra, format);
+        var time = this.$moment(this.$moment(), format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
 
         if (time.isBetween(beforeTime, afterTime)) {
+
           return "Abierto"
 
         } else {
@@ -1205,6 +1271,12 @@ export default {
           return "Cerrado"
 
         }
+
+      }
+
+      else{
+
+        return "Cerrado"
 
       }
 

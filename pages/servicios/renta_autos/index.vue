@@ -170,20 +170,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(renta.abre, renta.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(renta) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(renta.abre, renta.cierra) }}
+                    {{ VerificarHora(renta) }}
                   </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(renta.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(renta.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(renta)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
                 </h6>
 
               </v-card-title>
@@ -392,6 +386,8 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <DesplegarHorarios v-model="dialogos.horarios" :negocio.sync="rentas.seleccionado" />
+
     <v-dialog
       ref="fecha_planeada"
       v-model="dialogos.filtro_fecha"
@@ -499,9 +495,31 @@ export default {
 
         listado_total.filter(renta => {
 
-          if(this.helpers.filtro_hora && this.helpers.hora_planeada){
+          if(this.helpers.filtro_hora && this.helpers.filtro_fecha && this.helpers.hora_planeada &&
+            this.helpers.fecha_planeada){
 
-            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, renta.abre, renta.cierra)){
+            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, renta) &&
+              this.VerificarFechaFiltro(this.helpers.fecha_planeada, renta)){
+
+              lista.push(renta)
+
+            }
+
+          }
+
+          else if(this.helpers.filtro_hora && !this.helpers.filtro_fecha && this.helpers.hora_planeada){
+
+            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, renta)){
+
+              lista.push(renta)
+
+            }
+
+          }
+
+          else if(!this.helpers.filtro_hora && this.helpers.filtro_fecha && this.helpers.fecha_planeada) {
+
+            if(this.VerificarFechaFiltro(this.helpers.fecha_planeada, renta)){
 
               lista.push(renta)
 
@@ -552,7 +570,18 @@ export default {
       dialogos: {
         mapa: false,
         filtro_fecha: false,
-        filtro_hora: false
+        filtro_hora: false,
+        horarios: false
+      },
+
+      dias: {
+        lunes: 1,
+        martes: 2,
+        miércoles: 3,
+        jueves: 4,
+        viernes: 5,
+        sabado: 6,
+        domingo: 7
       },
 
       infoWindow: {
@@ -581,7 +610,8 @@ export default {
       },
 
       rentas: {
-        listado: []
+        listado: [],
+        seleccionado: {}
       },
 
       productos: {
@@ -714,6 +744,37 @@ export default {
           renta.totalValoraciones = 0
           renta.puntuacionAvg = 0
 
+          await this.$api.post("/horario/negocio", {negocioId: renta.id}).then(data => {
+
+            renta.horarios = data
+
+            renta.horarios.sort(function (a, b) {
+              return a.dia - b.dia
+            })
+
+          })
+
+          await this.$api.post("/productos", { id: renta.id }).then(data => {
+
+            data.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+            try {
+
+              renta.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+            }
+            catch (e) {}
+
+            this.productos.listado = [...this.productos.listado, ...data]
+
+            this.productos.listado.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+          })
+
           await this.$api.post("/valoraciones", params).then(data => {
 
             let valoracionesAvg = 0
@@ -732,22 +793,6 @@ export default {
 
           })
 
-          await this.$api.post("/productos", { id: hotel.id }).then(data => {
-
-            data.sort(function (a, b) {
-              return a.valor - b.valor
-            })
-
-            hotel.rango = [+data[0].valor, +data[data.length - 1].valor]
-
-            this.productos.listado = [...this.productos.listado, ...data]
-
-            this.productos.listado.sort(function (a, b) {
-              return a.valor - b.valor
-            })
-
-          })
-
           renta.showCardTags = false
           renta.tags = ["Al aire libre"]
           cont++
@@ -755,6 +800,13 @@ export default {
         } )
 
       } )
+
+    },
+
+    MostrarDialogoHorarios(negocio){/**********************************************************/
+
+      this.rentas.seleccionado = Object.assign({}, negocio)
+      this.dialogos.horarios = true
 
     },
 
@@ -803,6 +855,37 @@ export default {
 
             renta.totalValoraciones = 0
             renta.puntuacionAvg = 0
+
+            await this.$api.post("/horario/negocio", {negocioId: renta.id}).then(data => {
+
+              renta.horarios = data
+
+              renta.horarios.sort(function (a, b) {
+                return a.dia - b.dia
+              })
+
+            })
+
+            await this.$api.post("/productos", { id: renta.id }).then(data => {
+
+              data.sort(function (a, b) {
+                return a.valor - b.valor
+              })
+
+              try {
+
+                renta.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+              }
+              catch (e) {}
+
+              this.productos.listado = [...this.productos.listado, ...data]
+
+              this.productos.listado.sort(function (a, b) {
+                return a.valor - b.valor
+              })
+
+            })
 
             await this.$api.post("/valoraciones", params).then(data => {
 
@@ -915,7 +998,19 @@ export default {
 
     },
 
-    VerificarHoraFiltro(hora, abre, cierra){
+    VerificarHoraFiltro(hora, negocio){/**********************************************************/
+
+      let diaActual;
+
+      if(this.helpers.filtro_fecha && this.helpers.fecha_planeada)
+        diaActual = this.$moment(this.helpers.fecha_planeada, "YYYY-MM-DD HH:mm:ss").format("dddd")
+      else
+        diaActual = this.$moment().format('dddd')
+
+      const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+        negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+      const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+        negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
 
       var format = 'hh:mm:ss'
       var time = this.$moment(hora, format),
@@ -923,6 +1018,16 @@ export default {
         afterTime = this.$moment(cierra, format);
 
       return time.isBetween(beforeTime, afterTime)
+
+    },
+
+    VerificarFechaFiltro(fecha, negocio){/**********************************************************/
+
+      let dia_seleccionado = this.$moment(fecha, "YYYY-MM-DD HH:mm:ss").format("dddd")
+      let horario = negocio.horarios.find(h => h.dia === this.dias[dia_seleccionado])
+
+      return horario !== null && horario !== undefined
+
 
     },
 
@@ -975,18 +1080,35 @@ export default {
 
     },
 
-    VerificarHora(abre, cierra){
+    VerificarHora(negocio){
 
-      var format = 'hh:mm:ss'
-      var time = this.$moment(this.$moment(),format),
-        beforeTime = this.$moment(abre, format),
-        afterTime = this.$moment(cierra, format);
+      if (negocio.horarios) {
 
-      if (time.isBetween(beforeTime, afterTime)) {
+        const diaActual = this.$moment().format('dddd')
+        const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+        const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
 
-        return "Abierto"
 
-      } else {
+        var format = 'hh:mm:ss'
+        var time = this.$moment(this.$moment(), format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
+
+        if (time.isBetween(beforeTime, afterTime)) {
+
+          return "Abierto"
+
+        } else {
+
+          return "Cerrado"
+
+        }
+
+      }
+
+      else{
 
         return "Cerrado"
 

@@ -8,7 +8,7 @@
 
         <v-card style="border-radius:10px;"
                 max-width="400"
-                min-width="400"
+
                 class="mx-auto"
                 elevation="0"
                 outlined
@@ -154,7 +154,7 @@
               style="border-radius:10px;"
               class="mx-auto my-12"
               max-width="400"
-              min-width="400"
+
               elevation="0"
               outlined
             >
@@ -170,20 +170,14 @@
                 </h4>
                 <v-spacer/>
                 <h6>
-                  <span :class="VerificarHora(restaurante.abre, restaurante.cierra) === 'Cerrado' ?
+                  <span :class="VerificarHora(restaurante) === 'Cerrado' ?
                   'red--text' : 'green--text'">
-                    {{ VerificarHora(restaurante.abre, restaurante.cierra) }}
+                    {{ VerificarHora(restaurante) }}
                   </span> -
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-chip outlined color="black" small v-bind="attrs" v-on="on">
-                        <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
-                        Horarios
-                      </v-chip>
-                    </template>
-                    <span> Todos los días de {{ $moment(restaurante.abre, "HH:mm:ss").format('h:mm a') }} -
-                  {{ $moment(restaurante.cierra, "HH:mm:ss").format('h:mm a')  }}</span>
-                  </v-tooltip>
+                  <v-chip outlined color="black" small @click="MostrarDialogoHorarios(restaurante)">
+                    <v-icon color="black" class="mr-1">fa fa-clock</v-icon>
+                    Horarios
+                  </v-chip>
 
                 </h6>
               </v-card-title>
@@ -392,6 +386,8 @@
       ></v-progress-circular>
     </v-overlay>
 
+    <DesplegarHorarios v-model="dialogos.horarios" :negocio.sync="restaurantes.seleccionado" />
+
     <v-dialog
       ref="fecha_planeada"
       v-model="dialogos.filtro_fecha"
@@ -500,9 +496,30 @@ export default {
 
         listado_total.filter(restaurante => {
 
-          if(this.helpers.filtro_hora && this.helpers.hora_planeada){
+          if(this.helpers.filtro_hora && this.helpers.filtro_fecha && this.helpers.hora_planeada &&
+            this.helpers.fecha_planeada){
 
-            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, restaurante.abre, restaurante.cierra)){
+            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, restaurante) &&
+              this.VerificarFechaFiltro(this.helpers.fecha_planeada, restaurante)){
+
+              lista.push(restaurante)
+
+            }
+
+          }
+          else if(this.helpers.filtro_hora && !this.helpers.filtro_fecha && this.helpers.hora_planeada){
+
+            if(this.VerificarHoraFiltro(this.helpers.hora_planeada, restaurante)){
+
+              lista.push(restaurante)
+
+            }
+
+          }
+
+          else if(!this.helpers.filtro_hora && this.helpers.filtro_fecha && this.helpers.fecha_planeada) {
+
+            if(this.VerificarFechaFiltro(this.helpers.fecha_planeada, restaurante)){
 
               lista.push(restaurante)
 
@@ -553,7 +570,18 @@ export default {
       dialogos: {
         mapa: false,
         filtro_fecha: false,
-        filtro_hora: false
+        filtro_hora: false,
+        horarios: false
+      },
+
+      dias: {
+        lunes: 1,
+        martes: 2,
+        miércoles: 3,
+        jueves: 4,
+        viernes: 5,
+        sabado: 6,
+        domingo: 7
       },
 
       infoWindow: {
@@ -583,7 +611,8 @@ export default {
 
       restaurantes: {
 
-        listado: []
+        listado: [],
+        seleccionado: {}
 
       },
 
@@ -622,7 +651,7 @@ export default {
 
   methods: {
 
-    async ObtenerRestaurantes(){
+    async ObtenerRestaurantes(){/**********************************************************/
 
       this.productos.listado = []
 
@@ -637,6 +666,37 @@ export default {
 
           restaurante.totalValoraciones = 0
           restaurante.puntuacionAvg = 0
+
+          await this.$api.post("/horario/negocio", {negocioId: restaurante.id}).then(data => {
+
+            restaurante.horarios = data
+
+            restaurante.horarios.sort(function (a, b) {
+              return a.dia - b.dia
+            })
+
+          })
+
+          await this.$api.post("/productos", { id: restaurante.id }).then(data => {
+
+            data.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+            try {
+
+              restaurante.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+            }
+            catch (e) {}
+
+            this.productos.listado = [...this.productos.listado, ...data]
+
+            this.productos.listado.sort(function (a, b) {
+              return a.valor - b.valor
+            })
+
+          })
 
           await this.$api.post("/valoraciones", params).then(data => {
 
@@ -653,22 +713,6 @@ export default {
             restaurante.puntuacionAvg = (data.length > 0) ? valoracionesAvg / data.length : 0
 
             this.$forceUpdate()
-
-          })
-
-          await this.$api.post("/productos", { id: restaurante.id }).then(data => {
-
-            data.sort(function (a, b) {
-              return a.valor - b.valor
-            })
-
-            restaurante.rango = [+data[0].valor, +data[data.length - 1].valor]
-
-            this.productos.listado = [...this.productos.listado, ...data]
-
-            this.productos.listado.sort(function (a, b) {
-              return a.valor - b.valor
-            })
 
           })
 
@@ -851,33 +895,23 @@ export default {
 
     InformacionProducto(restaurante){
 
-      if(JSON.parse(localStorage.getItem('usuario'))){
-        if(JSON.parse(localStorage.getItem('usuario')).id !== restaurante.usuarioId){
-          this.ClickNegocio(restaurante)
-        }
-      }
-      else{
-        this.ClickNegocio(restaurante)
-      }
-
       this.$router.push({ path: '/servicios/restaurantes/'+restaurante.id })
 
     },
 
-    async ClickNegocio(restaurante){
+    VerificarHoraFiltro(hora, negocio){/**********************************************************/
 
-      let params = {
+      let diaActual;
 
-        id: restaurante.id,
-        vistas: restaurante.vistas ? restaurante.vistas++ : 1
+      if(this.helpers.filtro_fecha && this.helpers.fecha_planeada)
+        diaActual = this.$moment(this.helpers.fecha_planeada, "YYYY-MM-DD HH:mm:ss").format("dddd")
+      else
+        diaActual = this.$moment().format('dddd')
 
-      }
-
-      await this.$api.put("/negocio", params).then(data => {})
-
-    },
-
-    VerificarHoraFiltro(hora, abre, cierra){
+      const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+        negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+      const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+        negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
 
       var format = 'hh:mm:ss'
       var time = this.$moment(hora, format),
@@ -888,6 +922,16 @@ export default {
 
     },
 
+    VerificarFechaFiltro(fecha, negocio){/**********************************************************/
+
+      let dia_seleccionado = this.$moment(fecha, "YYYY-MM-DD HH:mm:ss").format("dddd")
+      let horario = negocio.horarios.find(h => h.dia === this.dias[dia_seleccionado])
+
+      return horario !== null && horario !== undefined
+
+
+    },
+
     VerificarRangoPrecios(rangoPrecios){
 
       return (Math.floor(+rangoPrecios[0]) >= this.range[0] && Math.floor(+rangoPrecios[0]) <= this.range[1]) ||
@@ -895,17 +939,35 @@ export default {
 
     },
 
-    VerificarHora(abre, cierra){
+    VerificarHora(negocio){
 
-      var format = 'hh:mm:ss'
-      var time = this.$moment(this.$moment(),format),
-        beforeTime = this.$moment(abre, format),
-        afterTime = this.$moment(cierra, format);
+      if (negocio.horarios) {
 
-      if (time.isBetween(beforeTime, afterTime)) {
-        return "Abierto"
+        const diaActual = this.$moment().format('dddd')
+        const abre = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).abre : ""
+        const cierra = negocio.horarios.find(h => h.dia === this.dias[diaActual]) ?
+          negocio.horarios.find(h => h.dia === this.dias[diaActual]).cierra : ""
 
-      } else {
+
+        var format = 'hh:mm:ss'
+        var time = this.$moment(this.$moment(), format),
+          beforeTime = this.$moment(abre, format),
+          afterTime = this.$moment(cierra, format);
+
+        if (time.isBetween(beforeTime, afterTime)) {
+
+          return "Abierto"
+
+        } else {
+
+          return "Cerrado"
+
+        }
+
+      }
+
+      else{
 
         return "Cerrado"
 
@@ -913,7 +975,14 @@ export default {
 
     },
 
-    async RefrescarNegocios(){
+    MostrarDialogoHorarios(negocio){/**********************************************************/
+
+      this.restaurantes.seleccionado = Object.assign({}, negocio)
+      this.dialogos.horarios = true
+
+    },
+
+    async RefrescarNegocios(){/**********************************************************/
 
       if(this.tags_seleccionadas && this.tags_seleccionadas.length > 0){
 
@@ -941,6 +1010,37 @@ export default {
 
             restaurante.totalValoraciones = 0
             restaurante.puntuacionAvg = 0
+
+            await this.$api.post("/horario/negocio", {negocioId: restaurante.id}).then(data => {
+
+              restaurante.horarios = data
+
+              restaurante.horarios.sort(function (a, b) {
+                return a.dia - b.dia
+              })
+
+            })
+
+            await this.$api.post("/productos", { id: restaurante.id }).then(data => {
+
+              data.sort(function (a, b) {
+                return a.valor - b.valor
+              })
+
+              try {
+
+                restaurante.rango = [+data[0].valor, +data[data.length - 1].valor]
+
+              }
+              catch (e) {}
+
+              this.productos.listado = [...this.productos.listado, ...data]
+
+              this.productos.listado.sort(function (a, b) {
+                return a.valor - b.valor
+              })
+
+            })
 
             await this.$api.post("/valoraciones", params).then(data => {
 

@@ -39,7 +39,7 @@
                 <ol class="ml-4 mt-2">
                   <li>
                     Lo primero que se debe de hacer es registrarse en la parte superior derecha de la página, en el apartado
-                    al lado del apartado de negocios apartado de negocios <v-icon size="20" color="black">fa fa-briefcase</v-icon>
+                    al lado del apartado de negocios  <v-icon size="20" color="black">fa fa-user</v-icon>
                     para que dicha cuenta sea asociada con el negocio para la administración del mismo.
                   </li>
                   <li class="mt-2">
