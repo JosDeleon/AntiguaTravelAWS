@@ -120,7 +120,7 @@ exports.update = (req, res) => {
             id : req.body.id
         }
     }).then(() => {
-        res.status(200).send({ message : "Actualizado!"});
+         res.status(200).send({ message : "Actualizado!"});
     })
     .catch( err => {
         res.status(500).send({ message : err.message })
