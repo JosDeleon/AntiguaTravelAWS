@@ -785,9 +785,33 @@ export default {
 
     },
 
-    DesactivarCuenta(){
+    async DesactivarCuenta(){
+
+      this.cargando = true
+
+      let params = {
+        id: this.auth.id
+      }
+
+      await this.$api.delete("/usuario", params).then(data => {
+
+        this.cargando = false
+        this.$alert.exito("Su usuario fue desactivado exitosamente", "Usuario Desactivado")
+        this.$router.push({ path: '/' })
+        this.CerrarSesion()
+
+      }).catch(({ data }) => {
+        console.error(data)
+        this.$alert.error('Ocurrió un error interno, vuelva a intentarlo', 'Error Interno')
+      })
 
     },
+
+    CerrarSesion(){
+      localStorage.removeItem('usuario')
+      this.usuario = { id: -1 }
+      this.$store.commit('setNegocios', [])
+    }
 
   }
 
