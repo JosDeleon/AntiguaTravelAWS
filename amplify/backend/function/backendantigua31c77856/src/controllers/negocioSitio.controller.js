@@ -118,7 +118,7 @@ exports.insert = async (req, res) => {
 
         Tags.bulkCreate(insertTags)
         .then(() => {
-            /*Usuario.findOne({
+            Usuario.findOne({
                 where : {
                     id : req.body.usuarioId
                 }
@@ -151,14 +151,13 @@ exports.insert = async (req, res) => {
                     await SES.sendEmail(params).promise();
                     return res.status(200).send({ message : 'Negocio Registrado!!'});
                 } catch (error) {
-                    //console.log('Error al enviar el Email', error);
+                    console.log('Error al enviar el Email', error);
                     return res.status(400).send({ message : "ERROR => " + error});
                 }
             })
             .catch( err => {
                 res.status(500).send({ message : err.message })
             })
-            */
             return res.status(200).send({ message : 'Negocio Registrado!!'});
         })
         .catch( err => {
