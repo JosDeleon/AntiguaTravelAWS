@@ -840,6 +840,7 @@ export default {
     this.ObtenerHorarios()
     this.ObtenerValoraciones()
     this.geolocate()
+    this.ObtenerAuth()
   },
 
   components: { VueGallerySlideshow, Valoracion },

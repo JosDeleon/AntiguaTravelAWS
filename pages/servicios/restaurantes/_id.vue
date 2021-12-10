@@ -810,6 +810,7 @@ export default {
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
     this.geolocate()
+    this.ObtenerAuth()
 
   },
 

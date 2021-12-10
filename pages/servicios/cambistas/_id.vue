@@ -841,6 +841,7 @@ export default {
     this.ObtenerGaleria()
     this.ObtenerValoraciones()
     this.geolocate()
+    this.ObtenerAuth()
   },
 
   components: { VueGallerySlideshow, Valoracion },
@@ -1050,7 +1051,7 @@ export default {
 
                     }
 
-                    this.$router.push({path: '/usuario/mensajes?id=' + cambista.id })
+                    this.$router.push({path: '/usuario/mensajes?id=' + this.cambista.id })
 
                   })
 
